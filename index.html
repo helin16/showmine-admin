@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html ng-app="shmApp">
+<head>
+    <base href="/">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <title>ShowMine 商家 | Company backend</title>
+    <link rel="stylesheet/less" type="text/css" href="app/css/app.less" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"><!-- htmlbuild:vendorCss -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"  crossorigin="anonymous"/>
+    <link rel="stylesheet" href="app/css/vendor-4b92e6d5a9.css"/>
+    <link rel="stylesheet" href="app/css/app.css"/>
+</head>
+<body ng-class="{'opened-in-wechat': openedInWechat}">
+    <div ng-if="false" style="width: 25rem; padding: 1rem; text-align: center; top: 50%; left: 50%; transform: translate(-50%, -50%); position: absolute;">
+        <i class="fa fa-spinner fa-5x"></i>
+    </div>
+
+    <opened-in-we-chat-checker></opened-in-we-chat-checker>
+    <div id='app-top' class="page-wrapper" ui-view ng-if="openedInWechat !== true"></div>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script src="app/js/vendor-e28f4221fa.js"></script>
+    <script src="app/js/app-63482f2685.js"></script>
+    <script src="app/js/template-eba3b4dbc0.js"></script>
+    <script src="app/js/language-d8052aa0c2.js"></script>
+</body>
+</html>
