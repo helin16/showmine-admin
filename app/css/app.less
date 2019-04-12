@@ -200,6 +200,16 @@ body.opened-in-wechat {
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+
+            .language-switcher {
+                .flex-display(row);
+                align-items: center;
+                justify-content: flex-end;
+                > .title {
+                    font-size: 9px;
+                    margin-right: 8px;
+                }
+            }
         }
     }
 }
@@ -682,6 +692,17 @@ body.opened-in-wechat {
 @lang-switch-pointer-font-size: 34px;
 @lang-switch-option-item-color: #6f727d;
 @lang-switch-zIndex: 1000;
+.language-options-musk {
+    position: fixed;
+    background: transparent;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    width: 100vw;
+    height: 100vh;
+    z-index: @lang-switch-zIndex - 1;
+}
 .language-switch-wrapper {
     position: relative;
 
@@ -711,19 +732,10 @@ body.opened-in-wechat {
         right: 0px;
         -webkit-box-shadow: 0px 0px 15px 1px rgba(69, 65, 78, 0.2);
         box-shadow: 0px 0px 15px 1px rgba(69, 65, 78, 0.2);
+        z-index: @lang-switch-zIndex;
 
         &.active {
             display: block;
-        }
-
-        .musk {
-            position: fixed;
-            background: transparent;
-            top: 0px;
-            bottom: 0px;
-            left: 0px;
-            right: 0px;
-            z-index: @lang-switch-zIndex - 1;
         }
 
         .title {
@@ -2274,6 +2286,15 @@ body.opened-in-wechat {
                 > div {
                     max-width: 80%;
                     margin: 0 auto;
+                }
+                .language-switcher {
+                    .flex-display(row);
+                    align-items: center;
+                    justify-content: flex-end;
+                    > .title {
+                        font-size: 9px;
+                        margin-right: 8px;
+                    }
                 }
             }
             .right {

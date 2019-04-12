@@ -255,7 +255,23 @@
 
   "LOGIN_PANEL.TITLE": "ShowMine Company backend login",
   "LOGIN_PANEL.WECHAT.QRCODE.TITLE": "Please Scan the below QRCode to login",
+  "LOGIN_PANEL.FREE_SIGNUP": "No Account yet? Sign up for free",
 
   "SIGN_UP.FORM.TITLE": "Get started now free.",
-  "SIGN_UP.FORM.SUB_TITLE": "Try the ShowMine free for 30 days. No credit card required. Any questions, please <a href='https://www.showmine.com/contact-us/'>contact us here</a>"
+  "SIGN_UP.FORM.SUB_TITLE": "Try the ShowMine free for 30 days. No credit card required. Any questions, please <a href='https://www.showmine.com/contact-us/'>contact us here</a>",
+  "SIGN_UP.FORM.BACK_TO_LOGIN_PAGE": "Got an account? login here.",
+  "SUBMIT": "Submit",
+  "EMAIL_ADDRESS": "Email Address",
+  "SIGN_UP.FORM.EMAIL_ADDRESS.PLACE_HOLDER": "Email address for your store.",
+  "SIGN_UP.FORM.STORE_NAME": "Store name",
+  "SIGN_UP.FORM.STORE_CONTACT_NO": "Contact number for your store.",
+  "SIGN_UP.DESCRIPTION": "<p>Within the trial period, you can try:</p><ul><li><h4>Content Management</h4>articles, pictures and videos for your all channels</li><li><h4>Product Management</h4>Price, description, buyer</li><li><h4>Voucher Management</h4>T&C's, redeems & quantity</li><li><h4>Social Media Sharing</h4>Sharing strategies, reward strategies</li></ul>",
+  "The email field is required.": "The email is required.",
+  "The company name field is required.": "The company name is required.",
+  "The phone field is required.": "The contact number is required.",
+  "SIGN_UP.FORM.LOGIN_TITLE": "Congrats, Store Created Successfully!",
+  "SIGN_UP.FORM.LOGIN_SUB_TITLE": "Please login by scanning the QRCode via your WeChat account: ",
+  "SIGN_UP.FORM.LOGIN_SUCCESS_MSG": "Scanned Successfully, login...",
+  "SIGN_UP.FORM.LOGIN_MAX_REACHED_MSG": "Oops, timed out",
+  "SIGN_UP.FORM.LOGIN_REFRESH_BTN": "Click here to refresh"
 }

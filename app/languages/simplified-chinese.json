@@ -276,9 +276,11 @@
 
   "LOGIN_PANEL.TITLE": "ShowMine 商家登录",
   "LOGIN_PANEL.WECHAT.QRCODE.TITLE": "请微信扫码登录",
+  "LOGIN_PANEL.FREE_SIGNUP": "还没有账号？现在就免费试用",
 
   "SIGN_UP.FORM.TITLE": "现在就开始免费使用.",
-  "SIGN_UP.FORM.SUB_TITLE": "免费试用ShowMine 30天。无需提供任何个人信息。如有任何问题，请随时<a href='https://www.showmine.com/contact-us/'>联系我们</a>。",
+  "SIGN_UP.FORM.SUB_TITLE": "免费试用ShowMine 30天。无需提供任何个人信息。如有任何问题，请随时<a href='https://www.showmine.com/cn/contact-us/'>联系我们</a>。",
+  "SIGN_UP.FORM.BACK_TO_LOGIN_PAGE": "已经有账号？从这里登陆",
   "SUBMIT": "提交",
   "EMAIL_ADDRESS": "Email 地址",
   "SIGN_UP.FORM.EMAIL_ADDRESS.PLACE_HOLDER": "店面的Email地址",
