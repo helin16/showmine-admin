@@ -47,6 +47,12 @@
   "GROUP_BUY": "Group Buys",
   "VOUCHERS": "Vouchers",
   "VOUCHER": "Voucher",
+  "PUBLISHED": "Published",
+  "DRAFT": "Draft",
+  "ENDED": "Ended",
+  "END": "End",
+  "SAVED_SUCCESSFULLY_WITH_QRCODE_TITLE": "Saved successfully, scan the following QrCode via WeChat.",
+  "NEXT": "Next",
 
 
   "MY_COMPANY": "My Company",
@@ -97,6 +103,8 @@
   "COMPANY.DESCRIPTION": "Company description",
   "COMPANY.VOUCHER_USAGE": "Vourcher Usage: how to redeem, descriptions...",
   "COMPANY.NAME": "Company Name",
+  "COMPANY.NAME.PLACEHOLDER": "Company Name ...",
+  "COMPANY.NAME.IS_REQUIRED": "Company Name is required.",
   "COMPANY.ABN": "Company Number",
   "COMPANY.ABN.PLACEHOLDER": "Company Number, ABN,ACN...",
   "COMPANY.SLOGAN": "SOLGAN",
@@ -122,6 +130,8 @@
   "COMPANY.BTN.SAVE": "Save",
   "COMPANY.EXPIRED.INFO.PANEL.BODY": "This company ({{company_name}}) has expired @{{expired_at}} ",
   "COMPANY.NOT_HAVING_THIS_MODULE.INFO.PANEL.BODY": "This company({{company_name}}) has NOT enabled module ({{module_name}}) yet.",
+
+  "COMPANY.SETUP_GUIDE.PANEL.TITLE": "Complete your company information...",
 
   "NOTES.NO_RECORD_YET": "There is NO News/Articles yet",
   "NOTES.SEARCH.PLACEHOLDER": "Search News/Articles ...",
@@ -265,6 +275,8 @@
   "LOGIN_PANEL.ALREADY_LOGIN": "You are already logged in, {{name}}.",
   "LOGIN_PANEL.TO_DASHBOARD_BTN": "Navigate to my dashboard.",
   "LOGIN_PANEL.LOGOUT_BTN": "This is not you? or try a different account?",
+  "LOGIN_PANEL.WECHAT.QRCODE.TIMED_OUT": "Oops, timed out.",
+  "LOGIN_PANEL.WECHAT.QRCODE.BTN.REGENERATE": "Click here to try again",
 
   "SIGN_UP.FORM.TITLE": "Get started now free.",
   "SIGN_UP.FORM.SUB_TITLE": "Start to use ShowMine for free. No credit card required. Any questions, please <a href='https://www.showmine.com/contact-us/'>contact us here</a>",

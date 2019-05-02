@@ -214,6 +214,34 @@ body.opened-in-wechat {
     }
 }
 
+.wechat-qrcode-login-wrapper {
+    #qrcode {
+        margin: 20px 0px;
+        position: relative;
+        .text-center;
+
+        .image {
+            width: 210px;
+            height: auto;
+        }
+
+        .timed-out-panel {
+            .vertical-center-wrapper;
+            position:absolute;
+            left: 0;
+            right: 0;
+            top:0;
+            bottom:0;
+            background: rgba(255, 255, 255, 0.95);
+            color: #5b5b5b;
+
+            .refresh-btn {
+                cursor: pointer;
+            }
+        }
+    }
+}
+
 @content-box-header-padding-top-and-bottom: 2rem 2.2rem;
 @content-box-header-height: 5.1rem;
 @content-box-body-padding: 2.2rem;
