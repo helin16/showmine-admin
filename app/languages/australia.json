@@ -25,6 +25,7 @@
   "TOTAL": "total",
   "DETAILS": "details",
   "ACCESS_DENY": "Access Denied",
+  "FOLLOWERS_COUNT": "Followers",
   "YOU_ARE_NOT_THE_COMPANY_ADMIN": "You don't have admin access to this company[{{company_name}}]，please contact the admin.",
   "ARE_SURE_TO_DELETE?": "Are you sure to delete?",
   "ITEM MAX JOIN LIMIT": "Total number of items",
@@ -45,7 +46,6 @@
   "GROUP_BUY": "Group Buys",
   "VOUCHERS": "Vouchers",
   "VOUCHER": "Voucher",
-  "EXPIRED": "Expired",
 
 
   "MY_COMPANY": "My Company",
@@ -254,6 +254,9 @@
   "LOGIN_PANEL.TITLE": "ShowMine Company backend login",
   "LOGIN_PANEL.WECHAT.QRCODE.TITLE": "Please Scan the below QRCode to login via WeChat",
   "LOGIN_PANEL.FREE_SIGNUP": "No Account yet? Sign up for free",
+  "LOGIN_PANEL.ALREADY_LOGIN": "You are already logged in, {{name}}.",
+  "LOGIN_PANEL.TO_DASHBOARD_BTN": "Navigate to my dashboard.",
+  "LOGIN_PANEL.LOGOUT_BTN": "This is not you? or try a different account?",
 
   "SIGN_UP.FORM.TITLE": "Get started now free.",
   "SIGN_UP.FORM.SUB_TITLE": "Start to use ShowMine for free. No credit card required. Any questions, please <a href='https://www.showmine.com/contact-us/'>contact us here</a>",
