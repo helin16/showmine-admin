@@ -286,6 +286,8 @@
   "LOGIN_PANEL.LOGOUT_BTN": "这个不是您? 或者登录其他账号？",
   "LOGIN_PANEL.WECHAT.QRCODE.TIMED_OUT": "超时啦！",
   "LOGIN_PANEL.WECHAT.QRCODE.BTN.REGENERATE": "点我重试",
+  "LOGIN_PANEL.WECHAT.QRCODE.SCANNED_SUCCESS": "扫码成功，跳转至公司后台...",
+  "LOGIN_PANEL.WECHAT.QRCODE.SCANNED_SUCCESS_IF_NOT_REDIRECTED": "点我跳转至公司后台",
 
   "SIGN_UP.FORM.TITLE": "现在就开始免费使用.",
   "SIGN_UP.FORM.SUB_TITLE": "开始免费注册并使用，无需提供任何支付信息。如有任何问题，请随时<a href='https://www.showmine.com/cn/contact-us/'>联系我们</a>。",
