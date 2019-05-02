@@ -252,18 +252,18 @@
 
 
   "LOGIN_PANEL.TITLE": "ShowMine Company backend login",
-  "LOGIN_PANEL.WECHAT.QRCODE.TITLE": "Please Scan the below QRCode to login",
+  "LOGIN_PANEL.WECHAT.QRCODE.TITLE": "Please Scan the below QRCode to login via WeChat",
   "LOGIN_PANEL.FREE_SIGNUP": "No Account yet? Sign up for free",
 
   "SIGN_UP.FORM.TITLE": "Get started now free.",
-  "SIGN_UP.FORM.SUB_TITLE": "Try the ShowMine free for 30 days. No credit card required. Any questions, please <a href='https://www.showmine.com/contact-us/'>contact us here</a>",
+  "SIGN_UP.FORM.SUB_TITLE": "Start to use ShowMine for free. No credit card required. Any questions, please <a href='https://www.showmine.com/contact-us/'>contact us here</a>",
   "SIGN_UP.FORM.BACK_TO_LOGIN_PAGE": "Got an account? login here.",
   "SUBMIT": "Submit",
   "EMAIL_ADDRESS": "Email Address",
   "SIGN_UP.FORM.EMAIL_ADDRESS.PLACE_HOLDER": "Email address for your store.",
   "SIGN_UP.FORM.STORE_NAME": "Store name",
   "SIGN_UP.FORM.STORE_CONTACT_NO": "Contact number for your store.",
-  "SIGN_UP.DESCRIPTION": "<p>Within the trial period, you can try:</p><ul><li><h4>Content Management</h4>articles, pictures and videos for your all channels</li><li><h4>Product Management</h4>Price, description, buyer</li><li><h4>Voucher Management</h4>T&C's, redeems & quantity</li><li><h4>Social Media Sharing</h4>Sharing strategies, reward strategies</li></ul>",
+  "SIGN_UP.DESCRIPTION": "<p>ShowMine will offer you free usage of:</p><ul><li><h4>Content Management</h4>articles, pictures and videos for your all channels</li><li><h4>Product Management</h4>Price, description, buyer</li><li><h4>Voucher Management</h4>T&C's, redeems & quantity</li><li><h4>Social Media Sharing</h4>Sharing strategies, reward strategies</li></ul>",
   "The email field is required.": "The email is required.",
   "The company name field is required.": "The company name is required.",
   "The phone field is required.": "The contact number is required.",
