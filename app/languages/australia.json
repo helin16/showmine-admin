@@ -34,6 +34,10 @@
   "DASHBOARD": "Dashboard",
   "COMPANY_TAGS": "Company Tags",
   "COMPANY_TAGS.PLACEHOLDER": "Add a tag",
+  "OR": "or",
+  "AUTHOR.PLACEHOLDER": "The name of the author",
+  "QRCODE": "QRCode",
+  "CAN_NOT_FIND_ANY_ASSOCIATED_COMPANY_FOR_YOU": "Can't find any company for you.",
 
   "COMPANY_BANNER": "banner",
   "COMPANY_NOTIFICATION": "broadcast",
