@@ -21,7 +21,6 @@
   "YES": "Yes",
   "CANCEL": "cancel",
   "CONFIRM": "confirm",
-  "SEND": "Send",
   "CLOSE": "Close",
   "TOTAL": "total",
   "DETAILS": "details",
@@ -206,15 +205,6 @@
   "GROUP_BUYS.VOUCHERS.ADD.BTN": "Add Bonus",
   "GROUP_BUYS.VOUCHERS.EDIT.BTN": "Edit Bonus",
 
-  "EVENTS": "Events",
-  "EVENTS.DESCRIPTION": "Event Description",
-  "EVENTS.LIST": "Event List",
-  "EVENTS.SEARCH.PLACEHOLDER": "Search Event...",
-  "EVENTS.HISTORY": "Event History",
-  "EVENTS.EXPORT.RECORDS": "Export Records",
-  "EVENTS.EXPORT.RECORDS.TITLE": "Event Records Export",
-  "EVENTS.EXPORT.RECORDS.PLACEHOLDER": "Please enter receiver's email address...",
-  "EVENTS.EXPORT.RECORDS.SUCCESS": "Email Sent",
 
 
   "VOUCHER_GROUP.NO_RECORD_YET": "There is No Vouchers yet",
@@ -243,7 +233,6 @@
 
   "ITEM.PREVIEW.QRCODE.TITLE": "Qrcodes for this item",
   "ITEM.PREVIEW.QRCODE.BODY": "Scan the following qrcode(s)",
-  "ITEM.COVER_IMAGE.UPLOAD": "Upload Cover Image",
 
   "STAFF.LIST.SEARCH.PLACEHOLDER": "Search Staff...",
   "STAFF.LIST.NO_RECORD_YET": "Can't find any staff",
