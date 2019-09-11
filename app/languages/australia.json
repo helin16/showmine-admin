@@ -3,6 +3,8 @@
 
   "OPENED_IN_WECHAT_PLEASE_OPEN_IN_BROWSER": "Please open the following link in PC browser：",
 
+  "FULL_SCREEN": "Fullscreen",
+  "INSERT_IMAGE": "Insert Image",
   "GET_MORE": "Get More",
   "VISITS": "Vistis",
   "NEW": "New",
@@ -12,9 +14,10 @@
   "DISPLAY": "display",
   "SAVE": "save",
   "AVAILABLE": "available",
+  "EXPIRED": "Expired",
   "SELLING": "Selling",
   "SOLD": "Sold",
-  "EXPIRED": "Expired",
+  "DELETE": "Delete",
   "DELETED": "deleted",
   "NONE": "None",
   "ALL": "all",
@@ -32,6 +35,9 @@
   "ITEM MAX JOIN LIMIT": "Total number of items",
   "JOIN LIMIT": "Participation upper limit per person",
   "UPLOAD_IMAGE.BTN.TITLE": "Upload Image",
+  "PUBLISHER": "Publisher",
+  "PUBLISH": "Publish",
+  "PUBLISHER.PLACEHOLDER": "Please enter publisher here",
   "DASHBOARD": "Dashboard",
   "COMPANY_TAGS": "Company Tags",
   "COMPANY_TAGS.PLACEHOLDER": "Add a tag",
@@ -40,12 +46,14 @@
   "QRCODE": "QRCode",
   "CAN_NOT_FIND_ANY_ASSOCIATED_COMPANY_FOR_YOU": "Can't find any company for you.",
 
+  "DASHBOARD": "Dashboard",
   "COMPANY_BANNER": "banner",
   "COMPANY_NOTIFICATION": "broadcast",
   "COMPANY_NOTIFICATION.SUBTITLE": "broadcast to all followers",
   "NOTIFICATION.NEW.TITLE": "New Broad Cast Message",
   "NOTIFICATION.CREATED_SUCCESSFULLY": "Broad Cast Message Published Successfully.",
   "NOTES": "News/Articles",
+  "NOTE": "News/Articles",
   "PRODUCTS": "Products",
   "PRODUCT": "Product",
   "GROUP_BUYS": "Group Buys",
@@ -58,7 +66,6 @@
   "END": "End",
   "SAVED_SUCCESSFULLY_WITH_QRCODE_TITLE": "Saved successfully, scan the following QrCode via WeChat.",
   "NEXT": "Next",
-
 
   "MY_COMPANY": "My Company",
   "COMPONENTS": "Components",
@@ -90,8 +97,6 @@
   "BANNER.LINK_TO": "Banner Link-to",
   "BANNER.DELETE.TITLE": "Delete This Banner Permanently?",
 
-
-
   "CUSTOMER_SERVICE.CLICK_HERE_TO_ENABLE_THIS_MODULE": "Please contact us to enable it.",
   "CUSTOMER_SERVICE.MODAL.TITLE": "Please scan the qrcode in WeChat to contact us:",
   "CUSTOMER_SERVICE.CLICK_HERE_TO_EXTEND_EXPIRY_DATE": "Please contact us to enable it.",
@@ -114,6 +119,8 @@
   "COMPANY.ABN.PLACEHOLDER": "Company Number, ABN,ACN...",
   "COMPANY.SLOGAN": "SOLGAN",
   "COMPANY.SLOGAN.PLACEHOLDER": "SLOGAN...",
+  "COMPANY.ADDRESS": "Company Address",
+  "COMPANY.ADDRESS.PLACEHOLDER": "Please enter company address.",
   "COMPANY.WEBSITE.PLACEHOLDER": "Website address",
   "COMPANY.EMAIL.PLACEHOLDER": "Email address",
   "COMPANY.CONTACT_NUMBER.PLACEHOLDER": "Contact number",
@@ -130,6 +137,7 @@
   "COMPANY.PICKUP_LOCATION.SAVING.ERROR.THE_ADDRESS_FIELD_IS_REQUIRED.": "Address is required",
   "COMPANY.PICKUP_LOCATION.SAVING.ERROR.THE_DESCRIPTION_FIELD_IS_REQUIRED.": "Description is required",
   "COMPANY.PICKUP_LOCATION.NOT_ENABLED": "Pickup location feature is NOT enabled yet.",
+  "COMPANY.PICKUP_LOCATION.CONTACT_US_TO_ENABLE_IT": "Please contact us to enable it.",
   "COMPANY.QRCODE.TITLE": "Company Home Qrcode",
   "COMPANY.QRCODE.BODY": "Scan the following qrocdes to view company home",
   "COMPANY.BTN.SAVE": "Save",
@@ -146,6 +154,7 @@
   "NOTE.TITLE": "Title",
   "NOTE.TITLE.PLACEHOLDER": "Title here",
   "NOTE.TITLE.IS_REQUIRED": "Please input the title, title can NOT be empty.",
+
   "NOTE.CONFIRM_SAVE.TITLE": "You are about to save this News/Article：",
   "NOTE.CONFIRM_SAVE.BODY": "You can save this News/Article:",
   "NOTE.BTN.SAVE_AS_DRAFT": "Save as a draft",
@@ -162,6 +171,7 @@
   "ITEM ADS": "Item Sell",
 
   "ITEM.PRICE":"Price",
+  "ITEM.IMAGE":"Image",
   "ITEM.DESCRIPTION":"Description",
   "ITEM.COMMENT":"Comment",
   "ITEM.TITLE":"Title",
@@ -174,7 +184,18 @@
   "ITEM.FORM.VALIDATION.TITLE":"Title is required",
   "ITEM.FORM.VALIDATION.QUANTITY":"Quantity is required",
   "ITEM.FORM.VALIDATION.EXPIRE.DATE":"Expired date is required",
-
+  "ITEM.PREVIEW.QRCODE.TITLE": "QR Code",
+  "ITEM.PREVIEW.QRCODE.BODY": "Scan QR Code below",
+  "ITEM.COVER_IMAGE.UPLOAD": "Upload cover image",
+  "ITEM.SHOW_COMPANY_CONTACT_INFO_AT_ITEM_BOTTOM": "Display company contact at bottom？",
+  "ITEM.DELETE.CONFIRM.TITLE": "Confirm to delete?",
+  "ITEM.DELETE.CONFIRM.BODY": "You are about to delete {{itemType}}. <b class='text-danger'>It can not be reversed.</b>. Are you sure to continue?",
+  "ITEM.END.CONFIRM.BODY": "You are about to unlisting {{itemType}}. Are you sure to continue?",
+  "ITEM.SAVE.CONFIRM.TITLE": "About to save{{itemType}}：",
+  "ITEM.SAVE.CONFIRM.BODY": "You can choose following save types:",
+  "ITEM.SAVE.SAVE_AS_DRAFT": "Save as draft",
+  "ITEM.SAVE.PUBLISH": "Save and publish",
+  "ITEM.PUBLISH.CONFIRM.BODY": "You are about to publish{{itemType}}, are you sure to continue?",
 
   "GROUP_BUYS.TITLE.PLACEHOLDER": "Enter group-buy's title here...",
   "GROUP_BUYS.NO_RECORD_YET": "There is No Group-Buys yet",
@@ -217,14 +238,13 @@
   "EVENTS.EXPORT.RECORDS.SUCCESS": "Email Sent",
   "EVENTS.DETAILS.QRCODE": "Event QrCode",
 
-
   "VOUCHER_GROUP.NO_RECORD_YET": "There is No Vouchers yet",
   "VOUCHER_GROUP.SEARCH.PLACEHOLDER": "Search Vouchers...",
   "VOUCHER.COVER_IMG.BTN":"Upload Voucher Picture",
   "VOUCHER.NEW.BTN":"Add New",
-  "VOUCHER.QUANTITY":"Voucher Quantity",
   "VOUCHER.NAME":"Voucher Name*",
   "VOUCHER.NAME.PLACEHOLDER":"Enter voucher title here...",
+  "VOUCHER.QUANTITY":"Voucher Quantity",
   "VOUCHER.QUANTITY.PLACEHOLDER": "Enter voucher quantity here...",
   "VOUCHER_GROUP.QR.CODE":"Voucher Qr Code",
   "VOUCHER_GROUP.REDEEM.DES": "Redeem Description",
@@ -240,8 +260,6 @@
   "VOUCHER.GROUP.QUANTITY": "Qty",
   "VOUCHER.GROUP.EXPIRE_DATE": "Expire Date",
 
-
-
   "ITEM.PREVIEW.QRCODE.TITLE": "Qrcodes for this item",
   "ITEM.PREVIEW.QRCODE.BODY": "Scan the following qrcode(s)",
   "ITEM.COVER_IMAGE.UPLOAD": "Upload Cover Image",
@@ -249,6 +267,7 @@
   "STAFF.LIST.SEARCH.PLACEHOLDER": "Search Staff...",
   "STAFF.LIST.NO_RECORD_YET": "Can't find any staff",
   "STAFF.IS_ADMIN?": "Admin?",
+  "STAFF.IS_PENDING?": "Activate?",
   "STAFF.CONFIRM_REMOVE_FROM_COMPANY?": "Remove staff?",
   "STAFF.NEW_BTN": "Add Staff",
   "STAFF.NEW_STAFF_TITLE": "Add Staff",
@@ -280,10 +299,6 @@
   "PACKAGE.SELECTION.RECOMMENDED_PACKAGE": "Recommended",
   "PACKAGE.SELECTION.PROFESSIONAL_PACKAGE": "Professional",
   "PACKAGE.SELECTION.NONE_PACKAGE": "None",
-
-
-
-
 
   "LOGIN_PANEL.TITLE": "ShowMine Company backend login",
   "LOGIN_PANEL.WECHAT.QRCODE.TITLE": "Please Scan the below QRCode to login via WeChat",

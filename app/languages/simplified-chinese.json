@@ -84,12 +84,12 @@
   "LANGUAGE.SIMPLIFIED-CHINESE": "简体中文",
   "LANGUAGE.AUSTRALIA": "English",
 
-
   "BANNER_DESCRIPTION": "图片标题",
   "BANNER.COMMENTS.PLACE_HOLDER": "还没有标题",
   "BANNER_LIST.NO_RECORD_YET": "还有没有任何首页横幅",
   "BANNER.LINK_TO.PLACEHOLDER": "在这里输入链接...",
   "BANNER.TITLE.PLACEHOLDER": "在这里输入标题...",
+
   "BANNER.NO.PICTURE.ERROR": "请添加一张照片",
   "BANNER.CREATE.NEW.BANNER.TITLE": "添加新首页横幅",
   "BANNER.PICTURE": "横幅照片",
@@ -155,6 +155,11 @@
   "NOTE.TITLE.PLACEHOLDER": "请在这里输入标题",
   "NOTE.TITLE.IS_REQUIRED": "请输入文章标题，文章标题不能为空",
 
+  "NOTE.CONFIRM_SAVE.TITLE": "确定保存此资讯：",
+  "NOTE.CONFIRM_SAVE.BODY": "您可以保存此资讯：",
+  "NOTE.BTN.SAVE_AS_DRAFT": "保存为草稿",
+  "NOTE.BTN.PUBLISH": "保存并发布",
+
   "PRODUCTS.NEW_BTN": "新建物品",
   "PRODUCT.EDITING": "编辑物品",
   "PRODUCT.PRICE": "价格",
@@ -164,7 +169,6 @@
   "PRODUCT.TITLE.IS_REQUIRED": "请输入物品名称，物品名称不能为空",
   "PRODUCT.PRICE.IS_REQUIRED": "请输入价格，物品价格不能为空",
   "ITEM ADS": "物品交易",
-
 
   "ITEM.PRICE":"价格",
   "ITEM.IMAGE":"图片",
@@ -193,15 +197,16 @@
   "ITEM.SAVE.PUBLISH": "保存并发布",
   "ITEM.PUBLISH.CONFIRM.BODY": "您即将发布以下{{itemType}}， 您确定要继续吗?",
 
-
   "GROUP_BUYS.TITLE.PLACEHOLDER": "在这里输入团购接龙的标题...",
   "GROUP_BUYS.NO_RECORD_YET": "还有没有任何接龙团购",
   "GROUP_BUYS.SEARCH.PLACEHOLDER": "搜索接龙团购...",
   "GROUP_BUYS.SAVING.CONFIRMATION": "确认保存接龙吗？",
   "GROUP_BUYS.CREATE.NEW": "新建接龙",
   "GROUP_BUYS.DESCRIPTION": "接龙详情",
+  "GROUP_BUYS.COMMENT": "评论",
   "GROUP_BUYS.LIST": "接龙列表",
   "GROUP_BUTS.ADD.EXPIRED.DATE": "是否设置过期时间",
+
   "GROUP_BUTS.MAIN.PICTURES": "接龙封面照片",
   "GROUP_BUYS.CHILD.DETAILS": "产品详情",
   "GROUP_BUYS.CHILD.ADD.BUTTON": "添加新产品",
@@ -243,6 +248,7 @@
   "VOUCHER.QUANTITY.PLACEHOLDER": "在这里输入优惠券发放数量",
   "VOUCHER_GROUP.QR.CODE":"优惠券二维码",
   "VOUCHER_GROUP.REDEEM.DES": "使用须知",
+  "VOUCHER_GROUP.REDEEM.DES.PLACEHOLDER": "使用须知...",
   "VOUCHER_GROUP.LIST":"优惠券列表",
   "VOUCHER_GROUP.USERS_LIST.TITLE":"已领用户列表：",
   "VOUCHER.SAVE.CONFIRM.TITLE":"即将保存优惠券",
@@ -253,6 +259,10 @@
   "VOUCHER.ERROR.REDEEM.REQUIRED":"使用须知不能为空",
   "VOUCHER.GROUP.QUANTITY": "数量",
   "VOUCHER.GROUP.EXPIRE_DATE": "截止日期",
+
+  "ITEM.PREVIEW.QRCODE.TITLE": "本物品的QR Code",
+  "ITEM.PREVIEW.QRCODE.BODY": "扫码如下二维码",
+  "ITEM.COVER_IMAGE.UPLOAD": "上传封面图",
 
   "STAFF.LIST.SEARCH.PLACEHOLDER": "搜索公司员工...",
   "STAFF.LIST.NO_RECORD_YET": "没有找到公司员工",
