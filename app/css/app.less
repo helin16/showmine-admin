@@ -213,7 +213,31 @@ body.opened-in-wechat {
         }
     }
 }
+.loader {
+    border: 8px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 8px solid dimgrey;
+    width: 120px;
+    height: 120px;
+    -webkit-animation: spin 2s linear infinite;
+    animation: spin 2s linear infinite;
+    margin:auto;
+    left:0;
+    right:0;
+    top:0;
+    bottom:0;
+    position:fixed;
+}
 
+@-webkit-keyframes spin {
+    0% { -webkit-transform: rotate(0deg); }
+    100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
 .wechat-qrcode-login-wrapper {
     #qrcode {
         margin: 20px 0px;
@@ -276,6 +300,9 @@ body.opened-in-wechat {
     }
 
     .header {
+        @media @phone {
+            display: block;
+        }
         .flex-display(row);
         justify-content: space-between;
         padding: @content-box-header-padding-top-and-bottom;
@@ -376,6 +403,9 @@ body.opened-in-wechat {
     &.min {
         .content-box-sticky-head {
             left: @backend-left-menu-width-min + @backend-content-padding;
+            @media @phone {
+                left: @backend-content-padding;
+            }
         }
     }
 }
@@ -459,6 +489,9 @@ body.opened-in-wechat {
 
         &.min {
             .left-menu {
+                @media @phone {
+                    display: none;
+                }
                 width: @backend-left-menu-width-min;
                 .main-menu-wrapper {
                     .main-menu {
@@ -486,9 +519,19 @@ body.opened-in-wechat {
             .backend-page-content-wrapper {
                 .top-menu-wrapper {
                     padding-left: @backend-left-menu-width-min + @backend-content-padding;
+                    @media @phone {
+                        padding-left: @backend-content-padding;
+                    }
+                    //padding-left: @backend-content-padding;
                 }
                 margin-left: @backend-left-menu-width-min;
+                //margin-left: 0;
                 max-width: calc(100% - @backend-left-menu-width-min);
+                //max-width: 100%;
+                @media @phone {
+                    margin-left: 0;
+                    max-width: 100%;
+                }
             }
         }
 
@@ -878,6 +921,9 @@ body.opened-in-wechat {
 .banner-list-item-wrapper {
 
     .banner-list-item {
+        @media @phone {
+            display: block;
+        }
 
         .flex-display(row);
         border-bottom: dashed 0.07rem @banner-list-item-border-color;
@@ -1362,17 +1408,17 @@ body.opened-in-wechat {
 
     .product-details{
         .dropdown-toggle{
-          .input-group{
-            width: 100%;
-          }
+            .input-group{
+                width: 100%;
+            }
         }
     }
 
     .description-container{
-          .row{
+        .row{
             margin-left:0;
             margin-right:0;
-          }
+        }
     }
 
     .voucher-preview {
@@ -1416,15 +1462,15 @@ body.opened-in-wechat {
         font-size: 12px;
     }
 
-   .jielong-item{
-     padding:20px 0 25px 0;
-     border-bottom: 1px dashed #ccc;
-       .upload-img-wrapper{
-           .img-preview{
-               height: 100px !important;
-           }
-       }
-   }
+    .jielong-item{
+        padding:20px 0 25px 0;
+        border-bottom: 1px dashed #ccc;
+        .upload-img-wrapper{
+            .img-preview{
+                height: 100px !important;
+            }
+        }
+    }
 
     .tags-input {
         .host {
@@ -1447,20 +1493,20 @@ body.opened-in-wechat {
 }
 
 .item-comments-wrapper{
-      .loading-more-btn{
-            margin-top:10px;
-      }
-      .comments-list{
-            border-bottom: 1px solid #ccc;
-            padding: 10px 0 10px 0;
-            .user-name{
-              font-weight: bold;
-            }
-            .replys-list{
-              border-top: 1px solid #ccc;
-              padding:5px 0 0 0;
-            }
+    .loading-more-btn{
+        margin-top:10px;
+    }
+    .comments-list{
+        border-bottom: 1px solid #ccc;
+        padding: 10px 0 10px 0;
+        .user-name{
+            font-weight: bold;
         }
+        .replys-list{
+            border-top: 1px solid #ccc;
+            padding:5px 0 0 0;
+        }
+    }
 }
 
 @inline-editor-on-focus-border-bottom: 1px #66afe9 solid;
@@ -1533,6 +1579,9 @@ body.opened-in-wechat {
                 background-position: center center;
                 background-repeat: no-repeat;
                 background-size: cover;
+                @media @phone {
+                    height: 100px;
+                }
             }
             .img-preview.margin {
                 margin-bottom: 10px;
@@ -2398,3 +2447,118 @@ body.opened-in-wechat {
     }
 
 }
+
+.mediaSearchBtn {
+
+    height: 34px;
+}
+.assetsArticleTitle{
+    overflow : hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+}
+
+.desc-previewer {
+    width: 100%;
+    border: 1px solid #333;
+    justify-content: center;
+    position: relative;
+}
+.desc-previewer .preview-content {
+    padding: 0.5em 1.5em;
+    min-height: 10em;
+    max-height: 50em;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+.desc-previewer .edit-icon{
+    color: white;
+    font-weight: bold;
+    justify-content: center;
+    position: absolute;
+    top: 3em;
+    left: calc(50% - 3.8em);
+    background: rgba(51,51,51,0.8);
+    border: 1px solid rgba(120,120,120);
+    padding: 2em;
+}
+
+.add-btn-row {
+    margin: 5px 0;
+    padding: 5px 0;
+}
+
+.special-row {
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #f7f7f7;
+}
+.add-btn-row {
+    margin: 5px 0;
+    padding: 5px 0;
+}
+
+.img-upload-wrapper .img-upload-btn {
+    width: 100%;
+}
+
+button.img-remove {
+    position: absolute;
+    top: 1.2em;
+    right: 0.5em;
+}
+.ui-select-bootstrap{
+    .ui-select-match-text{
+        font-size: 14px;
+        overflow-x:hidden;
+        text-overflow:ellipsis;
+    }
+}
+
+    table, thead, tbody, th, td, tr {
+        @media @phone {
+            display: block;
+        }
+    }
+
+    /* Hide table headers (but not display: none;, for accessibility) */
+    thead tr {
+        @media @phone {
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+        }
+    }
+
+    tr {
+        @media @phone {
+            border: 1px solid #ccc;
+            margin: 5px 0;
+        }
+    }
+
+    td {
+        @media @phone {
+            border: none;
+            border-bottom: 1px solid #eee;
+            position: relative;
+            padding-left: 50%;
+        }
+        /* Behave  like a "row" */
+    }
+
+    td:before {
+        @media @phone {
+            position: absolute;
+            /* Top/left values mimic padding */
+            top: 6px;
+            left: 6px;
+            width: 45%;
+            padding-right: 10px;
+            white-space: nowrap;
+        }
+        /* Now like a table header */
+    }
