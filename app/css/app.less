@@ -784,7 +784,6 @@ body.opened-in-wechat {
 }
 .language-switch-wrapper {
     position: relative;
-
     .language-switch {
         display: block;
     }
@@ -922,7 +921,10 @@ body.opened-in-wechat {
 
     .banner-list-item {
         @media @phone {
-            display: block;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
         }
 
         .flex-display(row);
@@ -931,6 +933,9 @@ body.opened-in-wechat {
         padding: @banner-list-item-padding;
 
         .preview {
+            @media @phone {
+
+            }
             width: @banner-list-item-preview-width;
             height: @banner-list-item-preview-height;
             background-color: @banner-list-item-preview-bg-color;
@@ -958,6 +963,8 @@ body.opened-in-wechat {
             }
             .link-to {
                 font-size: 11px;
+                word-wrap: break-word;
+                word-break: break-all;
                 ::placeholder {
                     color: lighten(@banner-list-item-title-color, 5%);
                 }
@@ -976,7 +983,7 @@ body.opened-in-wechat {
             .vertical-center-wrapper;
             .btns-inner {
                 .flex-display(row);
-                justify-content: space-around;
+                justify-content: space-between;
 
                 .btns-item {
                     cursor: pointer;
@@ -2027,6 +2034,9 @@ body.opened-in-wechat {
             padding: 8px 14px;
         }
         company-switch {
+            @media @phone{
+               max-width:100px;
+            }
             .arrow {
                 &::after {
                     border-bottom-color: @lang-switch-pointer-color;
