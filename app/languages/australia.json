@@ -31,6 +31,9 @@
   "DETAILS": "details",
   "ACCESS_DENY": "Access Denied",
   "FOLLOWERS_COUNT": "Followers",
+  "MEDIA_SPACE_NOT_ACTIVE": "Not Activate",
+  "ARTICLE_PUBLISHED": "Number of Articles",
+  "MEDIA_SPACE_USAGE": "Media Space Usage",
   "YOU_ARE_NOT_THE_COMPANY_ADMIN": "You don't have admin access to this company[{{company_name}}]，please contact the admin.",
   "ARE_SURE_TO_DELETE": "Are you sure to delete?",
   "ITEM MAX JOIN LIMIT": "Total number of items",
@@ -77,6 +80,8 @@
   "COMPANY_INFO": "Company Admin",
   "STAFF": "Staff List",
   "PAYMENTS": "Payments",
+  "SUPER_ADMIN": "Super Admin",
+  "COMPANY_CREATE": "Create Company",
 
   "SORRY_THIS_MODULE_IS_NOT_ENABLED": "Sorry, this module is NOT enabled for this company.",
   "CLICK_HERE_TO_SHOW_CUSTOMER_CONTACTS": "Click here to contact us",
@@ -299,7 +304,7 @@
   "VOUCHER.GROUP.QUANTITY": "Qty",
   "VOUCHER.GROUP.EXPIRE_DATE": "Expire Date",
 
-  "ITEM.PREVIEW.QRCODE.TITLE": "Qrcodes for this item",
+  "ITEM.PREVIEW.QRCODE.TITLE": "Please use WeChat to scan the QR code below.",
   "ITEM.PREVIEW.QRCODE.BODY": "Scan the following qrcode(s)",
   "ITEM.COVER_IMAGE.UPLOAD": "Upload Cover Image",
 

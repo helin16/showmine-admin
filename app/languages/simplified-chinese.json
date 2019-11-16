@@ -31,6 +31,9 @@
   "DETAILS": "详情",
   "ACCESS_DENY": "访问拒绝",
   "FOLLOWERS_COUNT": "关注人数",
+  "MEDIA_SPACE_NOT_ACTIVE": "尚未开通",
+  "MEDIA_SPACE_USAGE": "网盘空间",
+  "ARTICLE_PUBLISHED": "已发布文章",
   "YOU_ARE_NOT_THE_COMPANY_ADMIN": "您没有此公司【{{company_name}}】管理权限，请麻烦联系管理员",
   "ARE_SURE_TO_DELETE": "确信要删除？",
   "ITEM MAX JOIN LIMIT": "物品上限",
@@ -78,6 +81,8 @@
   "COMPANY_INFO": "公司设置",
   "STAFF": "公司员工",
   "PAYMENTS": "支付交易",
+  "SUPER_ADMIN": "Super Admin",
+  "COMPANY_CREATE": "创建公司",
 
   "SORRY_THIS_MODULE_IS_NOT_ENABLED": "对不起，您的公司还没有开启这个模块",
   "CLICK_HERE_TO_SHOW_CUSTOMER_CONTACTS": "点击这里来联系我们",
@@ -299,7 +304,7 @@
   "VOUCHER.GROUP.QUANTITY": "数量",
   "VOUCHER.GROUP.EXPIRE_DATE": "截止日期",
 
-  "ITEM.PREVIEW.QRCODE.TITLE": "本物品的QR Code",
+  "ITEM.PREVIEW.QRCODE.TITLE": "请用微信扫描以下二维码",
   "ITEM.PREVIEW.QRCODE.BODY": "扫码如下二维码",
   "ITEM.COVER_IMAGE.UPLOAD": "上传封面图",
 
@@ -344,7 +349,7 @@
 
 
   "LOGIN_PANEL.TITLE": "ShowMine 商家登录",
-  "LOGIN_PANEL.WECHAT.QRCODE.TITLE": "请微信扫码登录",
+  "LOGIN_PANEL.WECHAT.QRCODE.TITLE": "微信扫码关注以后自动登录",
   "LOGIN_PANEL.FREE_SIGNUP": "还没有账号？现在就免费使用",
   "LOGIN_PANEL.WECHAT.LOGIN": "使用微信登录",
   "LOGIN_PANEL.ALREADY_LOGIN": "您已经登录了, {{name}}.",

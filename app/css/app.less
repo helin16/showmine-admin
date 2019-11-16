@@ -2115,12 +2115,19 @@ body.opened-in-wechat {
 .dashboard-wrapper {
     .dashboard {
         .count-box {
+            cursor:pointer;
             .count {
+                @media @phone{
+                    font-size: 16px;
+                }
                 color: #2196F3;
                 font-weight: bold;
-                font-size: 46px;
+                font-size: 25px;
             }
             .bottom {
+                @media @phone{
+                    font-size: 9px;
+                }
                 font-size: 12px;
                 color: darken(@text-muted-color, 10%);
             }

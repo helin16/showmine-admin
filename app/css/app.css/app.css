@@ -2019,14 +2019,27 @@ body.opened-in-wechat .opened-in-wechat-wrapper .icon {
 .company-pickup-location-list .company-pickup-location-new-item-wrapper .company-pickup-location-item-edit .form-group .col-md-2 {
   padding-top: 5px;
 }
+.dashboard-wrapper .dashboard .count-box {
+  cursor: pointer;
+}
 .dashboard-wrapper .dashboard .count-box .count {
   color: #2196F3;
   font-weight: bold;
-  font-size: 46px;
+  font-size: 25px;
+}
+@media only screen and (max-width: 480px) {
+  .dashboard-wrapper .dashboard .count-box .count {
+    font-size: 16px;
+  }
 }
 .dashboard-wrapper .dashboard .count-box .bottom {
   font-size: 12px;
   color: #c9c9c9;
+}
+@media only screen and (max-width: 480px) {
+  .dashboard-wrapper .dashboard .count-box .bottom {
+    font-size: 9px;
+  }
 }
 .note-item-details-save .description-container .row {
   margin-left: 0px;
