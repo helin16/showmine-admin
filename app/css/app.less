@@ -706,6 +706,9 @@ body.opened-in-wechat {
                 flex: auto;
 
                 .page-title {
+                    @media @phone {
+                        display: block;
+                    }
                     .flex-display(row);
                     justify-content: space-between;
                     .title {
@@ -750,9 +753,12 @@ body.opened-in-wechat {
                     }
 
                     .btn-wrapper {
+                        @media @phone {
+                            flex-direction: row;
+                            justify-content: flex-end;
+                        }
                         .vertical-center-wrapper();
                         .btn {
-
                         }
                     }
                 }
