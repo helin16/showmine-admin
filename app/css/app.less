@@ -66,6 +66,10 @@ html, body, .page-wrapper {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
+.panel-body {
+    padding: 0 !important;
+}
+
 .flex-display(@direction) {
     display: flex;
     -ms-flex-direction: @direction;
@@ -395,6 +399,9 @@ body.opened-in-wechat {
     background-color: white;
     z-index: @z-index-left-menu - 2;
     .bottom-shadow();
+    @media @phone {
+        right: @backend-content-padding/2;
+    }
 }
 .backend-page {
     .content-box-sticky-head {
@@ -404,7 +411,7 @@ body.opened-in-wechat {
         .content-box-sticky-head {
             left: @backend-left-menu-width-min + @backend-content-padding;
             @media @phone {
-                left: @backend-content-padding;
+                left: @backend-content-padding/2;
             }
         }
     }
@@ -704,6 +711,9 @@ body.opened-in-wechat {
             .backend-page-content {
                 padding: @backend-content-padding;
                 flex: auto;
+                @media @phone {
+                    padding: @backend-content-padding/2;
+                }
 
                 .page-title {
                     @media @phone {
