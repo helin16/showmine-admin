@@ -80,6 +80,7 @@
   "MY_COMPANY": "我的公司",
   "COMPONENTS": "功能部件",
   "COMPANY_INFO": "公司设置",
+  "CHANNEL_INFO": "媒体设置",
   "STAFF": "公司员工",
   "PAYMENTS": "支付交易",
   "SUPER_ADMIN": "Super Admin",
@@ -198,6 +199,7 @@
   "ITEM.JIELONG.ADD.PRODUCT":"添加产品",
   "ITEM.UPDATE.SUCCESSFULLY":"更新成功",
   "ITEM.CREATE.SUCCESSFULLY":"创建成功",
+  "ITEM.DELETE.SUCCESSFULLY":"删除成功",
   "ITEM.FORM.VALIDATION.TITLE":"请输入标题",
   "ITEM.FORM.VALIDATION.QUANTITY":"请输入数量",
   "ITEM.FORM.VALIDATION.EXPIRE.DATE":"请输入过期时间",
@@ -384,6 +386,35 @@
   "ITEM.PAGE.CREATE.DES.ADD.TEXT": "添加文字",
   "ITEM.PAGE.CREATE.BTN.ADD_PHOTOS": "添加图片",
   "ITEM.PAGE.CREATE.BTN.ADD_VIDEOS": "添加视屏",
-  "ITEM.PAGE.CREATE.MEIPIAN.TOOLTIP": "点击拖拽调整顺序"
+  "ITEM.PAGE.CREATE.MEIPIAN.TOOLTIP": "点击拖拽调整顺序",
+
+  "WORDPRESS": "WordPress",
+  "CHANNEL.NAME": "备注名",
+  "CHANNEL.ADD": "添加",
+  "SYNC.STATUS": "同步状态",
+  "SYNC.SUCCESS": "成功",
+  "SYNC.FAILED": "失败",
+  "SYNC.PENDING": "等待中",
+  "SYNC.PROCESSING": "处理中",
+  "SYNC.NAME": "备注名",
+  "SYNC.DATE": "日期",
+  "SYNC.CHANNEL": "同步方式",
+  "CHANNEL.NO_RECORD_YET": "没有找到媒体信息",
+  "CHANNEL_INFO_EDIT": "编辑媒体信息",
+  "CHANNEL_INFO_NEW": "新建媒体信息",
+  "CHANNEL_TYPE": "媒体种类",
+
+  "TWITTER": "推特",
+  "LINKEDIN": "领英",
+  "WECHAT": " 微信公众号",
+  "WECHAT_APPID": "App ID",
+  "WECHAT_SECRET": "App Secret",
+  "INSTRUCTION": "设置说明",
+  "INSTRUCTION_CONTENT": "AppID和AppSecret可在“微信公众平台-开发-基本配置”页中获得（需要已经成为开发者，且帐号没有异常状态）。**调用接口时，请登录“微信公众平台-开发-基本配置”提前将服务器IP地址添加到IP白名单中，点击查看设置方法，否则将无法调用成功。**小程序无需配置IP白名单。",
+  "WECHAT.LIMIT.WARNING": "微信公众号每月推送限制为4次。"
+
+
+
+
 
 }

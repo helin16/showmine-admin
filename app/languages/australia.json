@@ -79,6 +79,7 @@
   "MY_COMPANY": "My Company",
   "COMPONENTS": "Components",
   "COMPANY_INFO": "Company Admin",
+  "CHANNEL_INFO": "Channels",
   "STAFF": "Staff List",
   "PAYMENTS": "Payments",
   "SUPER_ADMIN": "Super Admin",
@@ -198,6 +199,7 @@
   "ITEM.JIELONG.ADD.PRODUCT":"Add product",
   "ITEM.UPDATE.SUCCESSFULLY":"Update Successfully",
   "ITEM.CREATE.SUCCESSFULLY":"Create Successfully",
+  "ITEM.DELETE.SUCCESSFULLY":"Delete Successfully",
   "ITEM.FORM.VALIDATION.TITLE":"Title is required",
   "ITEM.FORM.VALIDATION.QUANTITY":"Quantity is required",
   "ITEM.FORM.VALIDATION.EXPIRE.DATE":"Expired date is required",
@@ -382,5 +384,33 @@
   "ITEM.PAGE.CREATE.DES.ADD.TEXT": "Add text",
   "ITEM.PAGE.CREATE.BTN.ADD_PHOTOS": "Add photo",
   "ITEM.PAGE.CREATE.BTN.ADD_VIDEOS": "Add video",
-  "ITEM.PAGE.CREATE.MEIPIAN.TOOLTIP": "Click and drag to reorder"
+  "ITEM.PAGE.CREATE.MEIPIAN.TOOLTIP": "Click and drag to reorder",
+
+  "WORDPRESS": "WordPress",
+  "CHANNEL.NAME": "Channel Name",
+  "CHANNEL.ADD": "Add",
+  "SYNC.STATUS": "Sync Status",
+  "SYNC.SUCCESS": "SUCCESS",
+  "SYNC.FAILED": "FAILED",
+  "SYNC.PENDING": "PENDING",
+  "SYNC.PROCESSING": "PROCESSING",
+  "SYNC.NAME": "Name",
+  "SYNC.DATE": "Date",
+  "SYNC.CHANNEL": "Channel",
+  "CHANNEL.NO_RECORD_YET": "No channel found",
+  "CHANNEL_INFO_EDIT": "Edit Channel",
+  "CHANNEL_INFO_NEW": "Create New Channel",
+  "CHANNEL_TYPE": "Channel Type",
+
+
+  "TWITTER": "Twitter",
+  "LINKEDIN": "LinkedIn",
+  "WECHAT": "WeChat",
+  "WECHAT_APPID": "App ID",
+  "WECHAT_SECRET": "App Secret",
+  "INSTRUCTION": "Instruction",
+  "INSTRUCTION_CONTENT": "AppID and AppSecret can be obtained in WeChat Official Accounts Platform > Development > Basic Settings (A developer account in a normal status is required). Before calling the API, you need to log in to the WeChat Official Accounts Platform, and go to Development > Basic Settings to add the server IP address to the IP whitelist; otherwise it will not be called successfully. An IP whitelist is not required for Mini Programs.",
+  "WECHAT.LIMIT.WARNING": "Monthly push limit for WeChat is 4 times."
+
+
 }
