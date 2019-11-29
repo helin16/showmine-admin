@@ -410,7 +410,10 @@
   "WECHAT_SECRET": "App Secret",
   "INSTRUCTION": "Instruction",
   "INSTRUCTION_CONTENT": "AppID and AppSecret can be obtained in WeChat Official Accounts Platform > Development > Basic Settings (A developer account in a normal status is required). Before calling the API, you need to log in to the WeChat Official Accounts Platform, and go to Development > Basic Settings to add the server IP address to the IP whitelist; otherwise it will not be called successfully. An IP whitelist is not required for Mini Programs.",
-  "WECHAT.LIMIT.WARNING": "Monthly push limit for WeChat is 4 times."
+  "WECHAT.LIMIT.WARNING": "Monthly push limit for WeChat is 4 times.",
+
+  "CONTACT.CUSTOMER.SERVICE": "Contact customer service",
+  "CONTACT.MESSAGE": "Message"
 
 
 }
