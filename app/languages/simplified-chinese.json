@@ -414,10 +414,11 @@
   "WECHAT.LIMIT.WARNING": "微信公众号每月推送限制为4次。",
 
   "CONTACT.CUSTOMER.SERVICE": "联系客服",
-  "CONTACT.MESSAGE": "请留言"
+  "CONTACT.MESSAGE": "请留言",
 
+  "ADDRESS.AUTO_COMPLETE.LOADING": "正在加载",
 
-
-
-
+  "RESTORE": "恢复",
+  "TO_NOW": "现在",
+  "RESTORE_HISTORY": "还原历史记录"
 }

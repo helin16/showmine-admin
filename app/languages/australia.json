@@ -413,7 +413,12 @@
   "WECHAT.LIMIT.WARNING": "Monthly push limit for WeChat is 4 times.",
 
   "CONTACT.CUSTOMER.SERVICE": "Contact customer service",
-  "CONTACT.MESSAGE": "Message"
+  "CONTACT.MESSAGE": "Message",
 
+  "ADDRESS.AUTO_COMPLETE.LOADING": "Loading",
+
+  "RESTORE": "Restore",
+  "TO_NOW": "Now",
+  "RESTORE_HISTORY": "Restore to history"
 
 }
