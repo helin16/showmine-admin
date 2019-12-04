@@ -650,7 +650,6 @@ body.opened-in-wechat .opened-in-wechat-wrapper .icon {
   margin: 10px 0;
   color: #a4a5ae;
   font-weight: 200;
-  justify-content: flex-start;
 }
 .backend-page-wrapper .backend-page .backend-page-content-wrapper .backend-page-content .page-title .subtitle .subtitle-part {
   width: 100%;
@@ -674,6 +673,7 @@ body.opened-in-wechat .opened-in-wechat-wrapper .icon {
   font-size: 18px;
 }
 .backend-page-wrapper .backend-page .backend-page-content-wrapper .backend-page-content .page-title .btn-wrapper {
+  margin-left: auto;
   display: flex;
   -ms-flex-direction: column;
   flex-direction: column;
@@ -681,8 +681,7 @@ body.opened-in-wechat .opened-in-wechat-wrapper .icon {
 }
 @media only screen and (max-width: 480px) {
   .backend-page-wrapper .backend-page .backend-page-content-wrapper .backend-page-content .page-title .btn-wrapper {
-    flex-direction: row;
-    justify-content: flex-end;
+    margin-left: auto;
   }
 }
 .backend-page-wrapper .backend-page .backend-page-content-wrapper .backend-page-content .page-body {
