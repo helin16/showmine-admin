@@ -625,9 +625,6 @@ body.opened-in-wechat .opened-in-wechat-wrapper .icon {
   justify-content: space-between;
 }
 @media only screen and (max-width: 480px) {
-  .backend-page-wrapper .backend-page .backend-page-content-wrapper .backend-page-content .page-title {
-    display: block;
-  }
 }
 .backend-page-wrapper .backend-page .backend-page-content-wrapper .backend-page-content .page-title .title {
   display: flex;

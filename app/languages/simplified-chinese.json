@@ -420,5 +420,8 @@
 
   "RESTORE": "恢复",
   "TO_NOW": "现在",
-  "RESTORE_HISTORY": "还原历史记录"
+  "RESTORE_HISTORY": "还原历史记录",
+  "ITEM.RESTORE.LOCALSTORAGE": "已还原本地记录",
+  "ITEM.RESTORE.HISTORY": "已还原历史记录",
+  "ITEM.BACKUP": "已自动备份至历史记录"
 }

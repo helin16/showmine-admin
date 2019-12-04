@@ -419,6 +419,10 @@
 
   "RESTORE": "Restore",
   "TO_NOW": "Now",
-  "RESTORE_HISTORY": "Restore to history"
+  "RESTORE_HISTORY": "Restore to history",
+  "ITEM.RESTORE.LOCALSTORAGE": "Restore to local record ",
+  "ITEM.RESTORE.HISTORY": "Restore to history",
+  "ITEM.BACKUP": "Automatically backed up to history record"
+
 
 }
