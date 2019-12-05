@@ -16,3 +16,21 @@
   line-height: 39.6px;
   margin: 10px;
 }
+
+.placeholderText {
+  color: rgb(117, 117, 117);
+  padding: 0.5em 1em;
+  border-bottom: 1px solid #cccccc;
+  font-weight: 500;
+  font-size: 1.3em;
+}
+
+.mce-content-body {
+  padding: 0.5em;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+}
+
+.mce-content-body .row {
+  margin: 0;
+}
