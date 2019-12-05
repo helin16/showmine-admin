@@ -637,6 +637,11 @@ body.opened-in-wechat .opened-in-wechat-wrapper .icon {
   padding: 7px 20px 7px 0;
   color: #3f4047;
 }
+@media only screen and (max-width: 480px) {
+  .backend-page-wrapper .backend-page .backend-page-content-wrapper .backend-page-content .page-title .title {
+    display: block;
+  }
+}
 .backend-page-wrapper .backend-page .backend-page-content-wrapper .backend-page-content .page-title .subtitle {
   display: flex;
   -ms-flex-direction: row;
@@ -647,6 +652,11 @@ body.opened-in-wechat .opened-in-wechat-wrapper .icon {
   margin: 10px 0;
   color: #a4a5ae;
   font-weight: 200;
+}
+@media only screen and (max-width: 480px) {
+  .backend-page-wrapper .backend-page .backend-page-content-wrapper .backend-page-content .page-title .subtitle {
+    display: block;
+  }
 }
 .backend-page-wrapper .backend-page .backend-page-content-wrapper .backend-page-content .page-title .subtitle .subtitle-part {
   width: 100%;

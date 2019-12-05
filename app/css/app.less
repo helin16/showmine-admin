@@ -722,6 +722,9 @@ body.opened-in-wechat {
                     .flex-display(row);
                     justify-content: space-between;
                     .title {
+                        @media @phone {
+                            display: block;
+                        }
                         .vertical-center-wrapper();
                         font-size: @page-title-size;
                         font-weight: @page-title-weight;
@@ -733,6 +736,9 @@ body.opened-in-wechat {
 
                     @page-title-sub-title-padding: 10px;
                     .subtitle {
+                        @media @phone {
+                            display: block;
+                        }
                         .flex-display(row);
                         font-size: 16px;
                         flex: auto;
