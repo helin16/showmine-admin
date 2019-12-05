@@ -138,6 +138,7 @@
   "COMPANY.WP.WEBSITE": "WordPress Website Address",
   "COMPANY.WP.USER": "WordPress User Name",
   "COMPANY.WP.PASSWORD": "WordPress Password",
+  "COMPANY.WP.CATEGORIES": "Categories",
   "COMPANY.EMAIL.PLACEHOLDER": "Email address",
   "COMPANY.CONTACT_NUMBER.PLACEHOLDER": "Contact number",
   "COMPANY.CONTACT_INFO": "Company Contacts",
