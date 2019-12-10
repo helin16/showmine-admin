@@ -1542,7 +1542,7 @@ body.opened-in-wechat .opened-in-wechat-wrapper .icon {
   background-color: #F4F5FA;
   background-position: center center;
   background-repeat: no-repeat;
-  background-size: cover;
+  background-size: contain;
 }
 @media only screen and (max-width: 480px) {
   .upload-img-wrapper .img-preview-list .img-preview-wrapper .img-preview {
