@@ -31,6 +31,10 @@
   font-size: 1.3em;
 }
 
+.non-border {
+  border: 0;
+}
+
 .mce-content-body {
   padding: 0.5em;
   border: 1px solid #cccccc;

@@ -56,6 +56,8 @@
   "QRCODE": "二维码",
   "PREVIEW": "查看",
   "CAN_NOT_FIND_ANY_ASSOCIATED_COMPANY_FOR_YOU": "没有在您的账号下找到任何公司",
+  "VALID": "有效",
+  "INVALID": "无效",
 
   "DASHBOARD": "仪表盘",
   "COMPANY_BANNER": "首页横幅",
@@ -369,6 +371,7 @@
   "SIGN_UP.FORM.SUB_TITLE": "开始免费注册并使用，无需提供任何支付信息。如有任何问题，请随时<a href='https://www.showmine.com/cn/contact-us/'>联系我们</a>。",
   "SIGN_UP.FORM.BACK_TO_LOGIN_PAGE": "已经有账号？从这里登陆",
   "SUBMIT": "提交",
+  "PHONE": "电话",
   "EMAIL_ADDRESS": "Email 地址",
   "SIGN_UP.FORM.EMAIL_ADDRESS.PLACE_HOLDER": "公司/组织的Email地址",
   "SIGN_UP.FORM.STORE_NAME": "公司/组织的名字",
@@ -425,5 +428,10 @@
   "RESTORE_HISTORY": "还原历史记录",
   "ITEM.RESTORE.LOCALSTORAGE": "已还原本地记录",
   "ITEM.RESTORE.HISTORY": "已还原历史记录",
-  "ITEM.BACKUP": "已自动备份至历史记录"
+  "ITEM.BACKUP": "已自动备份至历史记录",
+
+  "EDITOR.PLACEHOLDER": "开始编辑文章内容...",
+
+  "REPLY": "回复",
+  "SHOW.MORE": "查看更多..."
 }

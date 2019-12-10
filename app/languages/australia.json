@@ -55,6 +55,8 @@
   "QRCODE": "QRCode",
   "PREVIEW": "Preview",
   "CAN_NOT_FIND_ANY_ASSOCIATED_COMPANY_FOR_YOU": "Can't find any company for you.",
+  "VALID": "Valid",
+  "INVALID": "Invalid",
 
   "DASHBOARD": "Dashboard",
   "COMPANY_BANNER": "Banner",
@@ -367,6 +369,7 @@
   "SIGN_UP.FORM.SUB_TITLE": "Start to use ShowMine for free. No credit card required. Any questions, please <a href='https://www.showmine.com/contact-us/'>contact us here</a>",
   "SIGN_UP.FORM.BACK_TO_LOGIN_PAGE": "Got an account? login here.",
   "SUBMIT": "Submit",
+  "PHONE": "Phone",
   "EMAIL_ADDRESS": "Email Address",
   "SIGN_UP.FORM.EMAIL_ADDRESS.PLACE_HOLDER": "Email address for your company.",
   "SIGN_UP.FORM.STORE_NAME": "Company name",
@@ -424,7 +427,11 @@
   "RESTORE_HISTORY": "Restore to history",
   "ITEM.RESTORE.LOCALSTORAGE": "Restore to local record ",
   "ITEM.RESTORE.HISTORY": "Restore to history",
-  "ITEM.BACKUP": "Automatically backed up to history record"
+  "ITEM.BACKUP": "Automatically backed up to history record",
 
+  "EDITOR.PLACEHOLDER": "Content start here...",
+
+  "REPLY": "Reply",
+  "SHOW.MORE": "Show more..."
 
 }

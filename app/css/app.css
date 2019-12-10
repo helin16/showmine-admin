@@ -1368,7 +1368,7 @@ body.opened-in-wechat .opened-in-wechat-wrapper .icon {
 }
 .item-comments-wrapper .comments-list {
   border-bottom: 1px solid #ccc;
-  padding: 10px 0 10px 0;
+  padding: 10px;
 }
 .item-comments-wrapper .comments-list .user-name {
   font-weight: bold;
