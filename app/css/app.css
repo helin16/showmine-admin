@@ -197,8 +197,9 @@ body.opened-in-wechat .opened-in-wechat-wrapper .icon {
   -ms-flex-direction: row;
   flex-direction: row;
   justify-content: space-between;
-  padding: 2rem 2.2rem;
+  padding: 4rem 2.2rem;
   position: relative;
+  align-items: center;
   border-bottom: 1px solid #ebedf2;
 }
 @media only screen and (max-width: 480px) {
@@ -1438,8 +1439,9 @@ body.opened-in-wechat .opened-in-wechat-wrapper .icon {
   -ms-flex-direction: row;
   flex-direction: row;
   justify-content: space-between;
-  padding: 2rem 2.2rem;
+  padding: 4rem 2.2rem;
   position: relative;
+  align-items: center;
   border-bottom: 1px solid #ebedf2;
 }
 @media only screen and (max-width: 480px) {
@@ -2482,5 +2484,5 @@ td:before {
   display: inline-block !important;
 }
 .channel-card {
-  padding: 10px;
+  padding: 1em 2em;
 }
