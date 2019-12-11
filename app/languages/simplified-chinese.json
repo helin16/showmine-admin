@@ -171,6 +171,9 @@
   "NO.COMPANY.AUTHOR_INFO": "暂无",
   "COMPANY.SETUP_GUIDE.PANEL.TITLE": "完善您公司的信息...",
 
+  "COMPANY.CUSTOMISE.MESSAGE": "自定义信息",
+  "COMPANY.CUSTOMISE.MESSAGE.SUBTITLE": "用于发送给关注您公司的用户",
+
   "NOTES.NO_RECORD_YET": "还有没有任何咨询文章",
   "NOTES.SEARCH.PLACEHOLDER": "搜索任何咨询文章...",
   "NOTE.NEW_BTN": "新建文章",
@@ -397,6 +400,7 @@
   "ITEM.PAGE.CREATE.MEIPIAN.TOOLTIP": "点击拖拽调整顺序",
 
   "WORDPRESS": "WordPress",
+  "SHOWMINE": "Showmine官方公众号",
   "CHANNEL.NAME": "备注名",
   "CHANNEL.ADD": "添加",
   "SYNC.STATUS": "同步状态",
@@ -419,6 +423,7 @@
   "WECHAT_SECRET": "App Secret",
   "INSTRUCTION": "设置说明",
   "INSTRUCTION_CONTENT": "AppID和AppSecret可在“微信公众平台-开发-基本配置”页中获得（需要已经成为开发者，且帐号没有异常状态）。**调用接口时，请登录“微信公众平台-开发-基本配置”提前将服务器IP地址添加到IP白名单中，点击查看设置方法，否则将无法调用成功。**小程序无需配置IP白名单。",
+  "SHOWMINE.INSTRUCTION_CONTENT": "Showmine官方微信账号用于发布文章至微信用户，适用于没有公众号或没有微信授权的公司。选用此方式，文章将会同辉Showmine推送至对应关注用户的微信。",
   "WECHAT.LIMIT.WARNING": "微信公众号每月推送限制为4次。",
 
   "CONTACT.CUSTOMER.SERVICE": "联系客服",
@@ -436,5 +441,6 @@
   "EDITOR.PLACEHOLDER": "开始编辑文章内容...",
 
   "REPLY": "回复",
-  "SHOW.MORE": "查看更多..."
+  "COMMENT": "{{number_of_comments}}条回复",
+  "SHOW.MORE": "查看更多{{number_of_comments}}条评论..."
 }

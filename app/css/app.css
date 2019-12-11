@@ -1368,14 +1368,14 @@ body.opened-in-wechat .opened-in-wechat-wrapper .icon {
   margin-top: 10px;
 }
 .item-comments-wrapper .comments-list {
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid #9b9b9b;
   padding: 10px;
 }
 .item-comments-wrapper .comments-list .user-name {
   font-weight: bold;
 }
 .item-comments-wrapper .comments-list .replys-list {
-  border-top: 1px solid #ccc;
+  border-top: 1px dashed #ccc;
   padding: 5px 0 0 0;
 }
 .inline-editor.has-error .form-control {

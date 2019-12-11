@@ -171,6 +171,9 @@
 
   "COMPANY.SETUP_GUIDE.PANEL.TITLE": "Complete your company information...",
 
+  "COMPANY.CUSTOMISE.MESSAGE": "Customised Message",
+  "COMPANY.CUSTOMISE.MESSAGE.SUBTITLE": "It will be sent to subscribers",
+
   "NOTES.NO_RECORD_YET": "There is NO News/Articles yet",
   "NOTES.SEARCH.PLACEHOLDER": "Search News/Articles ...",
   "NOTE.NEW_BTN": "New",
@@ -395,6 +398,7 @@
   "ITEM.PAGE.CREATE.MEIPIAN.TOOLTIP": "Click and drag to reorder",
 
   "WORDPRESS": "WordPress",
+  "SHOWMINE": "Showmine Official Wechat",
   "CHANNEL.NAME": "Channel Name",
   "CHANNEL.ADD": "Add",
   "SYNC.STATUS": "Sync Status",
@@ -418,6 +422,7 @@
   "WECHAT_SECRET": "App Secret",
   "INSTRUCTION": "Instruction",
   "INSTRUCTION_CONTENT": "AppID and AppSecret can be obtained in WeChat Official Accounts Platform > Development > Basic Settings (A developer account in a normal status is required). Before calling the API, you need to log in to the WeChat Official Accounts Platform, and go to Development > Basic Settings to add the server IP address to the IP whitelist; otherwise it will not be called successfully. An IP whitelist is not required for Mini Programs.",
+  "SHOWMINE.INSTRUCTION_CONTENT": "Showmine account is for sending articles via Showmine Official Account to WeChat users, especially for those who are not able to send by WeChat using their own account. Only one Showmine Offical Account is enough.",
   "WECHAT.LIMIT.WARNING": "Monthly push limit for WeChat is 4 times.",
 
   "CONTACT.CUSTOMER.SERVICE": "Contact customer service",
@@ -435,6 +440,7 @@
   "EDITOR.PLACEHOLDER": "Content start here...",
 
   "REPLY": "Reply",
-  "SHOW.MORE": "Show more..."
+  "COMMENT": "{{number_of_comments}} Comments",
+  "SHOW.MORE": "{{number_of_comments}} more comments..."
 
 }
