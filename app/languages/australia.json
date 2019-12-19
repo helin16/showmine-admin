@@ -366,6 +366,7 @@
   "LOGIN_PANEL.ALREADY_LOGIN": "You are already logged in, {{name}}.",
   "LOGIN_PANEL.TO_DASHBOARD_BTN": "Navigate to my dashboard.",
   "LOGIN_PANEL.LOGOUT_BTN": "This is not you? or try a different account?",
+  "LOGOUT_BTN": "Log out",
   "LOGIN_PANEL.WECHAT.QRCODE.TIMED_OUT": "Oops, timed out.",
   "LOGIN_PANEL.WECHAT.QRCODE.BTN.REGENERATE": "Click here to try again",
   "LOGIN_PANEL.WECHAT.QRCODE.SCANNED_SUCCESS": "Scanned Successfully, navigating to dashboard ...",
@@ -441,6 +442,9 @@
 
   "REPLY": "Reply",
   "COMMENT": "{{number_of_comments}} Comments",
-  "SHOW.MORE": "{{number_of_comments}} more comments..."
+  "SHOW.MORE": "{{number_of_comments}} more comments...",
+
+  "MAIN.CHANNEL": "Main Channel",
+  "SET.MAIN.CHANNEL": "Set As Main Channel"
 
 }

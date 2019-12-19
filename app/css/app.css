@@ -1888,6 +1888,17 @@ body.opened-in-wechat .opened-in-wechat-wrapper .icon {
   color: #F44336;
   font-size: 24px;
 }
+.main-channel {
+  font-size: 24px !important;
+  display: flex;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 0 10px 0 10px;
+}
+.main-channel.is-main-channel {
+  color: #34bfa3;
+}
 .confirm-remove-user-from-company-wrapper .user-avatar {
   margin: 0px auto;
 }
@@ -2485,4 +2496,24 @@ td:before {
 }
 .channel-card {
   padding: 1em 2em;
+}
+.main-channel-icon {
+  position: relative;
+}
+.main-channel-icon::before {
+  content: '主频道';
+  color: orange;
+  position: absolute;
+  display: block;
+  font-size: 18px;
+  font-weight: bolder;
+  width: 200px;
+  height: 100px;
+  background-color: transparent;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  left: 10px;
+  top: 10px;
+  z-index: 99;
 }

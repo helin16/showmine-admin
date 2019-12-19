@@ -368,6 +368,7 @@
   "LOGIN_PANEL.ALREADY_LOGIN": "您已经登录了, {{name}}.",
   "LOGIN_PANEL.TO_DASHBOARD_BTN": "带我去我的后台.",
   "LOGIN_PANEL.LOGOUT_BTN": "这个不是您? 或者登录其他账号？",
+  "LOGOUT_BTN": "退出登录",
   "LOGIN_PANEL.WECHAT.QRCODE.TIMED_OUT": "超时啦！",
   "LOGIN_PANEL.WECHAT.QRCODE.BTN.REGENERATE": "点我重试",
   "LOGIN_PANEL.WECHAT.QRCODE.SCANNED_SUCCESS": "扫码成功，跳转至公司后台...",
@@ -442,5 +443,8 @@
 
   "REPLY": "回复",
   "COMMENT": "{{number_of_comments}}条回复",
-  "SHOW.MORE": "查看更多{{number_of_comments}}条评论..."
+  "SHOW.MORE": "查看更多{{number_of_comments}}条评论...",
+
+  "MAIN.CHANNEL": "主频道",
+  "SET.MAIN.CHANNEL": "设置为主频道"
 }

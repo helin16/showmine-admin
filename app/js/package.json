@@ -10,7 +10,7 @@
         "spec": ">=4.9.0 <5.0.0",
         "type": "range"
       },
-      "/Users/peng/Documents/git/admin-dashboard"
+      "/Users/Zac/Sysbox/SHM/admin-dashboard"
     ]
   ],
   "_from": "tinymce@>=4.9.0 <5.0.0",
@@ -45,7 +45,7 @@
   "_shasum": "ffba4fc56e3196f66873b60571b9aa164b2da931",
   "_shrinkwrap": null,
   "_spec": "tinymce@^4.9.0",
-  "_where": "/Users/peng/Documents/git/admin-dashboard",
+  "_where": "/Users/Zac/Sysbox/SHM/admin-dashboard",
   "author": {
     "name": "Ephox Corporation"
   },
