@@ -29,6 +29,7 @@
   "SEND": "Send",
   "CLOSE": "Close",
   "TOTAL": "total",
+  "TOTAL.NUMBER": "Total Number",
   "DETAILS": "details",
   "ACCESS_DENY": "Access Denied",
   "FOLLOWERS_COUNT": "Followers",
@@ -445,6 +446,13 @@
   "SHOW.MORE": "{{number_of_comments}} more comments...",
 
   "MAIN.CHANNEL": "Main Channel",
-  "SET.MAIN.CHANNEL": "Set As Main Channel"
+  "SET.MAIN.CHANNEL": "Set As Main Channel",
+  "SINGLEMESSAGE": "WeChat Share",
+  "GROUPMESSAGE": "WeChat Group Share",
+  "TIMELINE": "Moment Share",
+  "VISIT.RECORD": "Visits of recent 10 days",
+  "RECENT.DAYS": "Recent Days",
+  "VISIT.TYPE": "Visit Platfrom"
+
 
 }

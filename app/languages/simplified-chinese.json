@@ -29,6 +29,7 @@
   "SEND": "发送",
   "CLOSE": "关闭",
   "TOTAL": "总计",
+  "TOTAL.NUMBER": "总计",
   "DETAILS": "详情",
   "ACCESS_DENY": "访问拒绝",
   "FOLLOWERS_COUNT": "关注人数",
@@ -446,5 +447,11 @@
   "SHOW.MORE": "查看更多{{number_of_comments}}条评论...",
 
   "MAIN.CHANNEL": "主频道",
-  "SET.MAIN.CHANNEL": "设置为主频道"
+  "SET.MAIN.CHANNEL": "设置为主频道",
+  "SINGLEMESSAGE": "微信分享",
+  "GROUPMESSAGE": "微信群分享",
+  "TIMELINE": "朋友圈分享",
+  "VISIT.RECORD": "最近浏览",
+  "RECENT.DAYS": "最近天数",
+  "VISIT.TYPE" : "浏览方式"
 }
