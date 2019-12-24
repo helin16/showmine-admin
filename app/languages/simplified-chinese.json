@@ -454,5 +454,14 @@
   "TIMELINE": "朋友圈分享",
   "VISIT.RECORD": "最近浏览",
   "RECENT.DAYS": "最近天数",
-  "VISIT.TYPE" : "浏览方式"
+  "VISIT.TYPE" : "浏览方式",
+
+  "DAY": "天",
+  "DAYS": "天",
+  "MONTH": "个月",
+  "YEAR": "年",
+  "LAST.DAYS": "最近",
+  "CHANNEL.PIE.TITLE": "浏览方式",
+  "SHARER.PIE.TITLE": "浏览通过分享人",
+  "VISIT.TREND.TITLE": "浏览趋势"
 }

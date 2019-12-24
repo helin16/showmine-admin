@@ -453,7 +453,14 @@
   "TIMELINE": "Moment Share",
   "VISIT.RECORD": "Visits of recent 10 days",
   "RECENT.DAYS": "Recent Days",
-  "VISIT.TYPE": "Visit Platfrom"
+  "VISIT.TYPE": "Visit Platfrom",
 
-
+  "DAY": "day",
+  "DAYS": "days",
+  "MONTH": "month",
+  "YEAR": "year",
+  "LAST.DAYS": "Last",
+  "CHANNEL.PIE.TITLE": "Session by channels",
+  "SHARER.PIE.TITLE": "Session by sharers",
+  "VISIT.TREND.TITLE": "Trend of user visit"
 }
