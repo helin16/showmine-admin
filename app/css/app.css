@@ -2521,5 +2521,5 @@ td:before {
   z-index: 99;
 }
 .channel-portion-license-text {
-  opacity: 0;
+  opacity: 0 !important;
 }
