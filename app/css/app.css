@@ -2520,7 +2520,7 @@ td:before {
   top: 10px;
   z-index: 99;
 }
-#channel-portion-license-text {
+#channel-portion-license-text #visit-trend-license-text #sharer-portion-license-text {
   opacity: 0 !important;
   display: none !important;
 }
