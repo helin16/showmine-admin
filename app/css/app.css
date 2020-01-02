@@ -2520,6 +2520,20 @@ td:before {
   top: 10px;
   z-index: 99;
 }
-.channel-portion-license-text {
+#channel-portion-license-text {
   opacity: 0 !important;
+  display: none !important;
+}
+.jump-to-charts {
+  margin-top: 5px;
+}
+.excerpt-limit {
+  width: 100%;
+  outline: none;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  height: 34px;
+  font-size: 14px;
+  padding: 6px 12px;
 }

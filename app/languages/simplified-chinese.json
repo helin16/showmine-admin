@@ -464,5 +464,7 @@
   "LAST.DAYS": "最近",
   "CHANNEL.PIE.TITLE": "浏览方式",
   "SHARER.PIE.TITLE": "浏览通过分享人",
-  "VISIT.TREND.TITLE": "浏览趋势"
+  "VISIT.TREND.TITLE": "浏览趋势",
+  "VIEW.CHARTS": "跳至趋势",
+  "EXCERPT.WORDS.LIMIT": "摘要字数"
 }
