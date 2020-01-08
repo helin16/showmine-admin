@@ -145,6 +145,9 @@
   "COMPANY.WP.USER": "WordPress User Name",
   "COMPANY.WP.PASSWORD": "WordPress Password",
   "COMPANY.WP.CATEGORIES": "Categories",
+  "COMPANY.MG.WEBSITE": "Magento Website Address",
+  "COMPANY.MG.USER": "Magento Admin User Name",
+  "COMPANY.MG.PASSWORD": "Magento Admin Password",
   "COMPANY.EMAIL.PLACEHOLDER": "Email address",
   "COMPANY.CONTACT_NUMBER.PLACEHOLDER": "Contact number",
   "COMPANY.CONTACT_INFO": "Company Contacts",
@@ -426,6 +429,7 @@
   "INSTRUCTION": "Instruction",
   "INSTRUCTION_CONTENT": "AppID and AppSecret can be obtained in WeChat Official Accounts Platform > Development > Basic Settings (A developer account in a normal status is required). Before calling the API, you need to log in to the WeChat Official Accounts Platform, and go to Development > Basic Settings to add the server IP address to the IP whitelist; otherwise it will not be called successfully. An IP whitelist is not required for Mini Programs.",
   "SHOWMINE.INSTRUCTION_CONTENT": "Showmine account is for sending articles via Showmine Official Account to WeChat users, especially for those who are not able to send by WeChat using their own account. Only one Showmine Offical Account is enough.",
+  "MAGENTO.INSTRUCTION_CONTENT": "You will need to install 'Magento 2 Blog' extension and activate the blog function, so that you could use this channel to publish articles",
   "WECHAT.LIMIT.WARNING": "Monthly push limit for WeChat is 4 times.",
 
   "CONTACT.CUSTOMER.SERVICE": "Contact customer service",
