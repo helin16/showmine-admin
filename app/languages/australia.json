@@ -474,5 +474,6 @@
   "VISIT.TREND.TITLE": "Trend of user visit",
   "VIEW.CHARTS": "Jump to recent visit charts",
   "EXCERPT.WORDS.LIMIT": "Word limit of excerpt",
-  "ITEM.CUSTOMISED.EXCERPT": "Customised Excerpt"
+  "ITEM.CUSTOMISED.EXCERPT": "Customised Excerpt",
+  "DEFAULT.MAIN.CHANNEL": "Default Main Channel"
 }

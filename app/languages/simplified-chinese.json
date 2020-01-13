@@ -473,5 +473,6 @@
   "VISIT.TREND.TITLE": "浏览趋势",
   "VIEW.CHARTS": "跳至趋势",
   "EXCERPT.WORDS.LIMIT": "摘要字数",
-  "ITEM.CUSTOMISED.EXCERPT": "自定义摘要"
+  "ITEM.CUSTOMISED.EXCERPT": "自定义摘要",
+  "DEFAULT.MAIN.CHANNEL" : "默认主频道"
 }

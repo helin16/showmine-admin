@@ -2545,3 +2545,6 @@ td:before {
   font-size: 14px;
   padding: 6px 12px;
 }
+.inline-checkbox {
+  padding-top: 7px;
+}
