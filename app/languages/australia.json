@@ -475,5 +475,6 @@
   "VIEW.CHARTS": "Jump to recent visit charts",
   "EXCERPT.WORDS.LIMIT": "Word limit of excerpt",
   "ITEM.CUSTOMISED.EXCERPT": "Customised Excerpt",
-  "DEFAULT.MAIN.CHANNEL": "Default Main Channel"
+  "DEFAULT.MAIN.CHANNEL": "Default Main Channel",
+  "NO.CHANNEL.NAME": "No Channel Name"
 }
