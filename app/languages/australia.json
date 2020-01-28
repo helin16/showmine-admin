@@ -151,6 +151,7 @@
   "COMPANY.MG.USER": "Magento Admin User Name",
   "COMPANY.MG.PASSWORD": "Magento Admin Password",
   "COMPANY.FB.PAGES": "Facebook Pages",
+  "COMPANY.GOOGLE.LOCATIONS": "Google Business Locations",
   "COMPANY.EMAIL.PLACEHOLDER": "Email address",
   "COMPANY.CONTACT_NUMBER.PLACEHOLDER": "Contact number",
   "COMPANY.CONTACT_INFO": "Company Contacts",
