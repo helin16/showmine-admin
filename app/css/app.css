@@ -2553,3 +2553,10 @@ td:before {
   color: dodgerblue;
   font-size: 22px;
 }
+.shm-icon {
+  width: 20px;
+  margin-bottom: 2px;
+}
+.shm-grid-icon {
+  width: 42px;
+}
