@@ -2558,5 +2558,6 @@ td:before {
   margin-bottom: 2px;
 }
 .shm-grid-icon {
-  width: 42px;
+  width: 42px !important;
+  height: 42px !important;
 }
