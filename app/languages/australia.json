@@ -506,7 +506,7 @@
   "STAFF.INFO": "You will be able to manage your company staff by deleting or even invite new admin account.",
 
   "LOGIN.FAILURE": "Incorrect email or password",
-  "LOGIN_PANEL.QR_LOGIN": "Login by scanning QR code",
+  "LOGIN_PANEL.QR_LOGIN": "WeChat Login",
   "LOGIN_PANEL.NORMAL_LOGIN": "Normal Login",
   "BACK.TO.LOGIN": "Back to login",
   "FORGET.PASSWORD": "Forget Password",
