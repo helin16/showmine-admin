@@ -368,7 +368,7 @@
   "PACKAGE.SELECTION.PROFESSIONAL_PACKAGE": "Professional",
   "PACKAGE.SELECTION.NONE_PACKAGE": "None",
 
-  "LOGIN_PANEL.TITLE": "ShowMine Company backend login",
+  "LOGIN_PANEL.TITLE": "ShowMine Company Backend Login",
   "LOGIN_PANEL.WECHAT.QRCODE.TITLE": "Please Scan the below QRCode to login via WeChat",
   "LOGIN_PANEL.FREE_SIGNUP": "No Account yet? Sign up for free",
   "LOGIN_PANEL.WECHAT.LOGIN": "Login via WeChat",
@@ -461,10 +461,10 @@
 
   "MAIN.CHANNEL": "Main Channel",
   "SET.MAIN.CHANNEL": "Set As Main Channel",
-  "SINGLEMESSAGE": "WeChat Share",
+  "SINGLEMESSAGE": "WeChat Message Share",
   "GROUPMESSAGE": "WeChat Group Share",
   "TIMELINE": "Moment Share",
-  "SHOWMINEWECHAT": "Showmine Wechat",
+  "SHOWMINEWECHAT": "Showmine Official Account",
   "VISIT.RECORD": "Visits of recent 10 days",
   "RECENT.DAYS": "Recent Days",
   "VISIT.TYPE": "Visit Platfrom",
@@ -528,7 +528,7 @@
   "FIRST.NAME.PLACE_HOLDER": "Please enter your first name",
   "MOBILE.PLACE_HOLDER": "Please enter your contact number",
   "USER.UPDATE.SUCCESSFULLY":"Update Successfully",
-  "USER.UPDATE.FAILE":"Update Failed",
+  "USER.UPDATE.FAILED":"Update Failed",
   "USER.UPDATE.ERROR": "Details incorrect or email has been used."
 
 }

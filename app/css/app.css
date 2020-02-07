@@ -2785,9 +2785,31 @@ td:before {
   background-color: #3b5998;
   color: #fff;
   border-color: #3b5998;
+  margin-bottom: 10px !important;
+}
+@media (min-width: 768px) {
+  .btn-facebook {
+    width: 48% !important;
+  }
 }
 .btn-wechat {
   background-color: #7BB32E;
   color: #fff;
   border-color: #7BB32E;
+}
+@media (min-width: 768px) {
+  .btn-wechat {
+    width: 48% !important;
+  }
+}
+.btn {
+  font-size: 12px !important;
+}
+.login-form-wrapper {
+  min-width: 280px !important;
+}
+.center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
 }

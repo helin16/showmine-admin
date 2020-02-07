@@ -460,10 +460,10 @@
 
   "MAIN.CHANNEL": "主频道",
   "SET.MAIN.CHANNEL": "设置为主频道",
-  "SINGLEMESSAGE": "微信分享",
+  "SINGLEMESSAGE": "微信私聊分享",
   "GROUPMESSAGE": "微信群分享",
   "TIMELINE": "朋友圈分享",
-  "SHOWMINEWECHAT": "Showmine微信",
+  "SHOWMINEWECHAT": "Showmine公共账号",
   "VISIT.RECORD": "最近浏览",
   "RECENT.DAYS": "最近天数",
   "VISIT.TYPE" : "浏览方式",
@@ -527,6 +527,6 @@
   "FIRST.NAME.PLACE_HOLDER": "请输入名",
   "MOBILE.PLACE_HOLDER": "请输入联系方式",
   "USER.UPDATE.SUCCESSFULLY":"更新成功",
-  "USER.UPDATE.FAILE":"更新失败",
+  "USER.UPDATE.FAILED":"更新失败",
   "USER.UPDATE.ERROR": "信息错误或邮箱已被使用"
 }
