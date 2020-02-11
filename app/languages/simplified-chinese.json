@@ -502,7 +502,7 @@
   "NOTES.INFO": "您可以试着浏览或管理编辑发布过的文章，也可以在此新建并发布新的文章。",
   "CHANNEL_INFO.INFO": "您可以管理、编辑或删除已经设置的频道，也可以添加新的频道用于发布并推送文章。",
   "COMPANY_INFO.INFO": "在这里您可以编辑您公司的一些基本信息与配置。",
-  "STAFF.INFO": "您可以管理您公司的员工，删除老员工或添加新员工。",
+  "STAFF.INFO": "您可以前往主页管理您公司，频道以及文章信息。",
 
   "LOGIN.FAILURE": "邮箱或密码错误",
   "LOGIN_PANEL.QR_LOGIN": "微信登录",
@@ -528,5 +528,18 @@
   "MOBILE.PLACE_HOLDER": "请输入联系方式",
   "USER.UPDATE.SUCCESSFULLY":"更新成功",
   "USER.UPDATE.FAILED":"更新失败",
-  "USER.UPDATE.ERROR": "信息错误或邮箱已被使用"
+  "USER.UPDATE.ERROR": "信息错误或邮箱已被使用",
+  "USER.PASSWORD.FAILED": "密码与确认密码不一致",
+
+  "SIGN_UP.NORMAL.LOGIN": "返回登录界面",
+  "SIGN_UP.INSTRUCTION": "验证邮件已发至您的邮箱，完成验证后即可登录",
+  "COMPANY.SETUP.WIZARD": "公司设置向导",
+  "GET.STARTED": "开始初始设置",
+  "CONFIRM.PASSWORD": "确认密码",
+  "EMAIL_SENT": "重置密码邮件已发至邮箱，请查收",
+  "INVALID.LINK": "该链接已失效",
+  "NEW.PASSWORD.UPDATED": "新密码已更新",
+  "COMPANY.EXPIRED": "您的公司已过期",
+  "GO.TO.COMPANY.HOMEPAGE": "前往公司主页"
+
 }

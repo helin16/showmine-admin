@@ -1582,6 +1582,53 @@ body.opened-in-wechat .opened-in-wechat-wrapper .icon {
 .upload-img-wrapper .img-preview-list .img-preview-wrapper .preProcessing.uploading .options-wrapper.img-uploading-wrapper {
   font-size: 33px;
 }
+.is-avatar .uploader .btn-block {
+  margin: 0 auto;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+}
+.is-avatar .upload-img-wrapper .img-preview-list .img-preview-wrapper .img-preview {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background-size: cover;
+  margin: 0 auto;
+}
+.is-avatar .upload-img-wrapper .img-preview-list .img-preview-wrapper .img-preview.margin {
+  margin-bottom: 10px;
+}
+.is-avatar .upload-img-wrapper .img-preview-list .img-preview-wrapper .options-wrapper {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  display: none;
+  margin: 0 auto;
+}
+.is-avatar .upload-img-wrapper .img-preview-list .img-preview-wrapper:hover,
+.is-avatar .upload-img-wrapper .img-preview-list .img-preview-wrapper .preProcessing.uploading {
+  position: relative;
+}
+.is-avatar .upload-img-wrapper .img-preview-list .img-preview-wrapper:hover .options-wrapper,
+.is-avatar .upload-img-wrapper .img-preview-list .img-preview-wrapper .preProcessing.uploading .options-wrapper {
+  display: block;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  background-color: rgba(0, 0, 0, 0.75);
+  color: white;
+  text-align: center;
+  display: flex;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  justify-content: space-around;
+}
+.is-avatar .upload-img-wrapper .img-preview-list .img-preview-wrapper:hover .options-wrapper.img-uploading-wrapper,
+.is-avatar .upload-img-wrapper .img-preview-list .img-preview-wrapper .preProcessing.uploading .options-wrapper.img-uploading-wrapper {
+  font-size: 33px;
+}
 .voucher-list-wrapper .voucher-list .has-record {
   display: flex;
   -ms-flex-direction: row;
@@ -2676,6 +2723,11 @@ td:before {
   position: relative;
   font-weight: 400;
 }
+@media (max-width: 768px) {
+  .wizard-wrapper #progressbar li {
+    font-size: 12px;
+  }
+}
 .wizard-wrapper #progressbar #companyInfo:before {
   font-family: FontAwesome;
   content: "\f013";
@@ -2692,6 +2744,9 @@ td:before {
   font-family: FontAwesome;
   content: "\f15b";
 }
+.wizard-wrapper ul {
+  padding-inline-start: 0px !important;
+}
 .wizard-wrapper #progressbar li:before {
   width: 50px;
   height: 50px;
@@ -2704,6 +2759,14 @@ td:before {
   margin: 0 auto 10px auto;
   padding: 2px;
 }
+@media (max-width: 768px) {
+  .wizard-wrapper #progressbar li:before {
+    width: 30px;
+    height: 30px;
+    line-height: 25px;
+    font-size: 15px;
+  }
+}
 .wizard-wrapper #progressbar li:after {
   content: '';
   width: 100%;
@@ -2713,6 +2776,11 @@ td:before {
   left: 0;
   top: 25px;
   z-index: -1;
+}
+@media (max-width: 768px) {
+  .wizard-wrapper #progressbar li:after {
+    top: 15px;
+  }
 }
 .wizard-wrapper #progressbar li.active:before,
 .wizard-wrapper #progressbar li.active:after {
@@ -2741,7 +2809,7 @@ td:before {
   -moz-transition: all 0.25s ease;
   transition: all 0.25s ease;
   margin-bottom: 15px;
-  min-height: 250px !important;
+  min-height: 200px !important;
 }
 .wizard-wrapper .link-card:hover {
   -webkit-transform: translateY(-4px) scale(1.02);
@@ -2749,6 +2817,11 @@ td:before {
   -ms-transform: translateY(-4px) scale(1.02);
   -o-transform: translateY(-4px) scale(1.02);
   transform: translateY(-4px) scale(1.02);
+}
+@media (max-width: 768px) {
+  .wizard-wrapper .link-card {
+    min-height: 150px !important;
+  }
 }
 .wizard-wrapper .link-card .fa {
   height: 30px !important;
@@ -2812,4 +2885,11 @@ td:before {
   position: absolute;
   top: 50%;
   left: 50%;
+}
+.company-setup-wizard {
+  padding-left: 20px;
+  font-weight: bolder;
+}
+.expire-wrapper {
+  height: 100vh;
 }

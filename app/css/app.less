@@ -1645,6 +1645,59 @@ body.opened-in-wechat {
         }
     }
 }
+.is-avatar {
+    .uploader {
+        .btn-block {
+            margin: 0 auto;
+            width:@company-editor-logo-height;
+            height: @company-editor-logo-height;
+            border-radius: 50%;
+        }
+    }
+    .upload-img-wrapper {
+        .img-preview-list {
+            .img-preview-wrapper {
+                .img-preview {
+                    width:@company-editor-logo-height;
+                    height: @company-editor-logo-height;
+                    border-radius: 50%;
+                    background-size: cover;
+                    margin: 0 auto;
+                }
+                .img-preview.margin {
+                    margin-bottom: 10px;
+                }
+                .options-wrapper {
+                    width:@company-editor-logo-height;
+                    height: @company-editor-logo-height;
+                    border-radius: 50%;
+                    display: none;
+                    margin: 0 auto;
+                }
+
+                &:hover,
+                .preProcessing.uploading {
+                    position: relative;
+                    .options-wrapper {
+                        &.img-uploading-wrapper {
+                            font-size: 33px;
+                        }
+                        display: block;
+                        position: absolute;
+                        top: 0px;
+                        left: 0px;
+                        right: 0px;
+                        bottom: 0px;
+                        background-color: rgba(0, 0, 0, 0.75);
+                        color: white;
+                        .text-center;
+                        .vertical-center-wrapper;
+                    }
+                }
+            }
+        }
+    }
+}
 
 @voucher-per-row: 4;
 .voucher-list-wrapper {
@@ -2788,7 +2841,10 @@ td:before {
         width: 25%;
         float: left;
         position: relative;
-        font-weight: 400
+        font-weight: 400;
+        @media (max-width: 768px) {
+            font-size: 12px;
+    }
     }
 
     #progressbar #companyInfo:before {
@@ -2810,6 +2866,10 @@ td:before {
         font-family: FontAwesome;
         content: "\f15b"
     }
+    ul {
+        padding-inline-start: 0px !important;
+
+    }
 
     #progressbar li:before {
         width: 50px;
@@ -2821,7 +2881,13 @@ td:before {
         background: lightgray;
         border-radius: 50%;
         margin: 0 auto 10px auto;
-        padding: 2px
+        padding: 2px;
+        @media (max-width: 768px) {
+            width: 30px;
+            height: 30px;
+            line-height: 25px;
+            font-size: 15px;
+        }
     }
 
     #progressbar li:after {
@@ -2832,7 +2898,10 @@ td:before {
         position: absolute;
         left: 0;
         top: 25px;
-        z-index: -1
+        z-index: -1;
+        @media (max-width: 768px) {
+            top: 15px;
+    }
     }
 
     #progressbar li.active:before,
@@ -2860,7 +2929,10 @@ td:before {
         box-shadow: 1px 1px lightgray;
         .pull-up();
         margin-bottom: 15px;
-        min-height: 250px !important;
+        min-height: 200px !important;
+        @media (max-width: 768px) {
+            min-height: 150px !important;
+        }
         .fa {
             height: 30px !important;
         }
@@ -2926,5 +2998,11 @@ td:before {
     top: 50%;
     left: 50%;
 }
-
+.company-setup-wizard {
+    padding-left: 20px;
+    font-weight: bolder;
+}
+.expire-wrapper {
+    height: 100vh;
+}
 
