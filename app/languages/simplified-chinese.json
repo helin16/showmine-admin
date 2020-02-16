@@ -391,7 +391,7 @@
   "SIGN_UP.FORM.PASSWORD.PLACE_HOLDER": "请输入密码",
   "SIGN_UP.FORM.STORE_NAME": "公司/组织的名字",
   "SIGN_UP.FORM.STORE_CONTACT_NO": "公司/组织的联系电话",
-  "SIGN_UP.DESCRIPTION": "<p>您可以免费使用以下功能：</p><ul><li><h4>内容管理</h4>文字、图片、视频</li><li><h4>商品管理</h4>价格、描述、买家</li><li><h4>优惠卷</h4>发放数量、优惠卷内容、收到人</li><li><h4>社交分享</h4>分享绑定、分享奖励</li></ul>",
+  "SIGN_UP.DESCRIPTION": "<p>您可以免费使用以下功能：</p><ul><li><h4>内容管理</h4>文字、图片、视频</li><li><h4>社交分享</h4>分享绑定、分享奖励</li><li><h4>评论管理</h4>社交平台评论、回复</li></ul>",
   "The email field is required.": "Email是必填。",
   "The company name field is required.": "公司/组织的名字是必填。",
   "The phone field is required.": "联系电话是必填。",
@@ -472,11 +472,11 @@
   "DAYS": "天",
   "MONTH": "个月",
   "YEAR": "年",
-  "LAST.DAYS": "最近",
+  "LAST.DAYS": "最近 ",
   "CHANNEL.PIE.TITLE": "浏览方式",
   "SHARER.PIE.TITLE": "浏览通过分享人",
-  "VISIT.TREND.TITLE": "浏览趋势",
-  "VIEW.CHARTS": "跳至趋势",
+  "VISIT.TREND.TITLE": "浏览量",
+  "VIEW.CHARTS": "数据",
   "EXCERPT.WORDS.LIMIT": "摘要字数",
   "ITEM.CUSTOMISED.EXCERPT": "自定义摘要",
   "DEFAULT.MAIN.CHANNEL" : "默认主频道",
@@ -540,6 +540,11 @@
   "INVALID.LINK": "该链接已失效",
   "NEW.PASSWORD.UPDATED": "新密码已更新",
   "COMPANY.EXPIRED": "您的公司已过期",
-  "GO.TO.COMPANY.HOMEPAGE": "前往公司主页"
-
+  "GO.TO.COMPANY.HOMEPAGE": "前往公司主页",
+  "REGISTER": "注册",
+  "LOGIN": "登录",
+  "LANGUAGE": "语言",
+  "DELETE.INFO": "是否确定删除？",
+  "FROM.SHOWMINE": "来自Showmine",
+  "NO.DATA": "对不起，找不到相关数据。"
 }

@@ -89,8 +89,13 @@ body.opened-in-wechat .opened-in-wechat-wrapper .icon {
   right: 0;
   width: 100vw;
   height: 100vh;
-  background: transparent url(../images/bg.jpg) center center no-repeat;
+  background: transparent url(../images/signup-bg.png) center bottom no-repeat;
   background-size: cover;
+}
+.login-page .login-panel {
+  min-height: 100vh;
+  background: transparent url("../images/signup-right-bg.png") right bottom no-repeat;
+  background-size: contain;
 }
 .login-page .login-panel .login-form-wrapper {
   text-align: center;
@@ -197,7 +202,7 @@ body.opened-in-wechat .opened-in-wechat-wrapper .icon {
   -ms-flex-direction: row;
   flex-direction: row;
   justify-content: space-between;
-  padding: 4rem 2.2rem;
+  padding: 2rem;
   position: relative;
   align-items: center;
   border-bottom: 1px solid #ebedf2;
@@ -237,6 +242,14 @@ body.opened-in-wechat .opened-in-wechat-wrapper .icon {
 }
 .content-box .header .caption .title .text .sub-title {
   margin-left: 10px;
+}
+.content-box .header .recent-days {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+.content-box .header .recent-days .title .text > select {
+  margin-left: 5px;
 }
 .content-box .header .item-with-status::before {
   left: -30px !important;
@@ -1372,6 +1385,40 @@ body.opened-in-wechat .opened-in-wechat-wrapper .icon {
   border-bottom: 1px solid #9b9b9b;
   padding: 10px;
 }
+.item-comments-wrapper .comments-list .text-muted {
+  font-size: 12px;
+}
+.item-comments-wrapper .comments-list .comment-item {
+  padding-top: 10px;
+}
+.item-comments-wrapper .comments-list .comment-item .comment-avatar {
+  float: left;
+  width: 60px;
+  min-height: 150px;
+}
+@media only screen and (max-width: 480px) {
+  .item-comments-wrapper .comments-list .comment-item .comment-avatar {
+    height: 250px;
+  }
+}
+.item-comments-wrapper .comments-list .comment-item .comment-content {
+  min-height: 150px;
+}
+@media only screen and (max-width: 480px) {
+  .item-comments-wrapper .comments-list .comment-item .comment-content {
+    height: 250px;
+  }
+}
+.item-comments-wrapper .comments-list .comment-item .comment-button {
+  float: right;
+  width: 60px;
+  min-height: 150px;
+}
+@media only screen and (max-width: 480px) {
+  .item-comments-wrapper .comments-list .comment-item .comment-button {
+    height: 250px;
+  }
+}
 .item-comments-wrapper .comments-list .user-name {
   font-weight: bold;
 }
@@ -1440,7 +1487,7 @@ body.opened-in-wechat .opened-in-wechat-wrapper .icon {
   -ms-flex-direction: row;
   flex-direction: row;
   justify-content: space-between;
-  padding: 4rem 2.2rem;
+  padding: 2rem;
   position: relative;
   align-items: center;
   border-bottom: 1px solid #ebedf2;
@@ -1480,6 +1527,14 @@ body.opened-in-wechat .opened-in-wechat-wrapper .icon {
 }
 .company-editor-wrapper .company-editor .company-pickup-locations-wrapper .header .caption .title .text .sub-title {
   margin-left: 10px;
+}
+.company-editor-wrapper .company-editor .company-pickup-locations-wrapper .header .recent-days {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+.company-editor-wrapper .company-editor .company-pickup-locations-wrapper .header .recent-days .title .text > select {
+  margin-left: 5px;
 }
 .company-editor-wrapper .company-editor .company-pickup-locations-wrapper .header .item-with-status::before {
   left: -30px !important;
@@ -2110,6 +2165,9 @@ body.opened-in-wechat .opened-in-wechat-wrapper .icon {
 .company-pickup-location-list .company-pickup-location-new-item-wrapper .company-pickup-location-item-edit .form-group .col-md-2 {
   padding-top: 5px;
 }
+.dashboard-wrapper .dashboard .followers-count {
+  cursor: auto !important;
+}
 .dashboard-wrapper .dashboard .count-box {
   cursor: pointer;
 }
@@ -2414,6 +2472,10 @@ body.opened-in-wechat .opened-in-wechat-wrapper .icon {
   max-width: 80%;
   margin: 0 auto;
 }
+.sign-up-page .sign-up-panel-wrapper .sign-up-panel .control-label:after {
+  content: ' *';
+  color: red;
+}
 .sign-up-page .sign-up-panel-wrapper .sign-up-panel .form-control {
   padding: 2.125rem 1.5rem !important;
 }
@@ -2542,9 +2604,6 @@ td:before {
   min-width: 60px !important;
   display: inline-block !important;
 }
-.recent-days {
-  font-size: 16px;
-}
 .channel-card {
   padding: 1em 2em;
 }
@@ -2646,6 +2705,10 @@ td:before {
   -ms-flex-direction: row;
   flex-direction: row;
   justify-content: space-between;
+}
+.wizard-wrapper .backend-page-content-wrapper .top-menu-wrapper .top-menu .img-logo {
+  height: 35px;
+  padding: 5px;
 }
 .wizard-wrapper .backend-page-content-wrapper .top-menu-wrapper .top-menu .left {
   display: flex;
@@ -2799,6 +2862,10 @@ td:before {
   height: 50px !important;
 }
 .wizard-wrapper .link-card {
+  display: flex;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  justify-content: space-around;
   background: white;
   padding: 10px;
   border-radius: 8px;
@@ -2826,7 +2893,7 @@ td:before {
 .wizard-wrapper .link-card .fa {
   height: 30px !important;
 }
-.non-pull-up .note {
+.non-pull-up .note .unClick {
   cursor: default !important;
   -o-transition-property: none !important;
   -moz-transition-property: none !important;
@@ -2875,6 +2942,16 @@ td:before {
     width: 48% !important;
   }
 }
+.wechat {
+  background-color: #7BB32E;
+  color: #fff;
+  border-color: #7BB32E;
+}
+.facebook {
+  background-color: #3b5998;
+  color: #fff;
+  border-color: #3b5998;
+}
 .btn {
   font-size: 12px !important;
 }
@@ -2892,4 +2969,56 @@ td:before {
 }
 .expire-wrapper {
   height: 100vh;
+}
+.social-account-merger .card {
+  z-index: 0;
+  border: none;
+  position: relative;
+}
+.social-account-merger .link-card {
+  display: flex;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 1px 1px lightgray;
+  cursor: pointer;
+  -webkit-transition: all 0.25s ease;
+  -o-transition: all 0.25s ease;
+  -moz-transition: all 0.25s ease;
+  transition: all 0.25s ease;
+  margin-bottom: 15px;
+  min-height: 100px !important;
+}
+.social-account-merger .link-card:hover {
+  -webkit-transform: translateY(-4px) scale(1.02);
+  -moz-transform: translateY(-4px) scale(1.02);
+  -ms-transform: translateY(-4px) scale(1.02);
+  -o-transform: translateY(-4px) scale(1.02);
+  transform: translateY(-4px) scale(1.02);
+}
+.social-account-merger .link-card .fa {
+  height: 30px !important;
+}
+.social-account-merger .account-card {
+  background-color: white;
+  display: flex;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 1px 1px lightgray;
+  margin-bottom: 15px;
+}
+.social-account-merger .account-card .user-avatar-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.password-section {
+  border-top: 1px solid #e5e5e5;
+  padding: 15px 0;
+  margin-top: 15px;
 }

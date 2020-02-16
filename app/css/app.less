@@ -189,11 +189,12 @@ body.opened-in-wechat {
     right: 0;
     width: 100vw;
     height: 100vh;
-    background: transparent url(../images/bg.jpg) center center no-repeat;
+    background:  transparent url(../images/signup-bg.png) center bottom no-repeat;
     background-size: cover;
-
     .login-panel {
-
+        min-height: 100vh;
+        background: transparent url("../images/signup-right-bg.png") right bottom no-repeat;
+        background-size: contain;
         .login-form-wrapper {
             text-align: center;
             color: @login-panel-main-text-color;
@@ -270,7 +271,7 @@ body.opened-in-wechat {
     }
 }
 
-@content-box-header-padding-top-and-bottom: 4rem 2.2rem;
+@content-box-header-padding-top-and-bottom: 2rem;
 @content-box-header-height: 5.1rem;
 @content-box-body-padding: 2.2rem;
 @content-box-margin-bottom: 2.2rem;
@@ -337,6 +338,16 @@ body.opened-in-wechat {
                     .sub-title {
                         margin-left: 10px;
                     }
+                }
+            }
+        }
+        .recent-days {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            .title {
+                .text > select {
+                    margin-left: 5px;
                 }
             }
         }
@@ -1530,8 +1541,36 @@ body.opened-in-wechat {
         margin-top:10px;
     }
     .comments-list{
+        .text-muted {
+            font-size: 12px;
+        }
         border-bottom: 1px solid #9b9b9b;
         padding: 10px;
+        .comment-item {
+            padding-top: 10px;
+            .comment-avatar{
+                float: left;
+                width: 60px;
+                min-height: 150px;
+                @media @phone {
+                    height: 250px;
+                }
+            }
+            .comment-content{
+                min-height: 150px;
+                @media @phone {
+                    height: 250px;
+                }
+            }
+            .comment-button{
+                float: right;
+                width: 60px;
+                min-height: 150px;
+                @media @phone {
+                    height: 250px;
+                }
+            }
+        }
         .user-name{
             font-weight: bold;
         }
@@ -2202,6 +2241,9 @@ body.opened-in-wechat {
 
 .dashboard-wrapper {
     .dashboard {
+        .followers-count {
+            cursor: auto !important;
+        }
         .count-box {
             cursor:pointer;
             .count {
@@ -2527,7 +2569,10 @@ body.opened-in-wechat {
                     margin: 0 auto;
                 }
             }
-
+            .control-label:after {
+                content: ' *';
+                color: red;
+            }
             .form-control {
                 padding: 2.125rem 1.5rem !important;
             }
@@ -2671,9 +2716,6 @@ td:before {
         display: inline-block !important;
     }
 }
-.recent-days {
-    font-size: 16px;
-}
 .channel-card{
     padding: 1em 2em;
 }
@@ -2763,6 +2805,10 @@ td:before {
             .transition(width, 0.2s, ease);
 
             .top-menu {
+                .img-logo {
+                    height: @backend-top-menu-wrapper-height / 2;
+                    padding: 5px;
+                }
                 .flex-display(row);
                 justify-content: space-between;
 
@@ -2923,6 +2969,7 @@ td:before {
         }
     }
     .link-card {
+        .vertical-center-wrapper;
         background: white;
         padding: 10px;
         border-radius: 8px;
@@ -2940,24 +2987,26 @@ td:before {
 }
 .non-pull-up {
     .note {
-        cursor: default !important;
-        -o-transition-property: none !important;
-        -moz-transition-property: none !important;
-        -ms-transition-property: none !important;
-        -webkit-transition-property: none !important;
-        transition-property: none !important;
-        /*CSS transforms*/
-        -o-transform: none !important;
-        -moz-transform: none !important;
-        -ms-transform: none !important;
-        -webkit-transform: none !important;
-        transform: none !important;
-        /*CSS animations*/
-        -webkit-animation: none !important;
-        -moz-animation: none !important;
-        -o-animation: none !important;
-        -ms-animation: none !important;
-        animation: none !important;
+        .unClick {
+            cursor: default !important;
+            -o-transition-property: none !important;
+            -moz-transition-property: none !important;
+            -ms-transition-property: none !important;
+            -webkit-transition-property: none !important;
+            transition-property: none !important;
+            /*CSS transforms*/
+            -o-transform: none !important;
+            -moz-transform: none !important;
+            -ms-transform: none !important;
+            -webkit-transform: none !important;
+            transform: none !important;
+            /*CSS animations*/
+            -webkit-animation: none !important;
+            -moz-animation: none !important;
+            -o-animation: none !important;
+            -ms-animation: none !important;
+            animation: none !important;
+        }
     }
 }
 .shm-grid-icon {
@@ -2971,21 +3020,27 @@ td:before {
     }
 }
 .btn-facebook {
-    background-color: #3b5998;
-    color: #fff;
-    border-color: #3b5998;
+    .facebook;
     margin-bottom: 10px !important;
     @media (min-width: 768px) {
         width: 48% !important;
     }
 }
 .btn-wechat {
-    background-color: #7BB32E;
-    color: #fff;
-    border-color: #7BB32E;
+    .wechat;
     @media (min-width: 768px) {
         width: 48% !important;
     }
+}
+.wechat {
+    background-color: #7BB32E;
+    color: #fff;
+    border-color: #7BB32E;
+}
+.facebook {
+    background-color: #3b5998;
+    color: #fff;
+    border-color: #3b5998;
 }
 .btn {
     font-size: 12px !important;
@@ -3004,5 +3059,42 @@ td:before {
 }
 .expire-wrapper {
     height: 100vh;
+}
+.social-account-merger {
+    .card {
+        z-index: 0;
+        border: none;
+        position: relative
+    }
+    .link-card {
+        .vertical-center-wrapper;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 1px 1px lightgray;
+        .pull-up();
+        margin-bottom: 15px;
+        min-height: 100px !important;
+        .fa {
+            height: 30px !important;
+        }
+    }
+    .account-card {
+        background-color: white;
+        .vertical-center-wrapper;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 1px 1px lightgray;
+        margin-bottom: 15px;
+        .user-avatar-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    }
+}
+.password-section {
+    border-top: 1px solid #e5e5e5;
+    padding: 15px 0;
+    margin-top: 15px;
 }
 
