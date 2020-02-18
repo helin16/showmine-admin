@@ -83,6 +83,27 @@ body.opened-in-wechat .opened-in-wechat-wrapper {
 body.opened-in-wechat .opened-in-wechat-wrapper .icon {
   font-size: 48px;
 }
+.confirm-email {
+  position: fixed;
+  left: 0;
+  right: 0;
+  width: 100vw;
+  height: 100vh;
+  background: transparent url(../images/signup-bg.png) center bottom no-repeat;
+  background-size: cover;
+  display: flex;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  justify-content: space-around;
+}
+.confirm-email-form-wrapper {
+  text-align: center;
+  color: white;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  width: 30%;
+  margin: 0 auto;
+}
 .login-page {
   position: fixed;
   left: 0;
@@ -3021,4 +3042,10 @@ td:before {
   border-top: 1px solid #e5e5e5;
   padding: 15px 0;
   margin-top: 15px;
+}
+.channel-valid {
+  color: #7BB32E;
+}
+.channel-invalid {
+  color: red;
 }

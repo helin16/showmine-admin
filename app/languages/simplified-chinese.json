@@ -546,5 +546,10 @@
   "LANGUAGE": "语言",
   "DELETE.INFO": "是否确定删除？",
   "FROM.SHOWMINE": "来自Showmine",
-  "NO.DATA": "对不起，找不到相关数据。"
+  "NO.DATA": "对不起，找不到相关数据。",
+  "MAIN.CHANNEL.INFO": "设置为主频道，您的所有文章将自动跳转至该频道。",
+  "COMPANY.WP.WEBSITE.INFO": "网站网址， 如：https://test.com.au/",
+  "COMPANY.WP.USER.INFO": "必须为管理员账号",
+  "COMPANY.WP.CATEGORIES.INFO": "所有文章将会发布至所选的分类下。",
+  "EMAIL.CONFIRMATION.NOTIFICATION": "您将会收到邮箱验证的邮件，确认后您的邮箱才会变更。"
 }

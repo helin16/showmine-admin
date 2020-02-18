@@ -112,6 +112,8 @@ var mobile = (function (domGlobals) {
     var deepMerge = baseMerge(deep);
     var merge = baseMerge(shallow);
 
+    var never$1 = never;
+    var always$1 = always;
     var none = function () {
       return NONE;
     };
@@ -125,27 +127,37 @@ var mobile = (function (domGlobals) {
       var id = function (n) {
         return n;
       };
+      var noop = function () {
+      };
+      var nul = function () {
+        return null;
+      };
+      var undef = function () {
+        return undefined;
+      };
       var me = {
         fold: function (n, s) {
           return n();
         },
-        is: never,
-        isSome: never,
-        isNone: always,
+        is: never$1,
+        isSome: never$1,
+        isNone: always$1,
         getOr: id,
         getOrThunk: call,
         getOrDie: function (msg) {
           throw new Error(msg || 'error: getOrDie called on none.');
         },
-        getOrNull: constant(null),
-        getOrUndefined: constant(undefined),
+        getOrNull: nul,
+        getOrUndefined: undef,
         or: id,
         orThunk: call,
         map: none,
+        ap: none,
         each: noop,
         bind: none,
-        exists: never,
-        forall: always,
+        flatten: none,
+        exists: never$1,
+        forall: always$1,
         filter: none,
         equals: eq,
         equals_: eq,
@@ -160,9 +172,14 @@ var mobile = (function (domGlobals) {
       return me;
     }();
     var some = function (a) {
-      var constant_a = constant(a);
+      var constant_a = function () {
+        return a;
+      };
       var self = function () {
         return me;
+      };
+      var map = function (f) {
+        return some(f(a));
       };
       var bind = function (f) {
         return f(a);
@@ -174,8 +191,8 @@ var mobile = (function (domGlobals) {
         is: function (v) {
           return a === v;
         },
-        isSome: always,
-        isNone: never,
+        isSome: always$1,
+        isNone: never$1,
         getOr: constant_a,
         getOrThunk: constant_a,
         getOrDie: constant_a,
@@ -183,31 +200,35 @@ var mobile = (function (domGlobals) {
         getOrUndefined: constant_a,
         or: self,
         orThunk: self,
-        map: function (f) {
-          return some(f(a));
+        map: map,
+        ap: function (optfab) {
+          return optfab.fold(none, function (fab) {
+            return some(fab(a));
+          });
         },
         each: function (f) {
           f(a);
         },
         bind: bind,
+        flatten: constant_a,
         exists: bind,
         forall: bind,
         filter: function (f) {
           return f(a) ? me : NONE;
+        },
+        equals: function (o) {
+          return o.is(a);
+        },
+        equals_: function (o, elementEq) {
+          return o.fold(never$1, function (b) {
+            return elementEq(a, b);
+          });
         },
         toArray: function () {
           return [a];
         },
         toString: function () {
           return 'some(' + a + ')';
-        },
-        equals: function (o) {
-          return o.is(a);
-        },
-        equals_: function (o, elementEq) {
-          return o.fold(never, function (b) {
-            return elementEq(a, b);
-          });
         }
       };
       return me;
@@ -227,21 +248,21 @@ var mobile = (function (domGlobals) {
       for (var k = 0, len = props.length; k < len; k++) {
         var i = props[k];
         var x = obj[i];
-        f(x, i);
+        f(x, i, obj);
       }
     };
     var map = function (obj, f) {
-      return tupleMap(obj, function (x, i) {
+      return tupleMap(obj, function (x, i, obj) {
         return {
           k: i,
-          v: f(x, i)
+          v: f(x, i, obj)
         };
       });
     };
     var tupleMap = function (obj, f) {
       var r = {};
       each(obj, function (x, i) {
-        var tuple = f(x, i);
+        var tuple = f(x, i, obj);
         r[tuple.k] = tuple.v;
       });
       return r;
@@ -436,50 +457,49 @@ var mobile = (function (domGlobals) {
       };
     };
 
-    var nativeSlice = Array.prototype.slice;
-    var nativeIndexOf = Array.prototype.indexOf;
-    var nativePush = Array.prototype.push;
-    var rawIndexOf = function (ts, t) {
-      return nativeIndexOf.call(ts, t);
-    };
+    var slice = Array.prototype.slice;
+    var rawIndexOf = function () {
+      var pIndexOf = Array.prototype.indexOf;
+      var fastIndex = function (xs, x) {
+        return pIndexOf.call(xs, x);
+      };
+      var slowIndex = function (xs, x) {
+        return slowIndexOf(xs, x);
+      };
+      return pIndexOf === undefined ? slowIndex : fastIndex;
+    }();
     var contains = function (xs, x) {
       return rawIndexOf(xs, x) > -1;
     };
     var exists = function (xs, pred) {
-      for (var i = 0, len = xs.length; i < len; i++) {
-        var x = xs[i];
-        if (pred(x, i)) {
-          return true;
-        }
-      }
-      return false;
+      return findIndex(xs, pred).isSome();
     };
     var map$1 = function (xs, f) {
       var len = xs.length;
       var r = new Array(len);
       for (var i = 0; i < len; i++) {
         var x = xs[i];
-        r[i] = f(x, i);
+        r[i] = f(x, i, xs);
       }
       return r;
     };
     var each$1 = function (xs, f) {
       for (var i = 0, len = xs.length; i < len; i++) {
         var x = xs[i];
-        f(x, i);
+        f(x, i, xs);
       }
     };
     var eachr = function (xs, f) {
       for (var i = xs.length - 1; i >= 0; i--) {
         var x = xs[i];
-        f(x, i);
+        f(x, i, xs);
       }
     };
     var filter = function (xs, pred) {
       var r = [];
       for (var i = 0, len = xs.length; i < len; i++) {
         var x = xs[i];
-        if (pred(x, i)) {
+        if (pred(x, i, xs)) {
           r.push(x);
         }
       }
@@ -500,7 +520,7 @@ var mobile = (function (domGlobals) {
     var find$1 = function (xs, pred) {
       for (var i = 0, len = xs.length; i < len; i++) {
         var x = xs[i];
-        if (pred(x, i)) {
+        if (pred(x, i, xs)) {
           return Option.some(x);
         }
       }
@@ -509,19 +529,28 @@ var mobile = (function (domGlobals) {
     var findIndex = function (xs, pred) {
       for (var i = 0, len = xs.length; i < len; i++) {
         var x = xs[i];
-        if (pred(x, i)) {
+        if (pred(x, i, xs)) {
           return Option.some(i);
         }
       }
       return Option.none();
     };
+    var slowIndexOf = function (xs, x) {
+      for (var i = 0, len = xs.length; i < len; ++i) {
+        if (xs[i] === x) {
+          return i;
+        }
+      }
+      return -1;
+    };
+    var push = Array.prototype.push;
     var flatten = function (xs) {
       var r = [];
       for (var i = 0, len = xs.length; i < len; ++i) {
         if (!isArray(xs[i])) {
           throw new Error('Arr.flatten item ' + i + ' was not an array, input: ' + xs);
         }
-        nativePush.apply(r, xs[i]);
+        push.apply(r, xs[i]);
       }
       return r;
     };
@@ -532,14 +561,14 @@ var mobile = (function (domGlobals) {
     var forall = function (xs, pred) {
       for (var i = 0, len = xs.length; i < len; ++i) {
         var x = xs[i];
-        if (pred(x, i) !== true) {
+        if (pred(x, i, xs) !== true) {
           return false;
         }
       }
       return true;
     };
     var reverse = function (xs) {
-      var r = nativeSlice.call(xs, 0);
+      var r = slice.call(xs, 0);
       r.reverse();
       return r;
     };
@@ -552,7 +581,7 @@ var mobile = (function (domGlobals) {
       return [x];
     };
     var from$1 = isFunction(Array.from) ? Array.from : function (x) {
-      return nativeSlice.call(x);
+      return slice.call(x);
     };
 
     var detect$1 = function (candidates, userAgent) {
@@ -2725,9 +2754,6 @@ var mobile = (function (domGlobals) {
         }
       }
       return Option.none();
-    };
-    var someIf = function (b, a) {
-      return b ? Option.some(a) : Option.none();
     };
 
     var unknown$3 = 'unknown';
@@ -9014,6 +9040,9 @@ var mobile = (function (domGlobals) {
     }
 
     var api$3 = NodeValue(isText, 'text');
+    var get$b = function (element) {
+      return api$3.get(element);
+    };
     var getOption = function (element) {
       return api$3.getOption(element);
     };
@@ -9024,6 +9053,20 @@ var mobile = (function (domGlobals) {
       }, function (v) {
         return v.length;
       });
+    };
+    var NBSP = '\xA0';
+    var isTextNodeWithCursorPosition = function (el) {
+      return getOption(el).filter(function (text) {
+        return text.trim().length !== 0 || text.indexOf(NBSP) > -1;
+      }).isSome();
+    };
+    var elementsWithCursorPosition = [
+      'img',
+      'br'
+    ];
+    var isCursorPosition = function (elem) {
+      var hasCursorPosition = isTextNodeWithCursorPosition(elem);
+      return hasCursorPosition || contains(elementsWithCursorPosition, name(elem));
     };
 
     var create$3 = Immutable('start', 'soffset', 'finish', 'foffset');
@@ -9240,6 +9283,164 @@ var mobile = (function (domGlobals) {
       });
     };
 
+    var searchForPoint = function (rectForOffset, x, y, maxX, length) {
+      if (length === 0) {
+        return 0;
+      } else if (x === maxX) {
+        return length - 1;
+      }
+      var xDelta = maxX;
+      for (var i = 1; i < length; i++) {
+        var rect = rectForOffset(i);
+        var curDeltaX = Math.abs(x - rect.left);
+        if (y <= rect.bottom) {
+          if (y < rect.top || curDeltaX > xDelta) {
+            return i - 1;
+          } else {
+            xDelta = curDeltaX;
+          }
+        }
+      }
+      return 0;
+    };
+    var inRect = function (rect, x, y) {
+      return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+    };
+
+    var locateOffset = function (doc, textnode, x, y, rect) {
+      var rangeForOffset = function (o) {
+        var r = doc.dom().createRange();
+        r.setStart(textnode.dom(), o);
+        r.collapse(true);
+        return r;
+      };
+      var rectForOffset = function (o) {
+        var r = rangeForOffset(o);
+        return r.getBoundingClientRect();
+      };
+      var length = get$b(textnode).length;
+      var offset = searchForPoint(rectForOffset, x, y, rect.right, length);
+      return rangeForOffset(offset);
+    };
+    var locate$1 = function (doc, node, x, y) {
+      var r = doc.dom().createRange();
+      r.selectNode(node.dom());
+      var rects = r.getClientRects();
+      var foundRect = findMap(rects, function (rect) {
+        return inRect(rect, x, y) ? Option.some(rect) : Option.none();
+      });
+      return foundRect.map(function (rect) {
+        return locateOffset(doc, node, x, y, rect);
+      });
+    };
+
+    var searchInChildren = function (doc, node, x, y) {
+      var r = doc.dom().createRange();
+      var nodes = children(node);
+      return findMap(nodes, function (n) {
+        r.selectNode(n.dom());
+        return inRect(r.getBoundingClientRect(), x, y) ? locateNode(doc, n, x, y) : Option.none();
+      });
+    };
+    var locateNode = function (doc, node, x, y) {
+      return isText(node) ? locate$1(doc, node, x, y) : searchInChildren(doc, node, x, y);
+    };
+    var locate$2 = function (doc, node, x, y) {
+      var r = doc.dom().createRange();
+      r.selectNode(node.dom());
+      var rect = r.getBoundingClientRect();
+      var boundedX = Math.max(rect.left, Math.min(rect.right, x));
+      var boundedY = Math.max(rect.top, Math.min(rect.bottom, y));
+      return locateNode(doc, node, boundedX, boundedY);
+    };
+
+    var first$1 = function (element) {
+      return descendant(element, isCursorPosition);
+    };
+    var last = function (element) {
+      return descendantRtl(element, isCursorPosition);
+    };
+    var descendantRtl = function (scope, predicate) {
+      var descend = function (element) {
+        var children$1 = children(element);
+        for (var i = children$1.length - 1; i >= 0; i--) {
+          var child = children$1[i];
+          if (predicate(child)) {
+            return Option.some(child);
+          }
+          var res = descend(child);
+          if (res.isSome()) {
+            return res;
+          }
+        }
+        return Option.none();
+      };
+      return descend(scope);
+    };
+
+    var COLLAPSE_TO_LEFT = true;
+    var COLLAPSE_TO_RIGHT = false;
+    var getCollapseDirection = function (rect, x) {
+      return x - rect.left < rect.right - x ? COLLAPSE_TO_LEFT : COLLAPSE_TO_RIGHT;
+    };
+    var createCollapsedNode = function (doc, target, collapseDirection) {
+      var r = doc.dom().createRange();
+      r.selectNode(target.dom());
+      r.collapse(collapseDirection);
+      return r;
+    };
+    var locateInElement = function (doc, node, x) {
+      var cursorRange = doc.dom().createRange();
+      cursorRange.selectNode(node.dom());
+      var rect = cursorRange.getBoundingClientRect();
+      var collapseDirection = getCollapseDirection(rect, x);
+      var f = collapseDirection === COLLAPSE_TO_LEFT ? first$1 : last;
+      return f(node).map(function (target) {
+        return createCollapsedNode(doc, target, collapseDirection);
+      });
+    };
+    var locateInEmpty = function (doc, node, x) {
+      var rect = node.dom().getBoundingClientRect();
+      var collapseDirection = getCollapseDirection(rect, x);
+      return Option.some(createCollapsedNode(doc, node, collapseDirection));
+    };
+    var search$1 = function (doc, node, x) {
+      var f = children(node).length === 0 ? locateInEmpty : locateInElement;
+      return f(doc, node, x);
+    };
+
+    var caretPositionFromPoint = function (doc, x, y) {
+      return Option.from(doc.dom().caretPositionFromPoint(x, y)).bind(function (pos) {
+        if (pos.offsetNode === null) {
+          return Option.none();
+        }
+        var r = doc.dom().createRange();
+        r.setStart(pos.offsetNode, pos.offset);
+        r.collapse();
+        return Option.some(r);
+      });
+    };
+    var caretRangeFromPoint = function (doc, x, y) {
+      return Option.from(doc.dom().caretRangeFromPoint(x, y));
+    };
+    var searchTextNodes = function (doc, node, x, y) {
+      var r = doc.dom().createRange();
+      r.selectNode(node.dom());
+      var rect = r.getBoundingClientRect();
+      var boundedX = Math.max(rect.left, Math.min(rect.right, x));
+      var boundedY = Math.max(rect.top, Math.min(rect.bottom, y));
+      return locate$2(doc, node, boundedX, boundedY);
+    };
+    var searchFromPoint = function (doc, x, y) {
+      return Element.fromPoint(doc, x, y).bind(function (elem) {
+        var fallback = function () {
+          return search$1(doc, elem, x);
+        };
+        return children(elem).length === 0 ? fallback() : searchTextNodes(doc, elem, x, y).orThunk(fallback);
+      });
+    };
+    var availableSearch = document.caretPositionFromPoint ? caretPositionFromPoint : document.caretRangeFromPoint ? caretRangeFromPoint : searchFromPoint;
+
     var beforeSpecial = function (element, offset) {
       var name$1 = name(element);
       if ('input' === name$1) {
@@ -9330,7 +9531,7 @@ var mobile = (function (domGlobals) {
         return sel.rangeCount > 0;
       }).bind(doGetExact);
     };
-    var get$b = function (win) {
+    var get$c = function (win) {
       return getExact(win).map(function (range) {
         return Selection.exact(range.start(), range.soffset(), range.finish(), range.foffset());
       });
@@ -9523,7 +9724,7 @@ var mobile = (function (domGlobals) {
             var html = Element.fromDom(doc.dom().documentElement);
             var getCursorBox = editor.getCursorBox.getOrThunk(function () {
               return function () {
-                return get$b(win).bind(function (sel) {
+                return get$c(win).bind(function (sel) {
                   return getFirstRect$1(win, sel).orThunk(function () {
                     return tryFallbackBox(win);
                   });
@@ -9687,7 +9888,7 @@ var mobile = (function (domGlobals) {
     };
     var AndroidMode = { create: create$4 };
 
-    var first$1 = function (fn, rate) {
+    var first$2 = function (fn, rate) {
       var timer = null;
       var cancel = function () {
         if (timer !== null) {
@@ -9712,7 +9913,7 @@ var mobile = (function (domGlobals) {
         throttle: throttle
       };
     };
-    var last = function (fn, rate) {
+    var last$1 = function (fn, rate) {
       var timer = null;
       var cancel = function () {
         if (timer !== null) {
@@ -9747,7 +9948,7 @@ var mobile = (function (domGlobals) {
             toggleOnExecute: false
           })])
       }));
-      var onViewThrottle = first$1(onView, 200);
+      var onViewThrottle = first$2(onView, 200);
       return Container.sketch({
         dom: dom$1('<div class="${prefix}-disabled-mask"></div>'),
         components: [Container.sketch({
@@ -11024,7 +11225,7 @@ var mobile = (function (domGlobals) {
         });
       };
       var tapping = TappingEvent.monitor(editorApi);
-      var refreshThrottle = last(refreshView, 300);
+      var refreshThrottle = last$1(refreshView, 300);
       var listeners = [
         editorApi.onKeyup(clearAndRefresh),
         editorApi.onNodeChanged(refreshIosSelection),
@@ -11836,7 +12037,7 @@ var mobile = (function (domGlobals) {
         }
       ];
       return findMap(devices, function (device) {
-        return someIf(deviceWidth <= device.width && deviceHeight <= device.height, device.keyboard);
+        return deviceWidth <= device.width && deviceHeight <= device.height ? Option.some(device.keyboard) : Option.none();
       }).getOr({
         portrait: deviceHeight / 5,
         landscape: deviceWidth / 4
@@ -12207,7 +12408,7 @@ var mobile = (function (domGlobals) {
           }) : Option.none();
         });
       };
-      var scrollThrottle = last(function () {
+      var scrollThrottle = last$1(function () {
         scroller.idle(function () {
           IosUpdates.updatePositions(container, outerWindow.pageYOffset).get(function () {
             var extraScroll = scrollBounds();

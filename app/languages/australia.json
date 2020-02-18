@@ -547,5 +547,10 @@
   "LANGUAGE": "Language",
   "DELETE.INFO": "Are you sure to delete this?",
   "FROM.SHOWMINE": "From Showmine",
-  "NO.DATA": "Sorry, we can not find any data."
+  "NO.DATA": "Sorry, we can not find any data.",
+  "MAIN.CHANNEL.INFO": "Set as main channel, all articles will automatically be directed to this channel.",
+  "COMPANY.WP.WEBSITE.INFO": "E.g. https://test.com.au/",
+  "COMPANY.WP.USER.INFO": "Must be admin account",
+  "COMPANY.WP.CATEGORIES.INFO": "All articles will be published under the selected categories",
+  "EMAIL.CONFIRMATION.NOTIFICATION": "You email address will be updated after the validation from the validation email."
 }

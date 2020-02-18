@@ -183,6 +183,25 @@ body.opened-in-wechat {
     }
 }
 
+.confirm-email {
+    position: fixed;
+    left: 0;
+    right: 0;
+    width: 100vw;
+    height: 100vh;
+    background:  transparent url(../images/signup-bg.png) center bottom no-repeat;
+    background-size: cover;
+    .vertical-center-wrapper
+}
+.confirm-email-form-wrapper {
+    text-align: center;
+    color: @login-panel-main-text-color;
+    background: @login-panel-bg-color;
+    border-radius: @round-border-radius;
+    width: 30%;
+    margin: 0 auto;
+}
+
 .login-page {
     position: fixed;
     left: 0;
@@ -218,6 +237,7 @@ body.opened-in-wechat {
         }
     }
 }
+
 .loader {
     border: 8px solid #f3f3f3;
     border-radius: 50%;
@@ -3096,5 +3116,11 @@ td:before {
     border-top: 1px solid #e5e5e5;
     padding: 15px 0;
     margin-top: 15px;
+}
+.channel-valid {
+    color: #7BB32E;
+}
+.channel-invalid {
+    color: red;
 }
 
