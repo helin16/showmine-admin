@@ -505,7 +505,7 @@
   "COMPANY_INFO.INFO": "The company details and basic setting can be updated here.",
   "DASHBOARD.INFO": "You can go to dashboard to manage all your company, channel and article details.",
 
-  "LOGIN.FAILURE": "Incorrect email or password",
+  "auth.invalid_username_or_password": "Incorrect email or password",
   "LOGIN_PANEL.QR_LOGIN": "WeChat Login",
   "LOGIN_PANEL.NORMAL_LOGIN": "Normal Login",
   "BACK.TO.LOGIN": "Back to login",
@@ -552,5 +552,6 @@
   "COMPANY.WP.WEBSITE.INFO": "E.g. https://test.com.au/",
   "COMPANY.WP.USER.INFO": "Must be admin account",
   "COMPANY.WP.CATEGORIES.INFO": "All articles will be published under the selected categories",
-  "EMAIL.CONFIRMATION.NOTIFICATION": "You email address will be updated after the validation from the validation email."
+  "EMAIL.CONFIRMATION.NOTIFICATION": "You email address will be updated after the validation from the validation email.",
+  "REPLY.SUCCESS": "You have successfully replied."
 }
