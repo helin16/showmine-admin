@@ -2953,6 +2953,26 @@ td:before {
     width: 48% !important;
   }
 }
+.btn-cashier {
+  border: none;
+  outline: none;
+  color: #fff;
+  background: #32325d;
+  white-space: nowrap;
+  display: inline-block;
+  height: 40px;
+  line-height: 40px;
+  padding: 0 14px;
+  box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-radius: 4px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  text-decoration: none;
+  -webkit-transition: all 150ms ease;
+  transition: all 150ms ease;
+  margin: 10px auto;
+}
 .btn-wechat {
   background-color: #7BB32E;
   color: #fff;
@@ -3048,4 +3068,77 @@ td:before {
 }
 .channel-invalid {
   color: red;
+}
+.StripeElement {
+  box-sizing: border-box;
+  height: 40px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background-color: white;
+  box-shadow: 0 1px 3px 0 #e6ebf1;
+  -webkit-transition: box-shadow 150ms ease;
+  transition: box-shadow 150ms ease;
+}
+.StripeElement--focus {
+  box-shadow: 0 1px 3px 0 #cfd7df;
+}
+.StripeElement--invalid {
+  border-color: #fa755a;
+}
+.StripeElement--webkit-autofill {
+  background-color: #fefde5 !important;
+}
+.plan-wrapper .link-card {
+  display: flex;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  justify-content: space-around;
+  background: white;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 1px 1px lightgray;
+  cursor: pointer;
+  -webkit-transition: all 0.25s ease;
+  -o-transition: all 0.25s ease;
+  -moz-transition: all 0.25s ease;
+  transition: all 0.25s ease;
+  margin-bottom: 15px;
+  min-height: 330px !important;
+}
+.plan-wrapper .link-card:hover {
+  -webkit-transform: translateY(-4px) scale(1.02);
+  -moz-transform: translateY(-4px) scale(1.02);
+  -ms-transform: translateY(-4px) scale(1.02);
+  -o-transform: translateY(-4px) scale(1.02);
+  transform: translateY(-4px) scale(1.02);
+}
+@media (max-width: 768px) {
+  .plan-wrapper .link-card {
+    min-height: 150px !important;
+  }
+}
+.plan-wrapper .link-card .fa {
+  height: 30px !important;
+}
+.plan-wrapper .link-card:hover {
+  -webkit-transform: translateY(-4px) scale(1.02);
+  -moz-transform: translateY(-4px) scale(1.02);
+  -ms-transform: translateY(-4px) scale(1.02);
+  -o-transform: translateY(-4px) scale(1.02);
+  transform: translateY(-4px) scale(1.02);
+  background-color: aliceblue;
+}
+.negative-plan {
+  background-color: lightgray !important;
+}
+.negative-plan:hover {
+  -webkit-transform: translateY(0) scale(1) !important;
+  -moz-transform: translateY(0) scale(1) !important;
+  -ms-transform: translateY(0) scale(1) !important;
+  -o-transform: translateY(0) scale(1) !important;
+  transform: translateY(0) scale(1) !important;
+}
+.text-button {
+  cursor: pointer;
 }
