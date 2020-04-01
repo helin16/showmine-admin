@@ -3142,3 +3142,29 @@ td:before {
 .text-button {
   cursor: pointer;
 }
+.trial-left-time {
+  display: flex;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  justify-content: space-around;
+  font-size: 16px;
+  font-weight: bold;
+}
+.trial-left-days {
+  display: flex;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  justify-content: space-around;
+  background: #d6d6d6;
+  border-radius: 2px;
+  font-weight: bold;
+  padding: 5px 10px;
+  margin: auto 5px !important;
+  height: 80% !important;
+}
+.btn-upgrade-top-menu {
+  height: 80%;
+  font-weight: bold;
+  padding: 5px 10px;
+  margin: auto 5px !important;
+}

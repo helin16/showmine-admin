@@ -565,11 +565,11 @@
 
   "INVALID.PLAN": "The current plan is invalid, please update your subscription.",
   "NO.CURRENT.PLAN": "You haven't subscribed any plan, please select one plan for use.",
-  "USER_LIMIT": "User Limit",
-  "STORAGE_LIMIT": "Storage Limit",
-  "CHANNEL_LIMIT": "Channel Limit",
-  "TIME_LIMIT": "Time Limit",
-  "ITEM_LIMIT": "Item Limit",
+  "USER_LIMIT": "Maximum User",
+  "STORAGE_LIMIT": "Maximum Storage",
+  "CHANNEL_LIMIT": "Maximum Channel",
+  "TIME_LIMIT": "Time Period",
+  "ITEM_LIMIT": "Maximum Item",
   "INVOICE_NUMBER": "Invoice",
   "TOTAL_AMOUNT": "Total Amount",
   "PAID_AMOUNT": "Paid Amount",
@@ -583,5 +583,8 @@
   "OUT.OF.ITEM.LIMIT": "Item limit exceeded",
   "REAL.NUM": "Usage",
   "UNSUBSCRIBE.REASON": "Reason of unsubscription",
-  "EXCEED.LIMIT": " has exceeded."
+  "EXCEED.LIMIT": " has exceeded.",
+  "DAYS.IN.TRAIL": "Days left in trial",
+  "UPGRADE.BTN": "Upgrade",
+  "GO.TO.BILLING": "Upgrade"
 }
