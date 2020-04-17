@@ -3168,3 +3168,6 @@ td:before {
   padding: 5px 10px;
   margin: auto 5px !important;
 }
+.note-title-input {
+  height: 40px !important;
+}
