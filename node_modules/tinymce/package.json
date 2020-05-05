@@ -10,24 +10,24 @@
         "spec": ">=4.9.0 <5.0.0",
         "type": "range"
       },
-      "/Users/Zac/Sysbox/SHM/admin-dashboard"
+      "/home/circleci/project"
     ]
   ],
   "_from": "tinymce@>=4.9.0 <5.0.0",
   "_hasShrinkwrap": false,
-  "_id": "tinymce@4.9.6",
+  "_id": "tinymce@4.9.10",
   "_inCache": true,
   "_location": "/tinymce",
-  "_nodeVersion": "8.10.0",
+  "_nodeVersion": "10.19.0",
   "_npmOperationalInternal": {
     "host": "s3://npm-registry-packages",
-    "tmp": "tmp/tinymce_4.9.6_1567463716849_0.39019870629951403"
+    "tmp": "tmp/tinymce_4.9.10_1587610036556_0.48560179007810755"
   },
   "_npmUser": {
     "name": "ephox",
     "email": "npm-publish@tiny.cloud"
   },
-  "_npmVersion": "5.5.1",
+  "_npmVersion": "6.13.4",
   "_phantomChildren": {},
   "_requested": {
     "raw": "tinymce@^4.9.0",
@@ -41,11 +41,11 @@
   "_requiredBy": [
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/tinymce/-/tinymce-4.9.6.tgz",
-  "_shasum": "ffba4fc56e3196f66873b60571b9aa164b2da931",
+  "_resolved": "https://registry.npmjs.org/tinymce/-/tinymce-4.9.10.tgz",
+  "_shasum": "47bd7b4d27d80d53a464356eb7c72b97e5c3aadd",
   "_shrinkwrap": null,
   "_spec": "tinymce@^4.9.0",
-  "_where": "/Users/Zac/Sysbox/SHM/admin-dashboard",
+  "_where": "/home/circleci/project",
   "author": {
     "name": "Ephox Corporation"
   },
@@ -57,12 +57,12 @@
   "devDependencies": {},
   "directories": {},
   "dist": {
-    "integrity": "sha512-ZSBxBVvAHhi6KTSWGVsnv7X7drJJbInOrpCiSuvNLQz0Po8lZfeLh8nt7asQ9eGxD7TUD1dD46iXhOH+SsBbNg==",
-    "shasum": "ffba4fc56e3196f66873b60571b9aa164b2da931",
-    "tarball": "https://registry.npmjs.org/tinymce/-/tinymce-4.9.6.tgz",
+    "integrity": "sha512-vyzGG04Q44Y7zWIKA4c+G7MxMCsed6JkrhU+k0TaDs9XKAiS+e+D3Fzz5OIJ7p5keF7lbRK5czgI8T1JtouZqw==",
+    "shasum": "47bd7b4d27d80d53a464356eb7c72b97e5c3aadd",
+    "tarball": "https://registry.npmjs.org/tinymce/-/tinymce-4.9.10.tgz",
     "fileCount": 185,
-    "unpackedSize": 4638756,
-    "npm-signature": "-----BEGIN PGP SIGNATURE-----\r\nVersion: OpenPGP.js v3.0.4\r\nComment: https://openpgpjs.org\r\n\r\nwsFcBAEBCAAQBQJdbZklCRA9TVsSAnZWagAAQvsQAIgCTnyEAXi7iYcbz3pA\npi/mRzIT9Kiox5/Jcad8HpYaz2nbCWYRdEl0v9CnjgJFR54iDfccFeSOhH7B\nK3x1mcqrv1CxD7Q8SsDcgns510EvTwd9vfrY2Dl+qrEl4evlPM1lVhU1PypA\nalVWgSz2rAXxZIYaA29blgu0J5xWOtn7nh95B6NFzwDvHoOCuwXjAVX7pTHC\n2lu0Pfx3tj6RuhMD3Nkxn8/AltUpGIxKQV6jdEb5C96pH5o81M7QUDF6KoHm\nBuQQeN3SUWqlqjCcwAtGuCSAwxjQgal+U0mboXNzodafK+R7yiiHoKgB8t2t\n3OCoK/p1jbT6jCOeUSNMoLqa3VYbCabfMU12JhjMaa0rR+eUcsKKUJoL2E+T\noKaGsZZba4Eoo01E7dwCV6DaDHujtIFXKpu18QTGKlX4Z3t58Z/YCvz57TOx\nswHqn1jbvVVwKNb3gG5on9LMKxWUw56kbIH+KIME5x92iY1oQv5wpVMN7jlk\nltc8D7AfNLHGIfvhaGq69p+N+2U5v0viNlkayQhqB6c5qVfH1PMLbMjO0JSj\nF7Y6WeGI4l7IfC2pIEMaoo1of3k7t2w6vujPTvCBReHqhJJ5QTt2xc+N+jVW\nQG4sxV8ruLHbwsu3BKc0Su0J0zZsBSW4NIbzXUZBKDEe+GHwyHvPoRVeVRNZ\nuWQ8\r\n=vbiY\r\n-----END PGP SIGNATURE-----\r\n"
+    "unpackedSize": 4634731,
+    "npm-signature": "-----BEGIN PGP SIGNATURE-----\r\nVersion: OpenPGP.js v3.0.4\r\nComment: https://openpgpjs.org\r\n\r\nwsFcBAEBCAAQBQJeoQG1CRA9TVsSAnZWagAAT1oP/0fRb04V70f+l5ZEFFF8\nE+Yi5oNFg13fJX6XQefNZoyC1Ugf71j2FR8rrb3j+IsLYG23KJlq02Jqv/mN\nDecywScjkBLMEqzYrDj0Z274/edbtIajfjeKNHN7i7Lfj1RLQ2t9qS7EzK3k\n0iNR7to+sPKWbOP7hqG3jkw4bpQkvJO3umvOZ0romLTQ3fVfI9l/mP0hyhAj\nk7rm52E6Ra+U6wkzOpTsoTiLo3p7b3eCeEtXkRhpb9MuUdiIz2xWtzq1JHmo\nvi0JWDE2lXUojKYu8BA4lRsfGn5/RtoNLJzKSQjZDDgmpNBh+CG79K5xeHA/\nJyW8WIy5TakipbyeW3JqAAiFmns0gyf+fBnwwd3pYNCK/nRTGGKiVPQqpH9V\nVp53nnBQh1XZOMTGMTxdYzPU8GEhjYXmq/F6soVtrrYq04HI+G9Sj0DHJeUR\nB18TUFjRxXwCl2/g/q80hqMxmlnenRDBlu/my5uIKPUDk4/0vUgCyLDc9Mqj\nbz5woy00CeWZyXNcedBTPNLk+TRI7GxfV0ORCMfJIt75Yos+vec6tBZJpJDL\nI0ih1wQ7d1ZhVnLYvckeHioYUC2R8G1UVPd0dXxIX0St4rnaeMh2G/JCHJXP\nsplsGjIEclMP5NNwKp+7R4pTr7xY6AuxxB6OfgKO/vWlw2dSZu43U9SRLayp\nzNHG\r\n=tI1A\r\n-----END PGP SIGNATURE-----\r\n"
   },
   "homepage": "https://github.com/tinymce/tinymce-dist#readme",
   "keywords": [
@@ -93,5 +93,5 @@
     "type": "git",
     "url": "git+https://github.com/tinymce/tinymce-dist.git"
   },
-  "version": "4.9.6"
+  "version": "4.9.10"
 }
