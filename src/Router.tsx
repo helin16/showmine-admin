@@ -15,7 +15,7 @@ import {
   FORGOT_PASSWORD_URL,
   LOGIN_URL,
   MEDIA_LIST_URL,
-  MY_PROFILE_URL
+  MY_PROFILE_URL, WIZARD_URL
 } from './UrlMap';
 import ForgotPasswordPage from './Pages/Auth/ForgotPasswordPage';
 import ProtectedRoute from './Components/Route/ProtectedRoute';
@@ -31,6 +31,7 @@ import SuperAdminRoute from './Components/Route/SuperAdminRoute';
 import CompanyListPage from './Pages/Company/CompanyListPage';
 import CompanyChannelsPage from './Pages/Channel/ChannelsPage';
 import CompanyNewChannelPage from './Pages/Channel/CompanyNewChannelPage';
+import WizardPage from './Pages/User/WizardPage';
 
 const Router = () => {
   return (
@@ -57,6 +58,9 @@ const Router = () => {
               path={MEDIA_LIST_URL}
               element={<ProtectedRoute><MediaListPage /></ProtectedRoute>} />
 
+            <Route
+              path={WIZARD_URL}
+              element={<ProtectedRoute><WizardPage /></ProtectedRoute>} />
 
             <Route
               path={COMPANY_ADMIN_URL}

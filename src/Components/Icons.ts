@@ -35,6 +35,13 @@ import {
   TwitterSquareFilled,
   LinkedinFilled,
   RightOutlined,
+  ApartmentOutlined,
+  SettingOutlined,
+  FileOutlined,
+  SmileOutlined,
+  SettingFilled,
+  DashboardFilled,
+  FileFilled,
 } from '@ant-design/icons';
 
 
@@ -76,6 +83,13 @@ const Icons = {
   TwitterSquareFilled,
   LinkedinFilled,
   RightOutlined,
+  ApartmentOutlined,
+  SettingOutlined,
+  FileOutlined,
+  SmileOutlined,
+  SettingFilled,
+  DashboardFilled,
+  FileFilled,
 }
 
 export default Icons;
