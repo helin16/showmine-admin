@@ -42,8 +42,12 @@ import {
   SettingFilled,
   DashboardFilled,
   FileFilled,
+  CloudUploadOutlined,
+  EyeOutlined,
+  AreaChartOutlined,
+  OrderedListOutlined,
+  ClockCircleOutlined,
 } from '@ant-design/icons';
-
 
 
 const Icons = {
@@ -90,6 +94,11 @@ const Icons = {
   SettingFilled,
   DashboardFilled,
   FileFilled,
+  CloudUploadOutlined,
+  EyeOutlined,
+  AreaChartOutlined,
+  OrderedListOutlined,
+  ClockCircleOutlined,
 }
 
 export default Icons;

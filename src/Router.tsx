@@ -4,6 +4,8 @@ import LoginPage from './Pages/Auth/LoginPage';
 import Page404 from './Pages/Error/Page404';
 import React from 'react';
 import {
+  ARTICLE_DETAILS_URL,
+  ARTICLE_LIST_URL,
   BACK_END_URL,
   COMMENTS_LIST_URL,
   COMPANY_ADMIN_URL,
@@ -32,6 +34,8 @@ import CompanyListPage from './Pages/Company/CompanyListPage';
 import CompanyChannelsPage from './Pages/Channel/ChannelsPage';
 import CompanyNewChannelPage from './Pages/Channel/CompanyNewChannelPage';
 import WizardPage from './Pages/User/WizardPage';
+import ArticleListPage from './Pages/Article/ArticleListPage';
+import ArticleDetailsPage from './Pages/Article/ArticleDetailsPage';
 
 const Router = () => {
   return (
@@ -51,6 +55,12 @@ const Router = () => {
               path={BACK_END_URL}
               element={<ProtectedRoute><DashBoardPage /></ProtectedRoute>} />
 
+            <Route
+              path={ARTICLE_LIST_URL}
+              element={<ProtectedRoute><ArticleListPage /></ProtectedRoute>} />
+            <Route
+              path={ARTICLE_DETAILS_URL}
+              element={<ProtectedRoute><ArticleDetailsPage /></ProtectedRoute>} />
             <Route
               path={COMMENTS_LIST_URL}
               element={<ProtectedRoute><CommentsListPage /></ProtectedRoute>} />
