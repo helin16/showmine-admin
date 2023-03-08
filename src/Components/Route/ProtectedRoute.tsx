@@ -7,7 +7,7 @@ import AuthService from '../../Services/AuthService';
 import {
   isAuthenticated as isAuthed,
   changeCompanyPackage,
-  removedAuthentication,
+  removedAuthentication, changeAuthenticating,
 } from '../../Redux/reduxers/auth.slice';
 import AppInit from '../AppInit';
 import { LOGIN_URL } from '../../UrlMap';
@@ -19,9 +19,8 @@ import CompanyService from '../../Services/CompanyService';
  */
 const ProtectedRoute = ({children}: any) => {
   const [companyId, setCompanyId] = useState('');
-  const [isAuthenticating, setIsAuthenticating] = useState(false);
 
-  const { user } = useSelector(
+  const { user, isAuthenticating } = useSelector(
     (s: RootState) => s.auth,
   );
   const dispatch = useDispatch();
@@ -34,6 +33,9 @@ const ProtectedRoute = ({children}: any) => {
     if (user) {
       return;
     }
+    dispatch(changeAuthenticating({
+      isAuthenticating: true,
+    }))
     let isCancelled = false;
     AuthService.getMe()
       .then((res) => {
@@ -59,7 +61,9 @@ const ProtectedRoute = ({children}: any) => {
         navigate(LOGIN_URL);
       })
       .finally(() => {
-        setIsAuthenticating(false);
+        dispatch(changeAuthenticating({
+          isAuthenticating: false,
+        }));
       })
     return () => { // eslint-disable-line
       isCancelled = true;

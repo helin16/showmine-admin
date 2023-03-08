@@ -16,6 +16,9 @@ export const WORDPRESS_MAIN_COLOR = '#21759b';
 export const ADDRESS_ID_VIC = 'e9562f29ec33f9b04b4aaddef754f31c';
 export const ITEM_TYPE_ID_ARTICLE = '53c4b055f4b77e56691225d3c6498a26';
 export const DATE_TIME_MAX = '9999-12-31T12:59:59.000000Z';
+
+export const LANGUAGE_ID_ENGLISH = '99abc87b2698d636408e2aaa52088976';
+
 export const APP_WIDTHS = {
   xs: '480px',
   sm: '576px',

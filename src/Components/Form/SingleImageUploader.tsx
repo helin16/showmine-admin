@@ -71,13 +71,13 @@ const ImageWrapper = styled.div`
   .img {
     width: 100%;
     height: 100%;
-    min-height: 30px;
-    min-width: 30px;
+    min-height: 180px;
+    min-width: 180px;
     background-size: contain;
     background-position: center center;
     background-color: transparent;
     background-repeat: no-repeat;
-    display: table-cell;
+    display: block;
   }
   .btns-overlay {
     display: none;
@@ -135,6 +135,7 @@ const SingleImageUploader =  ({
 }: iSingleImageUploader) => {
   const [state, setState] = useState(initialState);
   const intl = useIntl();
+
   /**
    *
    */
@@ -208,7 +209,7 @@ const SingleImageUploader =  ({
       <Spin spinning={state.loading === true}
         indicator={
           <div className={'percentage-wrapper'}>
-            <Progress percent={state.loadingPercentage} type={'circle'} width={80}/>
+            <Progress percent={state.loadingPercentage} type={'circle'} size={80}/>
           </div>
         }>
         <UploadDragger

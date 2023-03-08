@@ -4,14 +4,21 @@ import ISession from '../../Types/Auth/ISession';
 /**
  * Initial State
  */
-const initialState: ISession = {};
+const initialState: ISession = {
+  isAuthenticating: false,
+};
 
 /**
  * Actions
  */
 const actions = {
-  isAuthenticated: (state: ISession = initialState,
-                    action: PayloadAction<ISession>) => ({
+  changeAuthenticating: (state: ISession = initialState, action: PayloadAction<ISession>) => ({
+    ...state,
+    isAuthenticating: action.payload.isAuthenticating || false,
+  }),
+  isAuthenticated: (
+    state: ISession = initialState, action: PayloadAction<ISession>
+  ) => ({
     ...state,
     isAuthenticated: true,
     user: action.payload.user,
@@ -49,6 +56,7 @@ const AuthSlice = createSlice({
  * action
  */
 export const {
+  changeAuthenticating,
   isAuthenticated,
   removedAuthentication,
   changeCompany,

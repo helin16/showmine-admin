@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, {createGlobalStyle} from 'styled-components';
 import {APP_WIDTHS} from '../Constants';
 
 export const primaryBtnBgColor = '#1890ff';
@@ -63,34 +63,52 @@ export const FlexContainer = styled.div`
   &.justify-content-space-between {
     justify-content: space-between;
   }
+  
+  &.with-gaps {
+    > * {
+      padding: 5px;
+    }
+  }
 `;
 
 
 export const listGutter = 16;
 
-const AppWrapper = styled.div`
-  @media (max-width: ${APP_WIDTHS.xs}) {
-    .hidden-xs { display: none }
+export const AppCssWrapper = createGlobalStyle`
+  @media only screen and (max-width: ${APP_WIDTHS.sm}) and (min-width: ${APP_WIDTHS.xs}) {
+    .hidden-sm {
+      display: none;
+    }
   }
-
-  @media only screen and (min-width: ${APP_WIDTHS.xs}) and (max-width: ${APP_WIDTHS.sm}) {
-    .hidden-sm { display: none }
+  @media only screen and (max-width: ${APP_WIDTHS.md}) and (min-width: ${APP_WIDTHS.sm}) {
+    .hidden-md {
+      display: none;
+    }
   }
-
-  @media only screen and (min-width: ${APP_WIDTHS.sm}) and (max-width: ${APP_WIDTHS.md}) {
-    .hidden-md { display: none }
+  @media only screen and (max-width: ${APP_WIDTHS.lg}) and (min-width: ${APP_WIDTHS.md}) {
+    .hidden-lg {
+      display: none;
+    }
   }
-
-  @media only screen and (min-width: ${APP_WIDTHS.md}) and (max-width: ${APP_WIDTHS.lg}) {
-    .hidden-lg { display: none }
+  @media only screen and (max-width: ${APP_WIDTHS.xl}) and (min-width: ${APP_WIDTHS.lg}) {
+    .hidden-xl {
+      display: none;
+    }
   }
-
-  @media only screen and (min-width: ${APP_WIDTHS.lg}) and (max-width: ${APP_WIDTHS.xl}) {
-    .hidden-xl { display: none }
-  }
-
   @media only screen and (min-width: ${APP_WIDTHS.xl}) {
-    .hidden-xxl { display: none }
+    .hidden-xxl {
+      display: none;
+    }
+  }
+`;
+
+const AppWrapper = styled.div`
+  .text-right {
+    text-align: right;
+  }
+  
+  .ant-upload {
+    background-color: white;
   }
   
   min-height: ${pageMinHeight};

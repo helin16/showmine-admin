@@ -3,6 +3,7 @@ import ICompany from '../Company/ICompany';
 import IPackage from '../Package/IPackage';
 
 type ISession = {
+  isAuthenticating?: boolean;
   isAuthenticated?: boolean;
   redirectPathOnAuthentication?: string;
   user?: IUser | null

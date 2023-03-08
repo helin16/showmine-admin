@@ -130,16 +130,18 @@ const initialState = {
   value: '',
   loading: false,
 };
+
+type iRichTextEditor = {
+  className?: string, onChange?: Function, value: string, placeholder?: string, isInLine?: boolean
+}
 /**
  *
  * @param onChange
  * @param value
  */
-export default ({
+const RichTextEditor = ({
   className, onChange, value, placeholder, isInLine, ...props
-}: {
-  className?: string, onChange?: Function, value: string, placeholder?: string, isInLine?: boolean
-}) => {
+}: iRichTextEditor) => {
   const [state, setState] = useState(initialState);
   /**
    *
@@ -195,3 +197,5 @@ export default ({
     </EditorWrapper>
   );
 };
+
+export default RichTextEditor;

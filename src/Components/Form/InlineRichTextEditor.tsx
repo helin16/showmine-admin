@@ -36,7 +36,7 @@ const initState = {
  * @param onChange
  * @param props
  */
-export default ({
+const InlineRichTextEditor =  ({
   value, height, maxHeight, onChange, ...props
 }: React.ComponentProps<any>) => { // eslint-disable-line
   const [state, setState] = useState(initState);
@@ -74,3 +74,5 @@ export default ({
     </InlineRichTextEditorDiv>
   );
 };
+
+export default InlineRichTextEditor;
