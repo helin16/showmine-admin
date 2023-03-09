@@ -1,6 +1,6 @@
 import React from 'react';
-import { Empty } from 'antd';
 import styled from 'styled-components';
+import Empty from '../Form/Empty';
 
 const Wrapper = styled.div`
   padding: 20px;

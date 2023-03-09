@@ -99,7 +99,7 @@ const LanguageEN = {
     'no-company': 'No company found for your account, refresh your page and try again.',
     'need-title': 'Please provide a title for your content.',
     'failed-create': 'Failed to create content: {text}',
-    'what-in-mind': 'What in your mind?',
+    'what-in-mind': 'What in your mind? The title for your new article',
     continue: 'Continue',
     'tag-success': 'Tags updated successfully.',
     'tag-error': 'Error when updating tag: {text}',

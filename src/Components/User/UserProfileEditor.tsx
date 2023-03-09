@@ -3,8 +3,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import { MailFilled, MobileFilled } from '@ant-design/icons';
-import enUS from 'antd/es/locale/en_US';
-import zhCN from 'antd/es/locale/zh_CN';
 import { useIntl, FormattedMessage } from 'react-intl';
 import { WIZARD_URL } from '../../UrlMap';
 import { RootState } from '../../Redux/makeReduxStore';
@@ -28,6 +26,7 @@ import {RadioButton, RadioGroup} from '../Form/Radio';
 import {LANGUAGE_ID_ENGLISH} from '../../Constants';
 import Spin from '../Form/Spin';
 import IAsset from '../../Types/Asset/IAsset';
+import Locale from '../Form/Locale';
 
 const Wrapper = styled.div`
 
@@ -208,13 +207,13 @@ const UserProfileEditor =({ user }: {user: IUser}) => {
                       modifyUser('language', e.target.value.locale);
                     }}
                   >
-                    <RadioButton key="en" value={enUS}>
+                    <RadioButton key="en" value={Locale.enUS}>
                       <span aria-label="au-flag" role="img" style={{ marginRight: '10px' }}>
                         🇦🇺
                       </span>
                       English
                     </RadioButton>
-                    <RadioButton key="cn" value={zhCN}>
+                    <RadioButton key="cn" value={Locale.zhCN}>
                       <span aria-label="cn-flag" role="img" style={{ marginRight: '10px' }}>
                         🇨🇳
                       </span>

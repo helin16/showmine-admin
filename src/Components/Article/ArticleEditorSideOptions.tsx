@@ -1,8 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import ReactHtmlParser from 'react-html-parser';
-import styled from 'styled-components';
+import React, { useState } from 'react';
 import { useIntl, FormattedMessage } from 'react-intl';
-import IArticle, {initialArticle} from '../../Types/Article/IArticle';
+import IArticle from '../../Types/Article/IArticle';
 import ICompany from '../../Types/Company/ICompany';
 import ArticleEditorTags from './ArticleEditorTags';
 import IAsset from '../../Types/Asset/IAsset';
@@ -13,119 +11,60 @@ import {
   BoxTitleDiv,
   BoxTitleSuffix,
   FormInputWrapper,
-  inlineInputBgColor,
-  inlineInputPaddingHalf
 } from '../../Styles/AppWrapper';
 import message from '../Form/message';
 import SingleImageUploader from '../Form/SingleImageUploader';
 import Space from '../Form/Space';
 import Switch from '../Form/Switch';
+import InputBox from '../Form/InputBox';
 
-const ContentFooterPreviewDiv = styled.div`
-  overflow-y: auto;
-  height: 200px;
-  width: 100%;
-  background: ${inlineInputBgColor};
-  padding: ${inlineInputPaddingHalf};
-`;
-
-type iState = {
+type iArticleEditorSideOptions = {
   article: IArticle,
-  saving: boolean,
+  company: ICompany,
+  onUpdate: (fieldName: string, newValue: any) => void,
+  onUpdated?: (newArticle: IArticle) => void,
+  onSetIsSaving?: (saving: boolean) => void;
 }
-const initState: iState = {
-  article: initialArticle,
-  saving: false,
-};
 /**
  *
  */
-const ArticleEditorSideOptions =  ({ article, company, onUpdated }: {article: IArticle, company: ICompany, onUpdated?: Function }) => {
-  const [state, setState] = useState(initState);
+const ArticleEditorSideOptions =  ({ article, company, onUpdate, onUpdated, onSetIsSaving }: iArticleEditorSideOptions) => {
+  const [isSaving, setIsSaving] = useState(false);
+  const [newEditor, setNewEditor] = useState(article.configObj?.writer || '');
   const intl = useIntl();
 
-  useEffect(() => {
-    setState((s) => ({
-      ...s,
-      article,
-    }));
-  }, [article]);
-
-  /**
-   *
-   */
   const imgUploaded = (newAsset: IAsset | null) => {
-    if (!state.article.id) return;
-    setState({
-      ...state,
-      saving: true,
-    });
-    ArticleService.updateArticle(state.article.id, { ...state.article, images: newAsset === null ? [] : [newAsset] })
+    if (!article.id) return;
+    if (onSetIsSaving) {
+      onSetIsSaving(true);
+    } else {
+      setIsSaving(true);
+    }
+    ArticleService.updateArticle(article.id, { ...article, images: newAsset === null ? [] : [newAsset] })
       .then((res) => {
         message.success(newAsset === null ? 'Cover image removed' : 'Cover image updated.');
-        setState({
-          ...state,
-          saving: false,
-        });
         if (typeof (onUpdated) === 'function') {
           onUpdated(res.data);
         }
       })
       .catch((err) => {
         message.error(`Error Occurred when updating cover image: ${err.message}, please delete and try again.`);
-      });
-  };
-
-  const authorChanged = (newArticle: IArticle) => {
-    setState({
-      ...state,
-      article: newArticle,
-    });
-    if (typeof (onUpdated) === 'function') {
-      onUpdated(newArticle);
-    }
-  };
-
-  const changeArticle = (fieldName: string, newValue: string | boolean | object) => {
-    const newArticle = {
-      ...state.article,
-      [fieldName]: newValue,
-    };
-    if (!newArticle.id) return;
-    setState({
-      ...state,
-      saving: true,
-    });
-    ArticleService.updateArticle(newArticle.id, newArticle)
-      .then((res) => {
-        setState({
-          ...state,
-          saving: false,
-        });
-        message.success('Content config updated.');
-        setState({
-          ...state,
-          article: res.data,
-        });
-        if (typeof (onUpdated) === 'function') {
-          onUpdated(res.data);
+      })
+      .finally(() => {
+        if (onSetIsSaving) {
+          onSetIsSaving(false);
+        } else {
+          setIsSaving(false);
         }
       })
-      .catch((err) => {
-        message.error(`Error: ${err.message}`);
-        setState({
-          ...state,
-          saving: false,
-        });
-      });
   };
 
-  const changeConfigObj = (fieldName: string, newValue: string | boolean) => {
-    changeArticle('configObj', {
-      ...state.article.configObj,
-      [fieldName]: newValue,
-    });
-  };
+  const updateEditor = () => {
+    onUpdate('configObj', {
+      ...article.configObj,
+      writer: `${newEditor || ''}`.trim(),
+    })
+  }
 
   return (
     <div className={'article-editor-side-options'}>
@@ -133,7 +72,7 @@ const ArticleEditorSideOptions =  ({ article, company, onUpdated }: {article: IA
         <SingleImageUploader
           onChange={imgUploaded}
           title={intl.formatMessage({ id: 'cover-image' })}
-          initImgUrl={state.article.images.length > 0 ? state.article.images[0].url : undefined}
+          initImgUrl={article.images.length > 0 ? article.images[0].url : undefined}
         />
       </FormInputWrapper>
 
@@ -142,14 +81,26 @@ const ArticleEditorSideOptions =  ({ article, company, onUpdated }: {article: IA
           <FormattedMessage id="author" />
           <BoxTitleSuffix><FormattedMessage id="author-manage" /></BoxTitleSuffix>
         </BoxTitleDiv>
-        <ArticleEditorAuthorSelector article={state.article} company={company} onChange={authorChanged}/>
+        <ArticleEditorAuthorSelector article={article} onUpdated={onUpdated} onSetIsSaving={onSetIsSaving} />
+      </FormInputWrapper>
+
+      <FormInputWrapper>
+        <BoxTitleDiv>
+          <FormattedMessage id="Editor" />
+        </BoxTitleDiv>
+        <InputBox
+          value={newEditor}
+          onChange={(e) => setNewEditor(e.target.value)}
+          onBlur={() => updateEditor()}
+          onPressEnter={() => updateEditor()}
+        />
       </FormInputWrapper>
 
       <FormInputWrapper>
         <BoxTitleDiv>
           <FormattedMessage id="tags" />
         </BoxTitleDiv>
-        <ArticleEditorTags article={state.article} company={company} />
+        <ArticleEditorTags article={article} company={company} onUpdate={onUpdate} />
       </FormInputWrapper>
 
       <FormInputWrapper>
@@ -160,8 +111,8 @@ const ArticleEditorSideOptions =  ({ article, company, onUpdated }: {article: IA
           </BoxTitleSuffix>
         </BoxTitleDiv>
         <InlineRichTextEditor
-          value={state.article.excerpt || ''}
-          onChange={(newValue: string) => changeArticle('excerpt', newValue)}
+          value={article.excerpt || ''}
+          onChange={(newValue: string) => onUpdate('excerpt', newValue)}
         />
       </FormInputWrapper>
 
@@ -170,16 +121,23 @@ const ArticleEditorSideOptions =  ({ article, company, onUpdated }: {article: IA
           <Space>
             <span><FormattedMessage id="display-footer" /></span>
             <Switch checkedChildren={intl.formatMessage({ id: 'yes' })} unCheckedChildren={intl.formatMessage({ id: 'no' })}
-              checked={state.article.configObj?.ifShowCompanyContact === true}
-              onChange={(checked: boolean) => changeConfigObj('ifShowCompanyContact', checked)}
-              loading={state.saving}
+              checked={article.configObj?.ifShowCompanyContact === true}
+              onChange={(checked: boolean) => onUpdate('configObj', {
+                ...article.configObj,
+                ifShowCompanyContact: checked === true ? true : false,
+              })}
+              loading={isSaving}
             />
           </Space>
         </BoxTitleDiv>
-        {state.article.configObj?.ifShowCompanyContact !== true ? null : (
-          <ContentFooterPreviewDiv>
-            { ReactHtmlParser(company.configObj?.defaultContact || '') }
-          </ContentFooterPreviewDiv>
+        {article.configObj?.ifShowCompanyContact !== true ? null : (
+          <InlineRichTextEditor
+            value={company.configObj?.defaultContact || ''}
+            onChange={(newValue: string) => onUpdate('configObj', {
+              ...article.configObj,
+              defaultContact: newValue,
+            })}
+          />
         )}
       </FormInputWrapper>
     </div>

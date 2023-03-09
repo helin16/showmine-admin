@@ -28,6 +28,7 @@ interface IArticle extends IBaseModel {
   config: string,
   configObj?: {
     ifShowCompanyContact?: boolean
+    writer?: string;
   },
 
   customiseExcerpt: boolean,

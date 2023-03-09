@@ -26,9 +26,11 @@ const groupArrayByKey = <T>(arr: T[], key: string) => arr.reduce((memo: any, x: 
 
 // eslint-disable-next-line
 const convertArrayToObject = <T>(array: T[], key: string): any => array.reduce((result, item) => {
-  // @ts-ignore
-  result[item[key]] = item; // eslint-disable-line
-  return result;
+  return {
+    ...result,
+    // @ts-ignore
+    [item[key]]: item,
+  }
 }, {});
 
 const translateChannelType = (type: string) => {

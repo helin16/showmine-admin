@@ -1,15 +1,15 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import enUS from 'antd/es/locale/en_US';
+import Locale from '../../Components/Form/Locale';
 
 type AppState = {
-  locale: typeof enUS,
+  locale: typeof Locale.enUS,
   componentSize: 'small' | 'middle' | 'large',
 }
 /**
  * Initial State
  */
 const initialState: AppState = {
-  locale: enUS,
+  locale: Locale.enUS,
   componentSize: 'large',
 };
 

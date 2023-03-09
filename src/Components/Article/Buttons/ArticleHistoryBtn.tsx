@@ -1,11 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Button, Modal, Spin, Timeline, Typography,
-} from 'antd';
-import { ArrowDownOutlined } from '@ant-design/icons';
-import { BaseButtonProps } from 'antd/es/button/button';
 import { useSelector } from 'react-redux';
-import ReactHtmlParser from 'react-html-parser';
 import styled from 'styled-components';
 import moment from 'moment';
 import { useIntl } from 'react-intl';
@@ -17,6 +11,12 @@ import ArticleService from '../../../Services/ArticleService';
 import IArticleHistoryItem from '../../../Types/Article/IArticleHistoryItem';
 import IResList, {InitialList} from '../../../Types/IResList';
 import Utils from '../../../Services/Utils';
+import Button, {iButton} from '../../Form/Button';
+import Timeline from '../../Form/Timeline';
+import Typography from '../../Form/Typography';
+import Modal from '../../Form/Modal';
+import Spin from '../../Form/Spin';
+import Icons from '../../Icons';
 
 const TimelineWrapper = styled.div`
   .item-title {
@@ -47,8 +47,8 @@ const initialState: iState = {
   loadingMore: false,
   historicalItems: InitialList,
 };
-
-const ArticleHistoryBtn =  ({ article, children, ...props }: BaseButtonProps & {article?: IArticle}) => {
+type iArticleHistoryBtn = iButton & {article?: IArticle}
+const ArticleHistoryBtn =  ({ article, children, ...props }: iArticleHistoryBtn) => {
   const [state, setState] = useState(initialState);
   const { company } = useSelector((s: RootState) => s.auth);
   const intl = useIntl();
@@ -114,23 +114,29 @@ const ArticleHistoryBtn =  ({ article, children, ...props }: BaseButtonProps & {
 
   const getHistoryPanel = () => (
       <TimelineWrapper>
-        <Timeline>
-          {state.historicalItems.data.map((item: IArticleHistoryItem, index: number) => (
-              <Timeline.Item color={index > 0 ? 'grey' : 'blue'}>
-                <div>
-                  <b>{moment(item.created_at).format('lll')} <small>[{moment(item.created_at).fromNow()}]</small></b>
+        <Timeline items={
+          state.historicalItems.data.map((item: IArticleHistoryItem, index: number) => (
+            {
+              key: index,
+              color: index > 0 ? 'grey' : 'blue',
+              children: (
+                <div className={'timeline-item'}>
+                  <div>
+                    <b>{moment(item.created_at).format('lll')} <small>[{moment(item.created_at).fromNow()}]</small></b>
+                  </div>
+                  <Typography.Paragraph ellipsis className={'item-title'}>
+                    {item.contentObj?.title}
+                  </Typography.Paragraph>
+                  <Typography.Paragraph ellipsis className={'item-content'}>
+                    {Utils.stripHTMLTags(item.contentObj?.description || '')}
+                  </Typography.Paragraph>
                 </div>
-                <Typography.Paragraph ellipsis className={'item-title'}>
-                  {item.contentObj?.title}
-                </Typography.Paragraph>
-                <Typography.Paragraph ellipsis className={'item-content'}>
-                  {ReactHtmlParser(Utils.stripHTMLTags(item.contentObj?.description || ''))}
-                </Typography.Paragraph>
-              </Timeline.Item>
-          ))}
-        </Timeline>
+              )
+            }
+          ))
+        }/>
         {state.historicalItems.current_page >= state.historicalItems.last_page ? null : (
-          <Button type={'primary'} icon={<ArrowDownOutlined />} loading={state.loadingMore} onClick={showMore}>
+          <Button type={'primary'} icon={<Icons.ArrowDownOutlined />} loading={state.loadingMore} onClick={showMore}>
             Show More
           </Button>
         )}

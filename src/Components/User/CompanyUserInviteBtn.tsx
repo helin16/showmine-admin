@@ -65,7 +65,7 @@ const CompanyUserInviteBtn = ({ company }: {company?: ICompany | null}) => {
         centered
         destroyOnClose
         title={<h3>{'Invite more user:'}</h3>}
-        visible={state.showingInvitationPanel}
+        open={state.showingInvitationPanel}
         footer={null}
         onCancel={() => setState({ ...state, showingInvitationPanel: false })}
       >

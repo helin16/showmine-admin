@@ -1,6 +1,7 @@
 import React from 'react';
-import { Result, Button } from 'antd';
 import translate from '../../i18n/translate';
+import Result from '../../Components/Form/Result';
+import Button from '../../Components/Form/Button';
 
 const Page404 =  () => (
   <Result

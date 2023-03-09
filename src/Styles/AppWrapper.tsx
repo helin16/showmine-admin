@@ -100,6 +100,26 @@ export const AppCssWrapper = createGlobalStyle`
       display: none;
     }
   }
+
+  body {
+    margin: 0px !important;
+  }
+
+  body.auth-page-body {
+    background: #f2f3f8 url('/img/signup-bg.png') center bottom no-repeat;
+    height: 100%;
+    min-height: 100vh;
+    margin: 0px 0px 0px 0px;
+    background-size: cover;
+  }
+
+  body.auth-page-body div#root {
+    width: 100%;
+    height: 100%;
+    min-height: 100vh;
+    background: transparent url('/img/auth-bg.png') right bottom no-repeat;
+    background-size: contain;
+  }
 `;
 
 const AppWrapper = styled.div`

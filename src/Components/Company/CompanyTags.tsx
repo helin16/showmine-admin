@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import ICompany, {initialCompany} from '../../Types/Company/ICompany';
-import ITag, {initialTag} from '../../Types/Tag/ITag';
+import ICompany from '../../Types/Company/ICompany';
+import ITag from '../../Types/Tag/ITag';
 import CompanyService from '../../Services/CompanyService';
-import IError from '../../Types/IError';
-import Utils from '../../Services/Utils';
 import IKeyboardEvent from '../../Types/IKeyboardEvent';
 import translate from '../../i18n/translate';
 import {InlineInputDiv, inlineInputPaddingHalf, primaryBtnBgColor} from '../../Styles/AppWrapper';
@@ -12,13 +10,26 @@ import message from '../Form/message';
 import Tag from '../Form/Tag';
 import Icons from '../Icons';
 import InputBox from '../Form/InputBox';
+import Button from '../Form/Button';
+import Spin from '../Form/Spin';
+import * as _ from 'lodash';
+import Utils from '../../Services/Utils';
+import MathHelper from '../../Helpers/MathHelper';
 
 const CompanyTagsDiv = styled(InlineInputDiv)`
   .company-tag-div {
     padding: ${inlineInputPaddingHalf};
     margin-bottom: 8px;
-    &.new-tag{
+    &.new-tag {
       cursor: pointer;
+    }
+    
+    &.input-tag {
+      padding: 0px;
+      
+      .ant-input-group-addon {
+        padding: 0px;
+      }
     }
   }
   .new-tag-input {
@@ -33,146 +44,122 @@ const CompanyTagsDiv = styled(InlineInputDiv)`
     }
   }
 `;
-type iState = {
-  company: ICompany,
-  tags: Array<ITag>,
-  loading: boolean,
-  loadingErr?: IError,
-  showingNewTagDiv: boolean,
-  newTagName: string,
-}
-const initialState: iState = {
-  company: initialCompany,
-  tags: [],
-  loading: false,
-  loadingErr: undefined,
-  showingNewTagDiv: false,
-  newTagName: '',
-};
-const CompanyTags = ({ company, onChange }: {company: ICompany, onChange?: Function}) => {
-  const [state, setState] = useState(initialState);
 
-  const getUniqueTags = (tags: Array<ITag>): Array<ITag> => {
-    const map = Utils.convertArrayToObject(tags, 'name');
-    const values = Object.keys(map).map((key: string) => map[key]);
-    return values.sort((a: ITag, b:ITag) => (a.name <= b.name ? 0 : 1));
-  };
+type ICompanyTags = {company: ICompany, onChange: (fieldName: string, newValue: string | object, savedFn?: (newCom: ICompany) => void) => void };
+type iTagsMap = { [key: string]: ITag };
+const CompanyTags = ({ company, onChange }: ICompanyTags) => {
+  const [showingNewTagDiv, setShowingNewTagDiv] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [tagsMap, setTagsMap] = useState<iTagsMap>({});
+  const [newTagName, setNewTagName] = useState('');
+  const [count, setCount] = useState(0);
 
   useEffect(() => {
     if (!company.id) return;
 
     let isCancelled = false;
-    setState((s) => ({
-      ...s,
-      loading: true,
-      loadingErr: undefined,
-    }));
+    setIsLoading(true);
     CompanyService.getCompanyTags(company.id)
       .then((res) => {
         if (isCancelled === true) return;
-        setState((s) => ({
-          ...s,
-          tags: getUniqueTags(res.data),
-          loading: false,
-          loadingErr: undefined,
-        }));
+        setTagsMap(res.data.reduce((map: iTagsMap, tag:ITag) => {
+          return {
+            ...map,
+            [tag.id || '']: tag,
+          }
+        }, {}));
+        setNewTagName('');
+        setShowingNewTagDiv(false);
       })
       .catch((err) => {
         if (isCancelled === true) return;
-        setState((s) => ({
-          ...s,
-          loading: false,
-          loadingErr: err.data,
-        }));
+        message.error(err.response.data.message);
+      })
+      .finally(() => {
+        if (isCancelled === true) return;
+        setIsLoading(false);
       });
+
     return () => { // eslint-disable-line
       isCancelled = true;
     };
-  }, [company.id]);
+  }, [company.id, count]);
 
-  const deleteTag = (index: number) => {
-    state.tags.splice(index, 1);
-    setState({
-      ...state,
-      tags: state.tags,
-    });
-    if (typeof (onChange) === 'function') {
-      onChange(state.tags);
-    }
-  };
-
-  const tagUpdated = () => {
-    if (state.newTagName === '') {
-      return;
-    }
-    const tagsNames = Object.keys(Utils.convertArrayToObject(state.tags, 'name'));
-    if (tagsNames.indexOf(state.newTagName) >= 0) {
-      message.error(`Tag (${state.newTagName}) exists!`);
-      setState({
-        ...state,
-        showingNewTagDiv: false,
-        newTagName: '',
-      });
-      return;
-    }
-    state.tags.push({
-      ...initialTag,
-      name: state.newTagName,
-    });
-    state.tags = getUniqueTags(state.tags);
-    setState({
-      ...state,
-      showingNewTagDiv: false,
-      newTagName: '',
-      tags: state.tags,
-    });
-    if (typeof (onChange) === 'function') {
-      onChange(state.tags);
-    }
-  };
-
-  const showNewTagDiv = () => {
-    setState({
-      ...state,
-      showingNewTagDiv: true,
-    });
+  const deleteTag = (tag: ITag) => {
+    delete tagsMap[tag.id || ''];
+    onChange(
+    'companyTags',
+        Object.keys(Utils.convertArrayToObject(Object.values(tagsMap), 'name')),
+      () => {
+        setCount(MathHelper.add(count, 1));
+      }
+    )
   };
 
   const newTagNameChanged = (e: IKeyboardEvent<HTMLInputElement>) => {
-    setState({
-      ...state,
-      newTagName: e.target.value,
-    });
+    setNewTagName(e.target.value);
   };
 
-  return (
-    <CompanyTagsDiv>
-      {state.tags.map((tag: ITag, index: number) => {
-        if (tag === null) return null;
-        return (
-          <Tag className={'company-tag-div'}
-               key={tag.name}
-               closable={true}
-               onClose={() => deleteTag(index)}>
-            {tag.name}
-          </Tag>
-        );
-      })}
-      {state.showingNewTagDiv !== true ? (
-        <Tag className={'company-tag-div new-tag'} color={primaryBtnBgColor} onClick={showNewTagDiv}>
-          <Icons.PlusOutlined /> {translate('new-tag')}
-        </Tag>
-      ) : (
-        <Tag className={'company-tag-div'}>
+  const createTag = () => {
+    const newTagNameTrim = `${newTagName || ''}`.trim();
+    if (newTagNameTrim === '') {
+      message.error('Tag can NOT be empty');
+      return;
+    }
+    const matchedTag = _.find(Object.values(tagsMap), {name: newTagNameTrim});
+    if (matchedTag !== undefined) {
+      message.error(`Tag (=${newTagNameTrim}) already exists!`);
+      return;
+    }
+    onChange(
+      'companyTags',
+      [...Object.values(tagsMap).map(tag => tag.name), newTagNameTrim],
+      () => {
+        setCount(MathHelper.add(count, 1));
+      }
+    );
+  }
+
+  const getNewTagDiv = () => {
+    if (showingNewTagDiv === true) {
+      return (
+        <Tag className={'company-tag-div input-tag'}>
           <InputBox
             className={'new-tag-input'}
             placeholder={translate('new-tag-name')}
             onChange={newTagNameChanged}
-            onBlur={tagUpdated}
-            onPressEnter={tagUpdated}
+            onPressEnter={createTag}
+            addonAfter={
+              <Button size={'small'} type={'text'} onClick={() => setShowingNewTagDiv(false)}><Icons.CloseOutlined /></Button>
+            }
           />
         </Tag>
-      )}
+      )
+    }
+    return (
+      <Tag className={'company-tag-div new-tag'} color={primaryBtnBgColor} onClick={() => setShowingNewTagDiv(true)}>
+        <Icons.PlusOutlined /> {translate('new-tag')}
+      </Tag>
+    )
+  }
+
+  return (
+    <CompanyTagsDiv>
+      <Spin spinning={isLoading}>
+        {Object.values(tagsMap).map((tag: ITag) => {
+          if (tag === null) return null;
+          return (
+            <Tag
+              className={'company-tag-div'}
+              key={tag.id}
+              closable={true}
+              onClose={() => deleteTag(tag)}>
+              {tag.name}
+            </Tag>
+          );
+        })}
+        {getNewTagDiv()}
+      </Spin>
     </CompanyTagsDiv>
   );
 };

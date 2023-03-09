@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Space, Spin, Typography } from 'antd';
 import { useSelector } from 'react-redux';
 import moment from 'moment';
-import { CloudUploadOutlined } from '@ant-design/icons';
 import { useIntl } from 'react-intl';
 import BackendPage from '../../Layouts/BackendPage';
 import { MENU_KEY_ARTICLES } from '../../Components/Menu/MenuItems';
@@ -19,14 +17,22 @@ import CommentsList from '../../Components/Comments/CommentsList';
 import IArticle from '../../Types/Article/IArticle';
 import Card from '../../Components/Form/Card';
 import {useParams} from 'react-router-dom';
+import Typography from '../../Components/Form/Typography';
+import Space from '../../Components/Form/Space';
+import Icons from '../../Components/Icons';
+import Spin from '../../Components/Form/Spin';
+import MathHelper from '../../Helpers/MathHelper';
+import message from '../../Components/Form/message';
 
 type iState = {
   fetching: boolean,
   article?: IArticle,
+  count: number,
 }
 
 const initialState: iState = {
   fetching: true,
+  count: 0,
 };
 
 const ArticleDetailsPage =  () => {
@@ -59,21 +65,21 @@ const ArticleDetailsPage =  () => {
       })
       .catch((err) => {
         if (isCancelled === true) return;
+        message.error(err.response.data.message);
         setState((s) => ({
           ...s,
           fetching: false,
-          fetchingErr: err.data,
         }));
       });
     return () => { // eslint-disable-line
       isCancelled = true;
     };
-  }, [articleId]);
+  }, [articleId, state.count]);
 
-  const articleUpdated = (article: IArticle) => {
+  const articleUpdated = () => {
     setState({
       ...state,
-      article,
+      count: MathHelper.add(state.count, 1),
     });
   };
 
@@ -87,6 +93,17 @@ const ArticleDetailsPage =  () => {
       </Card>
     );
   };
+
+  const getCommentsDiv = () => {
+    if (!company || `${articleId || ''}`.toLowerCase().trim() === 'new') {
+      return null;
+    }
+    return (
+      <Card>
+        <CommentsList itemId={articleId} />
+      </Card>
+    )
+  }
 
   const getDraftSpan = () => {
     if (!state.article || state.article.is_draft !== 1) {
@@ -120,29 +137,29 @@ const ArticleDetailsPage =  () => {
    * render
    */
   return (
-    <BackendPage selectedMenu={MENU_KEY_ARTICLES}>
-      <BackendPageContentTitle
-        title={!state.article ? null : <div>{intl.formatMessage({ id: 'editing' })}{getDraftSpan()}: {state.article.title}</div>}
-        controls={!state.article ? null : (
-          <Space>
-            <ArticlePublishBtn
-              article={state.article}
-              type={'primary'}
-              icon={<CloudUploadOutlined />}
-              onPublished={articleUpdated} />
-            <ArticleActionsDropdown article={state.article} onChanged={articleUpdated}/>
-          </Space>
-        )}
-      />
+    <BackendPage
+      selectedMenu={MENU_KEY_ARTICLES}
+      ContentHeader={
+        <BackendPageContentTitle
+          title={!state.article ? null : <div>{intl.formatMessage({ id: 'editing' })}{getDraftSpan()}: {state.article.title}</div>}
+          controls={!state.article ? null : (
+            <Space>
+              <ArticlePublishBtn
+                article={state.article}
+                type={'primary'}
+                icon={<Icons.CloudUploadOutlined />}
+                onPublished={articleUpdated} />
+              <ArticleActionsDropdown article={state.article} onChanged={articleUpdated}/>
+            </Space>
+          )}
+        />
+      }
+    >
       <Spin spinning={state.fetching} tip={intl.formatMessage({ id: 'loading' })}>
         {getArticleEditor()}
       </Spin>
-      <Card>
-        {company && `${articleId || ''}`.trim() !== ''
-          ? <CommentsList itemId={articleId} />
-          : null
-        }
-      </Card>
+
+      {getCommentsDiv()}
     </BackendPage>
   );
 };

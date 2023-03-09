@@ -47,6 +47,8 @@ import {
   AreaChartOutlined,
   OrderedListOutlined,
   ClockCircleOutlined,
+  CloseOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons';
 
 
@@ -99,6 +101,8 @@ const Icons = {
   AreaChartOutlined,
   OrderedListOutlined,
   ClockCircleOutlined,
+  CloseOutlined,
+  ReloadOutlined,
 }
 
 export default Icons;

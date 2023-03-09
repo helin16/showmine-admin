@@ -34,7 +34,7 @@ type iState = {
 const initialState: iState = {
   value: '',
 };
-export default ({ value, onChange, className, ...props }: React.ComponentProps<any>) => { // eslint-disable-line
+export default ({ value, onChange, className, onPressEnter, ...props }: React.ComponentProps<any>) => { // eslint-disable-line
   const [state, setState] = useState(initialState);
 
   useEffect(() => {
@@ -65,7 +65,7 @@ export default ({ value, onChange, className, ...props }: React.ComponentProps<a
         value={state.value}
         onChange={valueChanged}
         onBlur={onBlur}
-        onPressEnter={(e: IKeyboardEvent<HTMLInputElement>) => e.target.blur()}
+        onPressEnter={(e: IKeyboardEvent<HTMLInputElement>) => onPressEnter || e.target.blur()}
       />
     </InlineInputDiv>
   );

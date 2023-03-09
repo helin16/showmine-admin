@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { LockOutlined } from '@ant-design/icons';
-import {
-  Typography, Button, Row, Col, message,
-} from 'antd';
 import { useIntl } from 'react-intl';
 import InlineInput from '../Form/InlineInput';
 import {BoxTitleDiv, FormInputWrapper, listGutter} from '../../Styles/AppWrapper';
+import Row from '../Form/Row';
+import Col from '../Form/Col';
+import Typography from '../Form/Typography';
+import Button from '../Form/Button';
+import Icons from '../Icons';
+import message from '../Form/message';
 
 const ConfirmPasswordDiv = styled.div`
 `;
@@ -84,7 +86,7 @@ const PasswordConfirm =  ({
               className={isDiff() ? 'input-wrapper danger' : ''}
               value={state.confirmPassword}
               onChange={(newValue: string) => onConfirmPasswordChanged(newValue)}
-              prefix={<LockOutlined />}
+              prefix={<Icons.LockOutlined />}
               placeholder={intl.formatMessage({ id: 'confirm-password' })}
             />
             {!isDiff() ? null : (
@@ -114,7 +116,7 @@ const PasswordConfirm =  ({
               allowClear
               type={'password'}
               value={state.password}
-              prefix={<LockOutlined />}
+              prefix={<Icons.LockOutlined />}
               onChange={(newValue: string) => onPasswordChanged(newValue)}
               placeholder={intl.formatMessage({ id: 'password' })}
             />

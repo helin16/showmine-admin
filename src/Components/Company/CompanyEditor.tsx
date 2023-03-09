@@ -9,8 +9,6 @@ import IError from '../../Types/IError';
 import InlineRichTextEditor from '../Form/InlineRichTextEditor';
 import ICompanyAuthor from '../../Types/Company/ICompanyAuthor';
 import CompanyTags from './CompanyTags';
-import ITag from '../../Types/Tag/ITag';
-import Utils from '../../Services/Utils';
 import IAsset from '../../Types/Asset/IAsset';
 import translate from '../../i18n/translate';
 import message from '../Form/message';
@@ -38,7 +36,7 @@ const initState: iState = {
  * @param company
  * @constructor
  */
-const CompanyEditor = ({ company, onSaved }: {company: ICompany, onSaved?: Function}) => {
+const CompanyEditor = ({ company, onSaved }: {company: ICompany, onSaved?: (newCom: ICompany) => void}) => {
   const [state, setState] = useState(initState);
   /**
    * format company
@@ -55,7 +53,7 @@ const CompanyEditor = ({ company, onSaved }: {company: ICompany, onSaved?: Funct
    * @param fieldName
    * @param newValue
    */
-  const companyUpdated = (fieldName: string, newValue: string | object) => {
+  const companyUpdated = (fieldName: string, newValue: string | object, savedFn?: (newCom: ICompany) => void) => {
     const comp = {
       ...state.company,
       [fieldName]: newValue,
@@ -66,7 +64,7 @@ const CompanyEditor = ({ company, onSaved }: {company: ICompany, onSaved?: Funct
       ...state,
       isSaving: true,
     })
-    CompanyService.updateCompany(comp.id, comp)
+    return CompanyService.updateCompany(comp.id, comp)
       .then((res) => {
         const newCompany = res.data;
         setState({
@@ -74,10 +72,10 @@ const CompanyEditor = ({ company, onSaved }: {company: ICompany, onSaved?: Funct
           company: newCompany,
           isSaving: false,
         });
-        if (typeof (onSaved) === 'function') {
-          onSaved(newCompany);
-        }
         message.success(`Company (${comp.name}) updated.`);
+        if (typeof (savedFn) === 'function') {
+          savedFn(newCompany);
+        }
       })
       .catch((error: IError) => {
         message.error(error.message);
@@ -94,7 +92,7 @@ const CompanyEditor = ({ company, onSaved }: {company: ICompany, onSaved?: Funct
       ...state.company.configObj,
       [fieldName]: newValue,
     };
-    companyUpdated('configObj', obj);
+    companyUpdated('configObj', obj, onSaved);
   };
 
   /**
@@ -108,7 +106,7 @@ const CompanyEditor = ({ company, onSaved }: {company: ICompany, onSaved?: Funct
             allowClear
             placeholder={translate('company-name')}
             value={state.company.name}
-            onChange={(newValue: string) => companyUpdated('name', newValue)}
+            onChange={(newValue: string) => companyUpdated('name', newValue, onSaved)}
           />
         </Card>
 
@@ -117,7 +115,7 @@ const CompanyEditor = ({ company, onSaved }: {company: ICompany, onSaved?: Funct
             <Col md={{ span: 7 }}>
               <Space direction="vertical" style={{ width: '100%' }}>
                 <FormInputWrapper style={{ height: '180px' }}>
-                  <SingleImageUploader onChange={(newAsset: IAsset) => companyUpdated('logo_img', newAsset)}
+                  <SingleImageUploader onChange={(newAsset: IAsset) => companyUpdated('logo_img', newAsset, onSaved)}
                      title={translate('upload-logo')}
                      initImgUrl={
                        state.company?.logo_img?.url // eslint-disable-line
@@ -131,7 +129,7 @@ const CompanyEditor = ({ company, onSaved }: {company: ICompany, onSaved?: Funct
                     placeholder={translate('company-number-like')}
                     prefix={<Icons.TrademarkCircleFilled/>}
                     value={state.company.company_number}
-                    onChange={(newValue: string) => companyUpdated('company_number', newValue)}
+                    onChange={(newValue: string) => companyUpdated('company_number', newValue, onSaved)}
                   />
                 </FormInputWrapper>
                 <FormInputWrapper>
@@ -157,7 +155,7 @@ const CompanyEditor = ({ company, onSaved }: {company: ICompany, onSaved?: Funct
                       placeholder={translate('company-url')}
                       prefix={<Icons.CompassFilled/>}
                       value={state.company.website}
-                      onChange={(newValue: string) => companyUpdated('website', newValue)}
+                      onChange={(newValue: string) => companyUpdated('website', newValue, onSaved)}
                     />
                   </FormInputWrapper>
                 </Col>
@@ -169,7 +167,7 @@ const CompanyEditor = ({ company, onSaved }: {company: ICompany, onSaved?: Funct
                       placeholder={translate('company-email')}
                       prefix={<Icons.MailFilled/>}
                       value={state.company.email}
-                      onChange={(newValue: string) => companyUpdated('email', newValue)}
+                      onChange={(newValue: string) => companyUpdated('email', newValue, onSaved)}
                     />
                   </FormInputWrapper>
                 </Col>
@@ -181,7 +179,7 @@ const CompanyEditor = ({ company, onSaved }: {company: ICompany, onSaved?: Funct
                       placeholder={translate('company-contact-num')}
                       prefix={<Icons.PhoneFilled/>}
                       value={state.company.contact_number}
-                      onChange={(newValue: string) => companyUpdated('contact_number', newValue)}
+                      onChange={(newValue: string) => companyUpdated('contact_number', newValue, onSaved)}
                     />
                   </FormInputWrapper>
                 </Col>
@@ -201,7 +199,7 @@ const CompanyEditor = ({ company, onSaved }: {company: ICompany, onSaved?: Funct
                   <BoxTitleDiv>{translate('company-des')}</BoxTitleDiv>
                   <InlineRichTextEditor value={state.company.description} height={180} maxHeight={180}
                     placeholder={translate('company-description')}
-                    onChange={(newValue: string) => companyUpdated('description', newValue)}
+                    onChange={(newValue: string) => companyUpdated('description', newValue, onSaved)}
                   />
                 </Col>
               </Row>
@@ -210,49 +208,44 @@ const CompanyEditor = ({ company, onSaved }: {company: ICompany, onSaved?: Funct
         </Card>
 
         <Card>
-          <Space direction="vertical" style={{ width: '100%' }}>
-            <FormInputWrapper>
-              <BoxTitleDiv>
-                {translate('authors')}
-                <BoxTitleSuffix>
-                  {translate('authors-contents')}
-                </BoxTitleSuffix>
-              </BoxTitleDiv>
-              <CompanyAuthors
-                authors={state.company.configObj?.authorInfo || []}
-                onChange={(newArray: Array<ICompanyAuthor>) => companyConfigObjUpdated('authorInfo', newArray)}
-              />
-            </FormInputWrapper>
-
-            <FormInputWrapper>
-              <BoxTitleDiv>
-                {translate('tags')}
-                <BoxTitleSuffix>
-                  {translate('tags-contents')}
-                </BoxTitleSuffix>
-              </BoxTitleDiv>
-              <CompanyTags company={state.company}
-                   onChange={(tags: Array<ITag>) => companyUpdated(
-                     'companyTags',
-                     Object.keys(Utils.convertArrayToObject(tags, 'name')),
-                   )
-                   } />
-            </FormInputWrapper>
-
-            <FormInputWrapper>
-              <BoxTitleDiv>
-                {translate('content-footer')}
-                <BoxTitleSuffix>
-                  {translate('content-in-bottom-2')}
-                </BoxTitleSuffix>
-              </BoxTitleDiv>
-              <InlineRichTextEditor value={state.company.configObj?.defaultContact}
-                height={380}
-                placeholder={translate('content-in-bottom')}
-                onChange={(newValue: string) => companyConfigObjUpdated('defaultContact', newValue)}
-              />
-            </FormInputWrapper>
-          </Space>
+          <FormInputWrapper>
+            <BoxTitleDiv>
+              {translate('authors')}
+              <BoxTitleSuffix>
+                {translate('authors-contents')}
+              </BoxTitleSuffix>
+            </BoxTitleDiv>
+            <CompanyAuthors
+              authors={state.company.configObj?.authorInfo || []}
+              onChange={(newArray: Array<ICompanyAuthor>) => companyConfigObjUpdated('authorInfo', newArray)}
+            />
+          </FormInputWrapper>
+        </Card>
+        <Card>
+          <FormInputWrapper>
+            <BoxTitleDiv>
+              {translate('tags')}
+              <BoxTitleSuffix>
+                {translate('tags-contents')}
+              </BoxTitleSuffix>
+            </BoxTitleDiv>
+            <CompanyTags company={state.company} onChange={companyUpdated} />
+          </FormInputWrapper>
+        </Card>
+        <Card>
+          <FormInputWrapper>
+            <BoxTitleDiv>
+              {translate('content-footer')}
+              <BoxTitleSuffix>
+                {translate('content-in-bottom-2')}
+              </BoxTitleSuffix>
+            </BoxTitleDiv>
+            <InlineRichTextEditor value={state.company.configObj?.defaultContact}
+              height={380}
+              placeholder={translate('content-in-bottom')}
+              onChange={(newValue: string) => companyConfigObjUpdated('defaultContact', newValue)}
+            />
+          </FormInputWrapper>
         </Card>
       </Spin>
     </CompanyEditorWrapper>

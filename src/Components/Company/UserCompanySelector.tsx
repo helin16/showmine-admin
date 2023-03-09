@@ -7,11 +7,10 @@ import ICompany from '../../Types/Company/ICompany';
 import Utils from '../../Services/Utils';
 import UserService from '../../Services/UserService';
 import { BACK_END_URL } from '../../UrlMap';
-import {Select} from 'antd';
 import Spin from '../Form/Spin';
+import Select from '../Form/Select';
 import message from '../Form/message';
 import CompanyService from '../../Services/CompanyService';
-// import Select, {Option} from '../Form/Select';
 
 /**
  *
@@ -47,7 +46,7 @@ const UserCompanySelector = () => {
         navigate(BACK_END_URL);
       })
       .catch(err => {
-        message.error(err.data.message)
+        message.error(err.response.data.message)
       })
       .finally(() => {
         setIsSaving(false);

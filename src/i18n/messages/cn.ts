@@ -99,7 +99,7 @@ const LanguageCN = {
     'no-company': '您账户下没有公司，请刷新后重试',
     'need-title': '请为您的内容提供一个标题',
     'failed-create': '创建内容失败: {text}',
-    'what-in-mind': '有什么新的想法?',
+    'what-in-mind': '有什么新的想法? 给文章一个标题',
     continue: '继续',
     'tag-success': '标签更新成功',
     'tag-error': '更新标签时发生错误: {text}',

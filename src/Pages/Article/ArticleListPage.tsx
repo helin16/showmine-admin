@@ -20,16 +20,16 @@ const SectionDiv = styled.div`
   margin: ${contentInternalMargin} 0px;
 `;
 const articleStatuses = {
+  All: { is_published: undefined, is_draft: undefined, is_end: undefined },
   Published: { is_published: 1, is_draft: 0, is_end: 0 },
   Draft: { is_published: 0, is_draft: 1, is_end: 0 },
-  All: { is_published: undefined, is_draft: undefined, is_end: undefined },
 };
 const initialState = {
-  selectedStatus: 'Published',
+  selectedStatus: 'All',
   searchParams: {
-    is_draft: 0,
-    is_end: 0,
-    is_published: 1,
+    is_draft: undefined,
+    is_end: undefined,
+    is_published: undefined,
     'key-word': '',
   },
 };
@@ -85,7 +85,7 @@ const ArticleListPage = () => {
         <BackendPageContentTitle
           title={intl.formatMessage({ id: 'news_article' })}
           controls={
-            <Button type='primary' icon={<Icons.PlusOutlined />}>
+            <Button type='primary' icon={<Icons.PlusOutlined />} onClick={() => navigate(getUrl(ARTICLE_DETAILS_URL))}>
               {intl.formatMessage({ id: 'new-article' })}
             </Button>
           }

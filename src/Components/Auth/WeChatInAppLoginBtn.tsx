@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { BaseButtonProps } from 'antd/es/button/button';
 import { useSelector } from 'react-redux';
 import { STYLE_WECHAT_COLOR } from '../../Constants';
 import { RootState } from '../../Redux/makeReduxStore';
 import WeChatService from '../../Services/WeChatService';
 import { getFullUrl, THIRD_PARTY_AUTH_URL_WE_CHAT } from '../../UrlMap';
-import Button from '../Form/Button';
+import Button, {iButton} from '../Form/Button';
 import Icons from '../Icons';
 import message from '../Form/message';
 
@@ -22,7 +21,7 @@ const initialState = {
 
 const WeChatInAppLoginBtn = ({
   redirectUrl, originUrl, btnText, ...props
-}: BaseButtonProps & {
+}: iButton & {
   redirectUrl?: string, originUrl?: string, btnText?: string
 }) => {
   const [state, setState] = useState(initialState);
