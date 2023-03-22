@@ -41,6 +41,7 @@ type iRedirectChannelEditor = {
   onSaved?: (saved: IChannel) => void;
   onCancel?: () => void;
 }
+
 const RedirectChannelEditor = ({ channel, onSaved, onCancel }: iRedirectChannelEditor) => {
   return null
   // const [state, setState] = useState(initialState);
