@@ -1,40 +1,62 @@
 import React, { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
 import { useIntl } from 'react-intl'
-import { RootState } from '../../Redux/makeReduxStore'
 import { ARTICLE_LIST_URL } from '../../UrlMap'
 import UsageWrapperLink from '../Stats/UsageWrapperLink'
 import Statistic from '../Form/Statistic'
 import Icons from '../Icons'
+import Spin from '../Form/Spin';
+import ArticleService from '../../Services/ArticleService';
+import message from '../Form/message';
 
+const initState = {
+  realValue: 0,
+  maxValue: -1,
+};
 const CompanyArticleStats = () => {
-  // const { companyPackage } = useSelector((s: RootState) => s.auth);
-  const [state, setState] = useState({
-    realValue: 0,
-    maxValue: 0,
-  })
+  const [state, setState] = useState(initState)
+  const [isLoading, setIsLoading] = useState(false);
   const intl = useIntl()
   /**
    *
    */
   useEffect(() => {
-    // if (!companyPackage) return;
-    setState({
-      realValue: 0,
-      maxValue: -1,
-    })
-  }, [])
+    let isCanceled = false;
+    setIsLoading(true);
+    ArticleService.getAll({
+        where: JSON.stringify({isActive: true}),
+        perPage: 1,
+        currentPage: 1,
+      })
+      .then(resp => {
+        setState({
+          ...state,
+          realValue: resp.total,
+        });
+      })
+      .catch(err => {
+        message.error(err.response.data.message);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      })
+    return () => {
+      isCanceled = true;
+    }
+  }, []);
+
   /**
    *
    */
   return (
     <UsageWrapperLink currentValue={state.realValue} planValue={state.maxValue} url={ARTICLE_LIST_URL}>
-      <Statistic
-        title={intl.formatMessage({ id: 'articles' })}
-        prefix={<Icons.AuditOutlined />}
-        value={state.realValue}
-        suffix={`/ ${state.maxValue < 0 ? intl.formatMessage({ id: 'unlimited' }) : state.maxValue}`}
-      />
+      <Spin spinning={isLoading}>
+        <Statistic
+          title={intl.formatMessage({ id: 'articles' })}
+          prefix={<Icons.AuditOutlined />}
+          value={state.realValue}
+          suffix={`/ ${state.maxValue < 0 ? intl.formatMessage({ id: 'unlimited' }) : state.maxValue}`}
+        />
+      </Spin>
     </UsageWrapperLink>
   )
 }
