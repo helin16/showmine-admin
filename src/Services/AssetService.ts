@@ -1,12 +1,33 @@
-import RestfulService from './RestfulService';
+import AppService, { iConfigParams } from './AppService'
+import IResList from '../Types/IResList'
+import IAsset from '../Types/Asset/IAsset'
 
-const getAllAssetsUnderACompany = async (companyId: string,
-  params: object = {}, sortingField: string = 'updated_at',
-  sortingDirection: string = 'desc') => RestfulService.get(`/company/assets/${companyId}/${sortingField}/${sortingDirection}`, params);
+const endPoint = '/asset'
+const getAll = async (params?: iConfigParams, config?: iConfigParams): Promise<IResList<IAsset>> => {
+  return AppService.get(endPoint, params, config).then((resp) => resp.data)
+}
 
-const deleteAsset = async (assetId: string) => RestfulService.delete(`/asset/${assetId}`);
+const getItemById = async (id: string, params?: iConfigParams, config?: iConfigParams): Promise<IAsset> => {
+  return AppService.get(`${endPoint}/${id}`, params, config).then((resp) => resp.data)
+}
 
-const formatFileSize = (sizeInBytes: number, precision: number = 2) => {
+const create = async (params: iConfigParams, config?: iConfigParams): Promise<IAsset> => {
+  return AppService.post(endPoint, params, config).then((resp) => resp.data)
+}
+
+const update = async (id: string, params: iConfigParams, config?: iConfigParams): Promise<IAsset> => {
+  return AppService.put(`${endPoint}/${id}`, params, config).then((resp) => resp.data)
+}
+
+const deactivate = async (id: string, params?: iConfigParams, config?: iConfigParams): Promise<IAsset> => {
+  return AppService.delete(`${endPoint}/${id}`, params, config).then((resp) => resp.data)
+}
+
+const getUploadAssetUrl = () => {
+  return `${process.env.REACT_APP_REST_END_POINT || ''}${endPoint}/upload`;
+}
+
+const formatFileSize = (sizeInBytes: number, precision = 2) => {
   let value = (sizeInBytes / 1000);
   let suffix = 'KB';
   if (sizeInBytes >= 1000000000) {
@@ -19,17 +40,14 @@ const formatFileSize = (sizeInBytes: number, precision: number = 2) => {
   return [value.toFixed(precision), suffix];
 };
 
-// eslint-disable-next-line
-const uploadAsset = async (file: any) => RestfulService.post('/asset', file);
-
-const getUploadAssetUrl = () => `${RestfulService.getApiEndPoint()}/asset`;
-
 const AssetService = {
-  getAllAssetsUnderACompany,
-  formatFileSize,
-  deleteAsset,
+  getAll,
+  getItemById,
+  create,
+  update,
+  deactivate,
   getUploadAssetUrl,
-  uploadAsset,
-};
+  formatFileSize,
+}
 
-export default AssetService;
+export default AssetService

@@ -1,11 +1,11 @@
-import {Pie as AntdDonut, PieConfig} from '@ant-design/charts';
-import MathHelper from '../../Helpers/MathHelper';
+import { Pie as AntdDonut, PieConfig } from '@ant-design/charts'
+import MathHelper from '../../Helpers/MathHelper'
 
 type iDonut = PieConfig & {
-  radius: number;
-  innerRadius?: number;
-};
-const Donut = ({className, radius, innerRadius, ...props}: iDonut) => {
+  radius: number
+  innerRadius?: number
+}
+const Donut = ({ className, radius, innerRadius, ...props }: iDonut) => {
   return (
     <AntdDonut
       {...props}
@@ -13,7 +13,7 @@ const Donut = ({className, radius, innerRadius, ...props}: iDonut) => {
       radius={radius}
       innerRadius={innerRadius ? innerRadius : MathHelper.sub(radius, 0.2)}
     />
-  );
-};
+  )
+}
 
-export default Donut;
+export default Donut

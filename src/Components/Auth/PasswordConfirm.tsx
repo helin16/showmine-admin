@@ -1,85 +1,91 @@
-import React, { useEffect, useState } from 'react';
-import styled from 'styled-components';
-import { useIntl } from 'react-intl';
-import InlineInput from '../Form/InlineInput';
-import {BoxTitleDiv, FormInputWrapper, listGutter} from '../../Styles/AppWrapper';
-import Row from '../Form/Row';
-import Col from '../Form/Col';
-import Typography from '../Form/Typography';
-import Button from '../Form/Button';
-import Icons from '../Icons';
-import message from '../Form/message';
+import React, { useEffect, useState } from 'react'
+import styled from 'styled-components'
+import { useIntl } from 'react-intl'
+import InlineInput from '../Form/InlineInput'
+import { BoxTitleDiv, FormInputWrapper, listGutter } from '../../Styles/AppWrapper'
+import Row from '../Form/Row'
+import Col from '../Form/Col'
+import Typography from '../Form/Typography'
+import Button from '../Form/Button'
+import Icons from '../Icons'
+import message from '../Form/message'
 
-const ConfirmPasswordDiv = styled.div`
-`;
+const ConfirmPasswordDiv = styled.div``
 
-const directionHorizontal = 'horizontal';
+const directionHorizontal = 'horizontal'
 
 const initialState = {
   password: '',
   confirmPassword: '',
   isHorizontal: false,
+}
+type iPasswordConfirm = {
+  onConfirm: (password: string, confirmPassword: string) => void;
+  btnText?: React.ComponentProps<any> // eslint-disable-line
+  labelText?: React.ComponentProps<any> // eslint-disable-line
+  direction?: string
 };
-const PasswordConfirm =  ({
-  onConfirm, btnText, labelText, direction, ...props
-}: {
-  onConfirm: Function,
-  btnText?: React.ComponentProps<any>,  // eslint-disable-line
-  labelText?: React.ComponentProps<any>, // eslint-disable-line
-  direction?: string,
-}) => {
-  const [state, setState] = useState(initialState);
-  const intl = useIntl();
+const PasswordConfirm = ({
+  onConfirm,
+  btnText,
+  labelText,
+  direction,
+  ...props
+}: iPasswordConfirm) => {
+  const [state, setState] = useState(initialState)
+  const intl = useIntl()
 
   useEffect(() => {
     setState((s) => ({
       ...s,
       isHorizontal: direction === directionHorizontal,
-    }));
-  }, [direction]);
+    }))
+  }, [direction])
 
   const onPasswordChanged = (newValue: string) => {
     const newState = {
       ...state,
       password: newValue,
-    };
-    if (newValue === '') {
-      newState.confirmPassword = '';
     }
-    setState(newState);
-  };
+    if (newValue === '') {
+      newState.confirmPassword = ''
+    }
+    setState(newState)
+  }
 
   const onConfirmPasswordChanged = (newValue: string) => {
     setState({
       ...state,
       confirmPassword: newValue,
-    });
-  };
+    })
+  }
 
-  const isDiff = () => (state.password !== state.confirmPassword);
+  const isDiff = () => state.password !== state.confirmPassword
 
   const confirmPassword = () => {
     if (isDiff()) {
-      message.error(intl.formatMessage({ id: 'confirm-password-diff' }));
-      return;
+      message.error(intl.formatMessage({ id: 'confirm-password-diff' }))
+      return
     }
     setState({
       ...state,
       password: '',
       confirmPassword: '',
-    });
-    if (typeof (onConfirm) === 'function') {
-      onConfirm(state.password, state.confirmPassword);
+    })
+    if (typeof onConfirm === 'function') {
+      onConfirm(state.password, state.confirmPassword)
     }
-  };
+  }
 
   const getConfirmPassword = () => {
-    if (state.password === '') return null;
+    if (state.password === '') return null
     return (
       <>
         <Col md={state.isHorizontal !== true ? 24 : 9}>
           <FormInputWrapper>
-            <BoxTitleDiv className={isDiff() ? 'danger' : ''}>{intl.formatMessage({ id: 'confirm' })} {labelText || 'Password'}</BoxTitleDiv>
+            <BoxTitleDiv className={isDiff() ? 'danger' : ''}>
+              {intl.formatMessage({ id: 'confirm' })} {labelText || 'Password'}
+            </BoxTitleDiv>
             <InlineInput
               allowClear
               type={'password'}
@@ -95,23 +101,23 @@ const PasswordConfirm =  ({
           </FormInputWrapper>
         </Col>
         <Col md={state.isHorizontal !== true ? 24 : 6}>
-          <FormInputWrapper style={{ textAlign: (state.isHorizontal === true ? 'right' : 'left') }}>
-            <BoxTitleDiv style={{ display: (state.isHorizontal === true ? 'block' : 'none') }}>&nbsp;</BoxTitleDiv>
+          <FormInputWrapper style={{ textAlign: state.isHorizontal === true ? 'right' : 'left' }}>
+            <BoxTitleDiv style={{ display: state.isHorizontal === true ? 'block' : 'none' }}>&nbsp;</BoxTitleDiv>
             <Button type={'primary'} disabled={isDiff()} onClick={confirmPassword}>
               {btnText || 'Confirm'}
             </Button>
           </FormInputWrapper>
         </Col>
       </>
-    );
-  };
+    )
+  }
 
   return (
     <ConfirmPasswordDiv className={state.isHorizontal === true ? 'horizontal' : ''} {...props}>
       <Row gutter={listGutter}>
-        <Col md={(state.password === '' || state.isHorizontal !== true) ? 24 : 9}>
+        <Col md={state.password === '' || state.isHorizontal !== true ? 24 : 9}>
           <FormInputWrapper>
-            <BoxTitleDiv>{labelText || intl.formatMessage({ id: 'password' }) }</BoxTitleDiv>
+            <BoxTitleDiv>{labelText || intl.formatMessage({ id: 'password' })}</BoxTitleDiv>
             <InlineInput
               allowClear
               type={'password'}
@@ -125,7 +131,7 @@ const PasswordConfirm =  ({
         {getConfirmPassword()}
       </Row>
     </ConfirmPasswordDiv>
-  );
-};
+  )
+}
 
-export default PasswordConfirm;
+export default PasswordConfirm

@@ -1,11 +1,16 @@
-import RestfulService from './RestfulService';
-import { getCurrentUrl } from '../UrlMap';
+import { getCurrentUrl } from '../UrlMap'
+import AppService from './AppService'
 
-const getJsConf = async (url: string = getCurrentUrl()) => RestfulService.get('/wechat/js/conf', { url });
+const endPoint = 'weChat'
+const getJsConf = async (url: string = getCurrentUrl()) => {
+  return AppService.get(`${endPoint}/js/conf`, { url }).then((resp) => resp.data)
+}
 
-const isInWeChat = () => /(micromessenger|webbrowser)/.test(navigator.userAgent.toLocaleLowerCase());
+const isInWeChat = () => /(micromessenger|webbrowser)/.test(navigator.userAgent.toLocaleLowerCase())
 
-const getWeChatInAppLoginUrl = async (authUrl: string, origUrl: string = getCurrentUrl()) => RestfulService.get('/wechat/authUrl', { origUrl, authUrl, apiUrl: process.env.REACT_APP_REST_END_POINT });
+const getWeChatInAppLoginUrl = async (authUrl: string, origUrl: string = getCurrentUrl()) => {
+  return AppService.get('/wechat/authUrl', { origUrl, authUrl }).then((resp) => resp.data)
+}
 
 const WeChatService = {
   getJsConf,
@@ -13,4 +18,4 @@ const WeChatService = {
   getWeChatInAppLoginUrl,
 }
 
-export  default WeChatService;
+export default WeChatService

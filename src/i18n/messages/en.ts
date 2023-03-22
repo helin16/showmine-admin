@@ -1,12 +1,13 @@
-import { LOCALES } from '../../Constants';
+/* eslint-disable camelcase,quotes*/
+import { LOCALES } from '../../Constants'
 
 const LanguageEN = {
   [LOCALES.ENGLISH]: {
     homePage: 'Home Page',
     pageNotExists: 'Sorry, the page you visited does not exist.',
-    'edit-file': 'Edit {file} and save to reload.',
+    editFile: 'Edit {file} and save to reload.',
     hello: 'Hello',
-    'demo-placeholder': 'Placeholder sample',
+    demoPlaceholder: 'Placeholder sample',
     nickname: 'Nickname',
     'nickname-placeholder': 'The name that will shown to public',
     'first-name': 'First Name',
@@ -60,7 +61,7 @@ const LanguageEN = {
     are_you_sure: 'Are you sure?',
     yes_delete: 'Yes, delete',
     notice_delete_1: 'Once this content has been deleted',
-    notice_delete_2: "you won't be able to get it back anymore",
+    notice_delete_2: `you won't be able to get it back anymore`,
     notice_delete_3: 'Are you sure you want to do this?',
     preview: 'Preview',
     preview_content: 'Preview your content',
@@ -77,7 +78,7 @@ const LanguageEN = {
     'confirm-text': 'Confirm {text}?',
     'yes-text': 'Yes, {text} it',
     'publish-alert-1': 'Once this content has been {text}, ',
-    'publish-alert-2': "you won't be able to un-publish this content anymore.",
+    'publish-alert-2': `you won't be able to un-publish this content anymore.`,
     'check-confirm-1': 'Are you sure you want {state.publishText} the content',
     'check-confirm-2': 'channels?',
     'table-name': 'Name',
@@ -109,7 +110,7 @@ const LanguageEN = {
     'content-processed': '{text} content(s) processed.',
     'got-errors': 'Got {text} error(s)',
     'delete-them': 'Delete Them',
-    'notice-content': "Once these {text} contents have been deleted, you won't be able to get them back anymore.",
+    'notice-content': `Once these {text} contents have been deleted, you won't be able to get them back anymore.`,
     // Package Notice Board
     'package-limit-reached': 'Package limit reached',
     'update-subscription': 'please click here update your subscription',
@@ -181,7 +182,8 @@ const LanguageEN = {
     // Wizard
     'wizard-dashboard': 'You can go to dashboard to manage all your company, channel and article details.',
     'wizard-article': 'You can manage the articles here, delete or create new articles.',
-    'wizard-channel': 'You can manage your channels details, edit the using ones or create the new article for pushing articles',
+    'wizard-channel':
+      'You can manage your channels details, edit the using ones or create the new article for pushing articles',
     'wizard-company-admin': 'The company details and basic setting can be updated here.',
     previous: 'Previous',
     next: 'Next',
@@ -220,10 +222,9 @@ const LanguageEN = {
     'total-items': 'Total {total} items',
     'user-update-success': 'User info updated success',
     'back-to-login': 'Back to login',
-
+    unPublishConfirm: 'You are about to unPublish this content. Are you sure to continue?',
     upgrade: 'Upgrade',
   },
-};
+}
 
-
-export default LanguageEN;
+export default LanguageEN

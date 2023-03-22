@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import styled from 'styled-components';
-import IArticle from '../../Types/Article/IArticle';
-import SkeletonImage from '../Form/SkeletonImage';
-import Image from '../Form/Image';
+import React, { useEffect, useState } from 'react'
+import styled from 'styled-components'
+import IArticle from '../../Types/Article/IArticle'
+import SkeletonImage from '../Form/SkeletonImage'
 
 const ImageWrapper = styled.div`
   width: 100%;
@@ -29,18 +28,20 @@ const ImageWrapper = styled.div`
       object-fit: cover;
     }
   }
-`;
-
-
-const ArticleCoverImg = ({ article, onClick, ...otherProps }: {article: IArticle, style?: object, onClick?: Function}) => {
+`
+type iArticleCoverImg = {
+  article: IArticle
+  imgWrapperProps?: { [key: string]: string }
+  onClick?: (article: IArticle) => void;
+}
+const ArticleCoverImg = ({ article, onClick, imgWrapperProps}: iArticleCoverImg) => {
   const [imageSrc, setImageSrc] = useState('');
 
   useEffect(() => {
-    let imageUrl = '';
-    if (article && article.images && article.images.length > 0) {
-      imageUrl = article.images[0].url;
+    const imageUrl = `${article.CoverAsset?.url}`.trim();
+    if (imageUrl !== '') {
+      setImageSrc(imageUrl);
     }
-    setImageSrc(imageUrl);
   }, [article]);
 
   const clicked = () => {
@@ -50,16 +51,16 @@ const ArticleCoverImg = ({ article, onClick, ...otherProps }: {article: IArticle
   };
 
   return (
-    <ImageWrapper {...otherProps}>
+    <ImageWrapper {...imgWrapperProps}>
       {imageSrc === '' ? (
         <div className={'default-img-div'}>
           <SkeletonImage className={'default-img'}/>
         </div>
       ) : (
-        <Image src={imageSrc} className={'cover-img-div'} onClick={clicked} placeholder={<SkeletonImage />} />
+        <div className={'cover-img-div'} onClick={clicked} style={{backgroundImage: `url(${imageSrc})`}}/>
       )}
     </ImageWrapper>
   );
-};
+}
 
-export default ArticleCoverImg;
+export default ArticleCoverImg

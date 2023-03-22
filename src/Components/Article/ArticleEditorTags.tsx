@@ -1,56 +1,48 @@
-import React, { useEffect, useState } from 'react';
-import { useIntl } from 'react-intl';
-import IArticle from '../../Types/Article/IArticle';
-import ICompany from '../../Types/Company/ICompany';
-import CompanyService from '../../Services/CompanyService';
-import ITag from '../../Types/Tag/ITag';
-import Utils from '../../Services/Utils';
-import message from '../Form/message';
-import Select from '../Form/Select';
-import * as _ from 'lodash';
-
-type iState = {
-  loading: boolean,
-  tagsMap: { [key: string]: ITag },
-}
-const initState: iState = {
-  tagsMap: {},
-  loading: false,
-};
+import React, { useEffect, useState } from 'react'
+import { useIntl } from 'react-intl'
+import IArticle from '../../Types/Article/IArticle'
+import message from '../Form/message'
+import Select from '../Form/Select'
+import * as _ from 'lodash'
+import ITag from '../../Types/Article/ITag'
+import Spin from '../Form/Spin';
+import TagService from '../../Services/TagService';
+import IItemTag from '../../Types/Article/IItemTag';
+import ItemTagService from '../../Services/ItemTagService';
+import MathHelper from '../../Helpers/MathHelper';
 
 type iArticleEditorTags = {
-  article: IArticle,
-  company: ICompany,
-  onUpdate: (fieldName: string, newValue: any, onSaved?: (newArticle: IArticle) => void) => void,
+  article: IArticle
 }
 /**
  *
  */
-const ArticleEditorTags = ({ article, company, onUpdate }: iArticleEditorTags) => {
-  const [state, setState] = useState(initState);
+const ArticleEditorTags = ({ article }: iArticleEditorTags) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [tagsMap, setTagsMap] = useState<{[key: string]: ITag}>({});
+  const [itemTags, setItemTags] = useState<IItemTag[]>([]);
+  const [count, setCount] = useState(0);
   const intl = useIntl();
   /**
    *
    */
   useEffect(() => {
-    if (!company.id) return;
     let isCancelled = false;
-    setState((s) => ({
-      ...s,
-      loading: true,
-    }));
-    CompanyService.getCompanyTags(company.id)
+    setIsLoading(true);
+      Promise.all([
+        TagService.getAll({ where: JSON.stringify({ isActive: true }), perPage: 99999 }),
+        ItemTagService.getAll({ where: JSON.stringify({ isActive: true, itemId: article.id }), perPage: 99999 })
+      ])
       .then((res) => {
         if (isCancelled === true) return;
-        setState((s) => ({
-          ...s,
-          tagsMap: res.data.reduce((map: { [key: string]: ITag }, tag: ITag) => {
-            return {
-              ...map,
-              [tag.name]: tag,
-            }
-          }, {}),
-        }));
+        setTagsMap((res[0].data || []).reduce((map, tag) => {
+          return {
+            ...map,
+            [tag.id || '']: tag,
+          }
+        }, {}));
+        setItemTags(res[1].data || []);
       })
       .catch((error) => {
         if (isCancelled === true) return;
@@ -58,69 +50,49 @@ const ArticleEditorTags = ({ article, company, onUpdate }: iArticleEditorTags) =
       })
       .finally(() => {
         if (isCancelled === true) return;
-        setState((s) => ({
-          ...s,
-          loading: false,
-        }));
+        setIsLoading(false);
       });
-    return () => { // eslint-disable-line
+    return () => {
       isCancelled = true;
     };
-  }, [article, company]);
+  }, [article, count]);
 
-  const tagsChanged = (value: any) => { // eslint-disable-line
-    console.log('article.id', article.id);
-    console.log('article.company_tags', article.company_tags);
-    const currentTagNames =  _.uniq(article.tags.map((tag: ITag) => tag.name));
-    console.log('currentTagNames', currentTagNames);
-    if (!article.id) {
-      return;
-    }
-    if (Utils.compareArrays(value, currentTagNames)) {
-      return;
-    }
-    // console.log('value', value);
-    onUpdate(
-      'tagNames',
-      value
-    )
+  const tagsChanged = (tagIds: string[]) => {
+    const existingTagIds = _.uniq(itemTags.map(itemTag => itemTag.tagId));
+    const tagIdsToBeCreated = _.difference(tagIds, existingTagIds);
+    const tagIdsToBeDeleted = _.difference(existingTagIds, tagIds);
 
-    // ArticleService.updateArticle(state.article.id, newArticle)
-    //   .then((res) => {
-    //     setState({
-    //       ...state,
-    //       selectedTags: value,
-    //       article: {
-    //         ...state.article,
-    //         ...res.data,
-    //       },
-    //     });
-    //     message.success(intl.formatMessage({ id: 'tag-success' }));
-    //     if (typeof (onUpdated) === 'function') {
-    //       onUpdated(res.data);
-    //     }
-    //   })
-    //   .catch((err) => {
-    //     message.error(intl.formatMessage({ id: 'tag-error' }, { text: err.message }));
-    //   });
+    setIsSaving(true);
+    Promise.all([
+      ...tagIdsToBeCreated.map(tagIdToBeCreated => ItemTagService.create({itemId: article.id, tagId: tagIdToBeCreated})),
+      ...itemTags.filter(itemTag => tagIdsToBeDeleted.indexOf(itemTag.tagId) >= 0).map(itemTag => ItemTagService.deactivate(itemTag.id || ''))
+    ]).then(() => {
+      message.success('Tags updated.')
+      setCount(MathHelper.add(count, 1));
+    }).catch(err => {
+      message.error(err.response.data.message)
+    }).finally(() => {
+      setIsSaving(false);
+    })
   };
 
   return (
-    <div className={'article-editor-tags-wrapper'}>
+    <Spin spinning={isLoading || isSaving} className={'article-editor-tags-wrapper'}>
       <Select mode="tags" style={{ width: '100%' }}
-        value={ article.tags ? _.uniq(article.tags.map((tag: ITag) => tag.name)) : []}
+        allowClear
+        value={ _.uniq(itemTags.map((itemTag) => itemTag.tagId))}
         placeholder={ `${intl.formatMessage({ id: 'tags' })}...` }
         onChange={tagsChanged}
-        options={Object.values(state.tagsMap).map((tag: ITag, index: number) => {
+        options={Object.values(tagsMap).map((tag: ITag) => {
           return {
             label: tag.name,
-            value: tag.name,
-            key: index,
+            value: tag.id,
+            key: tag.id,
           }
         })}
       />
-    </div>
+    </Spin>
   );
-};
+}
 
-export default ArticleEditorTags;
+export default ArticleEditorTags

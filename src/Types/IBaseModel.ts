@@ -1,18 +1,14 @@
+import IUser from './User/IUser'
+
 type IBaseModel = {
-  id?: string,
-  active: boolean | number,
-  created_at: string, // eslint-disable-line
-  created_by_id: string, // eslint-disable-line
-  updated_at: string, // eslint-disable-line
-  updated_by_id: string, // eslint-disable-line
-};
+  id?: string
+  isActive?: boolean | number
+  createdAt?: Date
+  createdById?: string
+  updatedAt?: Date
+  updatedById?: string
+  CreatedBy?: IUser
+  UpdatedBy?: IUser
+}
 
-export const initialBaseModel: IBaseModel = {
-  active: 1,
-  created_at: '',
-  created_by_id: '',
-  updated_at: '',
-  updated_by_id: '',
-};
-
-export default IBaseModel;
+export default IBaseModel

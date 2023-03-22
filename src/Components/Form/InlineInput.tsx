@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import styled from 'styled-components';
-import { Input } from 'antd';
-import { InlineInputDiv as DefaultInlineInputDiv } from '../../Styles/AppWrapper';
-import IKeyboardEvent from '../../Types/IKeyboardEvent';
+import React, { useEffect, useState } from 'react'
+import styled from 'styled-components'
+import { Input } from 'antd'
+import { InlineInputDiv as DefaultInlineInputDiv } from '../../Styles/AppWrapper'
+import IKeyboardEvent from '../../Types/IKeyboardEvent'
 
 const InlineInputDiv = styled(DefaultInlineInputDiv)`
   input {
@@ -11,7 +11,7 @@ const InlineInputDiv = styled(DefaultInlineInputDiv)`
   }
   .ant-input-affix-wrapper {
     box-shadow: none;
-    :not(.ant-input-affix-wrapper-focused)  {
+    :not(.ant-input-affix-wrapper-focused) {
       .ant-input-clear-icon {
         color: transparent;
       }
@@ -26,36 +26,37 @@ const InlineInputDiv = styled(DefaultInlineInputDiv)`
   .ant-input-prefix {
     margin-right: 8px;
   }
-`;
+`
 
 type iState = {
-  value: string,
+  value: string
 }
 const initialState: iState = {
   value: '',
-};
-export default ({ value, onChange, className, onPressEnter, ...props }: React.ComponentProps<any>) => { // eslint-disable-line
-  const [state, setState] = useState(initialState);
+}
+// eslint-disable-next-line react/prop-types
+const InlineInput = ({ value, onChange, className, onPressEnter, ...props }: React.ComponentProps<any>) => {
+  const [state, setState] = useState(initialState)
 
   useEffect(() => {
     setState((s) => ({
       ...s,
       value,
-    }));
-  }, [value]);
+    }))
+  }, [value])
 
   const valueChanged = (e: IKeyboardEvent<HTMLInputElement>) => {
     setState({
       ...state,
       value: e.target.value,
-    });
-  };
+    })
+  }
 
   const onBlur = () => {
-    if (typeof (onChange) === 'function' && state.value !== value) {
-      onChange(state.value);
+    if (typeof onChange === 'function' && state.value !== value) {
+      onChange(state.value)
     }
-  };
+  }
 
   return (
     <InlineInputDiv className={className}>
@@ -68,5 +69,7 @@ export default ({ value, onChange, className, onPressEnter, ...props }: React.Co
         onPressEnter={(e: IKeyboardEvent<HTMLInputElement>) => onPressEnter || e.target.blur()}
       />
     </InlineInputDiv>
-  );
-};
+  )
+}
+
+export default InlineInput;

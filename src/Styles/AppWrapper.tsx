@@ -1,14 +1,14 @@
-import styled, {createGlobalStyle} from 'styled-components';
-import {APP_WIDTHS} from '../Constants';
+import styled, { createGlobalStyle } from 'styled-components'
+import { APP_WIDTHS } from '../Constants'
 
-export const primaryBtnBgColor = '#1890ff';
-export const dangerColor = '#ff4d4f';
+export const primaryBtnBgColor = '#1890ff'
+export const dangerColor = '#ff4d4f'
 
-export const pageMinHeight = '100vh';
-export const logoMinHeight = '63px';
-export const contentSideMargin = '16';
-export const contentInternalMargin = `${contentSideMargin}px`;
-export const contentInternalPadding = `${contentSideMargin}px`;
+export const pageMinHeight = '100vh'
+export const logoMinHeight = '63px'
+export const contentSideMargin = '16'
+export const contentInternalMargin = `${contentSideMargin}px`
+export const contentInternalPadding = `${contentSideMargin}px`
 
 export const BoxTitleDiv = styled.div`
   font-weight: bold;
@@ -18,19 +18,18 @@ export const BoxTitleDiv = styled.div`
   &.danger {
     color: ${dangerColor};
   }
-`;
+`
 export const BoxTitleSuffix = styled.div`
   font-weight: normal;
   font-size: 10px;
   display: inline-block;
   margin-left: 23px;
   font-style: italic;
-`;
+`
 
-
-export const inlineInputPadding = '13px 22px';
-export const inlineInputPaddingHalf = '6.5px 11px';
-export const inlineInputBgColor = '#fafafa;';
+export const inlineInputPadding = '13px 22px'
+export const inlineInputPaddingHalf = '6.5px 11px'
+export const inlineInputBgColor = '#fafafa;'
 
 export const InlineInputDiv = styled.div`
   border: none;
@@ -38,7 +37,7 @@ export const InlineInputDiv = styled.div`
   :hover {
     background: ${inlineInputBgColor};
   }
-`;
+`
 
 export const FormInputWrapper = styled.div`
   margin-bottom: 10px;
@@ -55,24 +54,23 @@ export const FormInputWrapper = styled.div`
       border: 1px ${dangerColor} solid;
     }
   }
-`;
+`
 
 export const FlexContainer = styled.div`
   display: flex;
-  
+
   &.justify-content-space-between {
     justify-content: space-between;
   }
-  
+
   &.with-gaps {
     > * {
       padding: 5px;
     }
   }
-`;
+`
 
-
-export const listGutter = 16;
+export const listGutter = 16
 
 export const AppCssWrapper = createGlobalStyle`
   @media only screen and (max-width: ${APP_WIDTHS.sm}) and (min-width: ${APP_WIDTHS.xs}) {
@@ -120,31 +118,31 @@ export const AppCssWrapper = createGlobalStyle`
     background: transparent url('/img/auth-bg.png') right bottom no-repeat;
     background-size: contain;
   }
-`;
+`
 
 const AppWrapper = styled.div`
   .text-right {
     text-align: right;
   }
-  
+
   .ant-upload {
     background-color: white;
   }
-  
+
   min-height: ${pageMinHeight};
-  
+
   .ant-select-selector,
   .app-button,
   .app-input-box,
   .app-input-password-box {
     border-radius: 0px !important;
   }
-  
+
   .ant-statistic {
     .ant-statistic-title {
       text-align: left;
     }
   }
-`;
+`
 
-export default AppWrapper;
+export default AppWrapper

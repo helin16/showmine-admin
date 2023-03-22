@@ -1,14 +1,14 @@
-import React from 'react';
-import styled from 'styled-components';
-import Button, {iButton} from './Button';
-import Icons from '../Icons';
+import React from 'react'
+import styled from 'styled-components'
+import Button, { iButton } from './Button'
+import Icons from '../Icons'
 
 const LoadMoreBtnDiv = styled.div`
   text-align: center;
   margin-top: 12px;
   height: 32px;
   line-height: 32px;
-`;
+`
 /**
  *
  * @param onClick
@@ -17,18 +17,21 @@ const LoadMoreBtnDiv = styled.div`
  * @constructor
  */
 const LoadMoreBtn = ({
-  showing, onClick, icon, ...props
+  showing,
+  onClick,
+  icon,
+  ...props
 }: iButton & {
   showing?: boolean
 }) => {
   const handleClicked = (e: React.MouseEvent<any>) => {
-    if (typeof (onClick) === 'function') {
-      onClick(e);
+    if (typeof onClick === 'function') {
+      onClick(e)
     }
-  };
+  }
 
   if (showing !== true) {
-    return null;
+    return null
   }
   return (
     <LoadMoreBtnDiv
@@ -39,9 +42,11 @@ const LoadMoreBtn = ({
         lineHeight: '32px',
       }}
     >
-      <Button {...props} onClick={handleClicked} icon={icon || <Icons.ArrowDownOutlined />}>load more</Button>
+      <Button {...props} onClick={handleClicked} icon={icon || <Icons.ArrowDownOutlined />}>
+        load more
+      </Button>
     </LoadMoreBtnDiv>
-  );
-};
+  )
+}
 
-export default LoadMoreBtn;
+export default LoadMoreBtn

@@ -1,5 +1,5 @@
 // import { mathExact } from 'math-exact';
-import Big from 'big.js';
+import Big from 'big.js'
 
 // const getTheBase = (arg1: number, arg2: number) => {
 //   const [, decimalsArg1] = `${arg1}`.split('.');
@@ -51,29 +51,29 @@ import Big from 'big.js';
 // };
 
 const add = (arg1: number, arg2: number) => {
-  const x = new Big(arg1);
-  return x.add(arg2).toNumber();
-};
+  const x = new Big(arg1)
+  return x.add(arg2).toNumber()
+}
 
 const sub = (arg1: number, arg2: number) => {
-  const x = new Big(arg1);
-  return x.sub(arg2).toNumber();
-};
+  const x = new Big(arg1)
+  return x.sub(arg2).toNumber()
+}
 
 const mul = (arg1: number, arg2: number) => {
-  const x = new Big(arg1);
-  return x.mul(arg2).toNumber();
-};
+  const x = new Big(arg1)
+  return x.mul(arg2).toNumber()
+}
 
 const div = (arg1: number, arg2: number) => {
-  const x = new Big(arg1);
-  return x.div(arg2).toNumber();
-};
+  const x = new Big(arg1)
+  return x.div(arg2).toNumber()
+}
 
 const MathHelper = {
   add,
   sub,
   mul,
   div,
-};
-export default MathHelper;
+}
+export default MathHelper

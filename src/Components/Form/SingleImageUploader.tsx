@@ -1,17 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import styled from 'styled-components';
-import { useIntl } from 'react-intl';
-import IError from '../../Types/IError';
-import IAsset, { initAsset } from '../../Types/Asset/IAsset';
-import AssetService from '../../Services/AssetService';
-import RestfulService from '../../Services/RestfulService';
-import { inlineInputBgColor } from '../../Styles/AppWrapper';
-import Icons from '../Icons';
-import Button from './Button';
-import UploadDragger from './UploadDragger';
-import Spin from './Spin';
-import message from './message';
-import Progress from './Progress';
+import React, { useEffect, useState } from 'react'
+import styled from 'styled-components'
+import { useIntl } from 'react-intl'
+import IError from '../../Types/IError'
+import IAsset, {initAsset} from '../../Types/Asset/IAsset'
+import AssetService from '../../Services/AssetService'
+import { inlineInputBgColor } from '../../Styles/AppWrapper'
+import Icons from '../Icons'
+import Button from './Button'
+import UploadDragger from './UploadDragger'
+import Spin from './Spin'
+import message from './message'
+import Progress from './Progress'
+import AppService from '../../Services/AppService';
 
 const UploadWrapper = styled.div`
   height: 100%;
@@ -20,13 +20,13 @@ const UploadWrapper = styled.div`
     height: 100%;
     width: 100%;
     display: table;
-    background: rgba(0,0,0);
+    background: rgba(0, 0, 0);
     color: white;
-    
+
     .ant-progress-text {
       color: white;
     }
-    
+
     .ant-spin-container {
       height: 100%;
       width: 100%;
@@ -37,9 +37,9 @@ const UploadWrapper = styled.div`
         display: table-cell;
       }
     }
-    
+
     .ant-spin.ant-spin-spinning {
-      .percentage-wrapper{
+      .percentage-wrapper {
         top: 0px;
         bottom: 0px;
         left: 0px;
@@ -48,7 +48,7 @@ const UploadWrapper = styled.div`
         width: 100%;
         height: 100%;
         display: table;
-        
+
         .ant-progress {
           position: relative;
           height: 100%;
@@ -59,7 +59,7 @@ const UploadWrapper = styled.div`
       }
     }
   }
-`;
+`
 const ImageWrapper = styled.div`
   width: 100%;
   height: 100%;
@@ -67,7 +67,7 @@ const ImageWrapper = styled.div`
   text-align: center;
   position: relative;
   background: ${inlineInputBgColor};
-  
+
   .img {
     width: 100%;
     height: 100%;
@@ -107,32 +107,32 @@ const ImageWrapper = styled.div`
       display: block;
     }
   }
-`;
+`
 type iState = {
-  loading: boolean,
-  loadingPercentage: number,
-  loadingErr?: IError,
-  imgAsset?: IAsset,
+  loading: boolean
+  loadingPercentage: number
+  loadingErr?: IError
+  imgAsset?: IAsset
 }
 
 const initialState: iState = {
   loading: false,
   loadingPercentage: 0,
-};
+}
 /**
  *
  * @param props
  */
 type iSingleImageUploader = {
-  initImgUrl?: string,
-  title?: any,
-  hint?: any,
-  onChange?: Function,
+  initImgUrl?: string
+  assetType?: string
+  title?: any
+  hint?: any
+  onChange?: (newAsset: IAsset | null) => void;
+  onSetIsSaving?: (saving: boolean) => void
   icon?: any
-};
-const SingleImageUploader =  ({
-  initImgUrl, title, onChange, icon, hint, ...otherProps
-}: iSingleImageUploader) => {
+}
+const SingleImageUploader = ({ initImgUrl, title, assetType, onChange, icon, hint, onSetIsSaving, ...otherProps }: iSingleImageUploader) => {
   const [state, setState] = useState(initialState);
   const intl = useIntl();
 
@@ -154,6 +154,9 @@ const SingleImageUploader =  ({
   const upload = ({ file }: any) => { // eslint-disable-line
     if (file && file.status) {
       if (file.status.toLowerCase() === 'uploading') {
+        if (onSetIsSaving) {
+          onSetIsSaving(true);
+        }
         setState({
           ...state,
           loading: true,
@@ -200,7 +203,7 @@ const SingleImageUploader =  ({
         </ImageWrapper>
       );
     }
-    const authHeaderObj = RestfulService.getAuthorizationHeader();
+    const authHeaderObj = AppService.getHeaders();
     if (authHeaderObj === null) {
       message.error(intl.formatMessage({ id: 'not-authorize' }));
       return null;
@@ -214,14 +217,14 @@ const SingleImageUploader =  ({
         }>
         <UploadDragger
           listType="picture"
+          name={'file'}
           className={'image-uploader'}
           showUploadList={false}
           onChange={upload}
           accept={'image/*'}
           action={AssetService.getUploadAssetUrl()}
-          headers={{
-            authorization: (authHeaderObj.authorization || ''),
-          }}
+          headers={authHeaderObj.headers}
+          data={`${assetType || ''}`.trim() === '' ? {} : {type: assetType}}
         >
           <div>
             <p className="ant-upload-drag-icon">
@@ -246,6 +249,6 @@ const SingleImageUploader =  ({
       {getContent()}
     </UploadWrapper>
   );
-};
+}
 
-export default SingleImageUploader;
+export default SingleImageUploader

@@ -1,9 +1,9 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import Locale from '../../Components/Form/Locale';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import Locale from '../../Components/Form/Locale'
 
 type AppState = {
-  locale: typeof Locale.enUS,
-  componentSize: 'small' | 'middle' | 'large',
+  locale: typeof Locale.enUS | typeof Locale.zhCN;
+  componentSize: 'small' | 'middle' | 'large'
 }
 /**
  * Initial State
@@ -11,7 +11,7 @@ type AppState = {
 const initialState: AppState = {
   locale: Locale.enUS,
   componentSize: 'large',
-};
+}
 
 /**
  * Actions
@@ -25,7 +25,7 @@ const actions = {
     ...state,
     componentSize: action.payload.componentSize,
   }),
-};
+}
 /**
  * Slice
  */
@@ -33,15 +33,12 @@ const AppSlice = createSlice({
   name: 'App',
   initialState,
   reducers: actions,
-});
+})
 /**
  * action
  */
-export const {
-  changeLocale,
-  changeComponentSize,
-} = AppSlice.actions;
+export const { changeLocale, changeComponentSize } = AppSlice.actions
 /**
  * reducer
  */
-export default AppSlice.reducer;
+export default AppSlice.reducer

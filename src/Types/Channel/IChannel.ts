@@ -1,24 +1,15 @@
-import IBaseModel, { initialBaseModel } from '../IBaseModel';
+import IBaseModel from '../IBaseModel'
+import ICompany from '../Company/ICompany'
+import IChannelScript from './IChannelScript'
 
-interface IChannel extends IBaseModel {
-  name: string,
-  type: string,
-  company_id: string, // eslint-disable-line
-  credential: any, // eslint-disable-line
-  valid: number | boolean,
-  config: any, // eslint-disable-line
-  isMainChannel: number | boolean,
+type IChannel = IBaseModel & {
+  name: string
+  scriptId: string
+  isOnBoarded: boolean
+  settings?: any
+  companyId: string
+  Company?: ICompany
+  Script?: IChannelScript
 }
 
-export const initialChannel: IChannel = {
-  ...initialBaseModel,
-  name: '',
-  type: '',
-  company_id: '', // eslint-disable-line
-  credential: {},
-  valid: 0,
-  config: {},
-  isMainChannel: 0,
-};
-
-export default IChannel;
+export default IChannel

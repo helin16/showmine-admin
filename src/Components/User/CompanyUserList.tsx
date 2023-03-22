@@ -1,156 +1,126 @@
-import React, { useEffect, useState } from 'react';
-import moment from 'moment';
-import { useSelector } from 'react-redux';
-import ICompany from '../../Types/Company/ICompany';
-import UserAvatar from './UserAvatar';
-import CompanyService from '../../Services/CompanyService';
-import ICompanyUser from '../../Types/User/ICompanyUser';
-import { RootState } from '../../Redux/makeReduxStore';
-import translate from '../../i18n/translate';
-import message from '../Form/message';
-import List, {ListItem, ListItemMeta} from '../Form/List';
-import Button from '../Form/Button';
-import PopConfirm from '../Form/Popconfirm';
-import Icons from '../Icons';
-import Switch from '../Form/Switch';
+import React, { useEffect, useState } from 'react'
+import moment from 'moment'
+import { useSelector } from 'react-redux'
+import UserAvatar from './UserAvatar'
+import ICompanyUser, {ROLE_ADMIN, ROLE_NON_ADMIN} from '../../Types/Company/ICompanyUser'
+import { RootState } from '../../Redux/makeReduxStore'
+import translate from '../../i18n/translate'
+import message from '../Form/message'
+import List, { ListItem, ListItemMeta } from '../Form/List'
+import Button from '../Form/Button'
+import PopConfirm from '../Form/Popconfirm'
+import Icons from '../Icons'
+import Switch from '../Form/Switch'
+import CompanyUserService from '../../Services/CompanyUserService';
+import MathHelper from '../../Helpers/MathHelper';
+import IResList from '../../Types/IResList';
 
-type iState = {
-  loading: boolean,
-  list: Array<ICompanyUser>,
+type iCompanyUserList = {
+  searchKeyWord?: string
 }
-const initialState: iState = {
-  loading: false,
-  list: [],
-};
-
-const CompanyUserList = ({ company, searchKeyWord, onUpdated }:
-  {company: ICompany, searchKeyWord?: string, onUpdated?: Function}) => {
-  const [state, setState] = useState(initialState);
-  const { user } = useSelector(
-    (s: RootState) => s.auth,
-  );
+const CompanyUserList = ({ searchKeyWord }: iCompanyUserList) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [count, setCount] = useState(0);
+  const [companyUserList, setCompanyUserList] = useState<IResList<ICompanyUser> | null>(null);
+  const { user } = useSelector(    (s: RootState) => s.auth );
 
   useEffect(() => {
-    if (!company.id) return;
-
     let isCancelled = false;
-    setState((s) => ({
-      ...s,
-      loading: true,
-    }));
-    CompanyService.getCompanyUsers(company.id, { 'key-word': searchKeyWord })
+    setIsLoading(true);
+    CompanyUserService.getAll({
+        where: JSON.stringify({isActive: true, }),
+        include: 'User',
+      })
       .then((res) => {
         if (isCancelled === true) return;
-        const list = res.data.list.sort((a: ICompanyUser, b: ICompanyUser) => (
-          a.user.nick_name >= b.user.nick_name ? 0 : 1
-        ));
-        setState((s) => ({
-          ...s,
-          loading: false,
-          list,
-        }));
-        if (typeof (onUpdated) === 'function') {
-          onUpdated(list);
-        }
+        setCompanyUserList(res);
       })
       .catch((err) => {
         if (isCancelled === true) return;
         message.error(err.data.message);
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
 
     return () => { // eslint-disable-line
       isCancelled = true;
     };
-  }, [company.id, searchKeyWord, onUpdated]);
-  /**
-   *
-   * @param index
-   * @param companyUser
-   * @param newValue
-   */
-  const changeCompanyUserRole = (index: number, companyUser: ICompanyUser, newValue: boolean) => {
-    state.list[index] = {
-      ...companyUser,
-      role_id: (newValue === true ? 1 : 0),
-    };
-    setState({
-      ...state,
-      list: state.list,
-    });
-    if (!company.id || !companyUser.user || !companyUser.user.id) {
-      return;
-    }
-    CompanyService.updateCompanyUser(company.id, companyUser.user.id, { is_admin: newValue === true })
-      .then((res) => {
-        if (res.data.success === true) {
-          message.success(translate('user-updated', { text: companyUser.user.nick_name }));
-        }
-      })
-      .catch((err) => {
-        message.error(translate('error-update', {
-          text1: companyUser.user.nick_name, text2: err.response.data.message,
-        }));
-      });
-  };
+  }, [searchKeyWord, count]);
   /**
    *
    * @param companyUser
    */
-  const isCurrentUser = (companyUser: ICompanyUser) => (!user || !user.id || user.id === companyUser.user_id);
+  const isCurrentUser = (companyUser: ICompanyUser) => (!user || !user.id || user.id === companyUser.userId);
   /**
    *
    * @param companyUser
    * @param index
    */
-  const deleteCompanyUser = (companyUser: ICompanyUser, index: number) => {
-    if (!company.id || !companyUser.user || !companyUser.user.id) {
+  const deleteCompanyUser = (companyUser: ICompanyUser) => {
+    const companyUserId = `${companyUser.id || ''}`.trim();
+    if (companyUserId === '') {
       return;
     }
-    CompanyService.removeCompanyUser(company.id, companyUser.user.id)
+    setIsSaving(true);
+    CompanyUserService.deactivate(companyUserId)
       .then((res) => {
-        if (res.data.success === true) {
-          state.list.splice(index, 1);
-          setState({
-            ...state,
-            list: state.list,
-          });
-          message.success(translate('user-removed', { text: companyUser.user.nick_name }));
-        }
+        message.success(translate('user-removed', { text: companyUser.User?.nickName }));
       })
       .catch((err) => {
         message.error(translate('error-remove', {
-          text1: companyUser.user.nick_name, text2: err.response.data.message,
+          text1: companyUser.User?.nickName, text2: err.response.data.message,
         }));
-      });
+      })
+      .finally(() => {
+        setIsSaving(false);
+        setCount(MathHelper.add(count, 1))
+      })
   };
-  /**
-   *
-   * @param companyUser
-   * @param index
-   */
-  const approveCompanyUser = (companyUser: ICompanyUser, index: number) => {
-    // TODO: !!!!!
-    console.log(companyUser); // eslint-disable-line
-    console.log(index); // eslint-disable-line
-  };
+
+  const updateCompanyUser = (companyUser: ICompanyUser, data: {[key: string]: string | boolean}) => {
+    const companyUserId = `${companyUser.id || ''}`.trim();
+    if (companyUserId === '') {
+      return;
+    }
+    setIsSaving(true);
+    CompanyUserService.update(companyUserId, data)
+      .then((res) => {
+        message.success(translate('user-updated', { text: companyUser.User?.nickName }));
+      })
+      .catch((err) => {
+        message.error(translate('error-update', {
+          text1: companyUser.User?.nickName, text2: err.response.data.message,
+        }));
+      })
+      .finally(() => {
+        setIsSaving(false);
+        setCount(MathHelper.add(count, 1))
+      })
+  }
   /**
    * Rendering
    */
   return (
     <List
       className="company-users-list"
-      loading={state.loading}
+      loading={isLoading || isSaving}
       itemLayout="horizontal"
-      dataSource={state.list}
+      dataSource={(companyUserList?.data || []).sort((a: ICompanyUser, b: ICompanyUser) => (
+          `${a.User?.nickName || ''}`.trim() >= `${b.User?.nickName || ''}`.trim() ? 0 : 1
+        ))
+      }
       renderItem={(companyUser: ICompanyUser, index: number) => (
         <ListItem
           actions={[
             (
-              (isCurrentUser(companyUser) || companyUser.pending === false) ? null : (
+              (isCurrentUser(companyUser) || companyUser.isPending === false) ? null : (
                 <PopConfirm
-                  title={<div><div>Are you sure approve</div><h4>{companyUser.user.nick_name}</h4></div>}
+                  key={'approve-btn'}
+                  title={<div><div>Are you sure approve</div><h4>{companyUser.User?.nickName}</h4></div>}
                   onConfirm={() => {
-                    approveCompanyUser(companyUser, index);
+                    updateCompanyUser(companyUser, {isPending: false});
                   }}
                   okText={translate('yes')}
                   cancelText={translate('no')}
@@ -164,18 +134,20 @@ const CompanyUserList = ({ company, searchKeyWord, onUpdated }:
             ),
             (
               <Switch
+                key={'admin-switch'}
                 checkedChildren={translate('is-admin')}
                 unCheckedChildren={translate('not-admin')}
-                checked={companyUser.role_id === 1}
-                onChange={(e: boolean) => changeCompanyUserRole(index, companyUser, e)}
+                checked={companyUser.role === ROLE_ADMIN}
+                onChange={(e: boolean) => updateCompanyUser(companyUser, {role: e === true ? ROLE_ADMIN : ROLE_NON_ADMIN})}
                 disabled={isCurrentUser(companyUser)}
               />
             ),
             (
               <PopConfirm
-                title={<div><div>Are you sure remove</div><h4>{companyUser.user.nick_name}</h4></div>}
+                key={'delete-btn'}
+                title={<div><div>Are you sure remove</div><h4>{companyUser.User?.nickName}</h4></div>}
                 onConfirm={() => {
-                  deleteCompanyUser(companyUser, index);
+                  deleteCompanyUser(companyUser);
                 }}
                 okText={translate('yes')}
                 cancelText={translate('no')}
@@ -191,16 +163,16 @@ const CompanyUserList = ({ company, searchKeyWord, onUpdated }:
           ]}
         >
           <ListItemMeta
-            avatar={<UserAvatar user={companyUser.user} />}
-            title={companyUser.user.nick_name}
+            avatar={<UserAvatar user={companyUser.User} />}
+            title={companyUser.User?.nickName}
             description={
-              <div>{moment(companyUser.created_at).format('ll')}</div>
+              <div>{moment(companyUser.createdAt).format('ll')}</div>
             }
           />
         </ListItem>
       )}
     />
   );
-};
+}
 
-export default CompanyUserList;
+export default CompanyUserList

@@ -1,45 +1,70 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import CompanyEditor from '../../Components/Company/CompanyEditor';
-import { RootState } from '../../Redux/makeReduxStore';
-import { MENU_KEY_COMPANY_ADMIN } from '../../Components/Menu/MenuItems';
-import ICompany from '../../Types/Company/ICompany';
-import { changeCompany } from '../../Redux/reduxers/auth.slice';
-import CompanyDeleteBtn from '../../Components/Company/CompanyDeleteBtn';
-import translate from '../../i18n/translate';
-import BackendPage from '../../Layouts/BackendPage';
-import BackendPageContentTitle from '../../Layouts/BackendPageContentTitle';
+import React, { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import CompanyEditor from '../../Components/Company/CompanyEditor'
+import { RootState } from '../../Redux/makeReduxStore'
+import { MENU_KEY_COMPANY_ADMIN } from '../../Components/Menu/MenuItems'
+import ICompany from '../../Types/Company/ICompany'
+import { changeCompany } from '../../Redux/reduxers/auth.slice'
+import CompanyDeleteBtn from '../../Components/Company/CompanyDeleteBtn'
+import translate from '../../i18n/translate'
+import BackendPage from '../../Layouts/BackendPage'
+import BackendPageContentTitle from '../../Layouts/BackendPageContentTitle'
+import CompanyService from '../../Services/CompanyService';
+import message from '../../Components/Form/message';
+import MathHelper from '../../Helpers/MathHelper';
 
 type iState = {
-  company?: ICompany,
-  loading: boolean,
-  loadingErr?: object,
+  company?: ICompany
+  loading: boolean;
+  count: number;
 }
 const initState: iState = {
   loading: false,
-};
+  count: 0,
+}
 const CompanyEditPage = () => {
   const [state, setState] = useState(initState);
-  const { company, companyPackage } = useSelector((s: RootState) => s.auth);
-  const dispatch = useDispatch();
+  const { company } = useSelector((s: RootState) => s.auth)
+  const dispatch = useDispatch()
 
   const companyUpdated = (newCompany: ICompany) => {
-    dispatch(changeCompany({ company: newCompany, companyPackage }));
-  };
-
-  useEffect(() => {
-    if (!company || !company.id) return;
+    dispatch(changeCompany({ company: newCompany }));
     setState((s) => ({
       ...s,
-      company,
-      loading: true,
-      loadingErr: undefined,
-    }));
-  }, [company]);
+      count: MathHelper.add(s.count, 1),
+    }))
+  }
 
-  const getControls = () => (
-      <CompanyDeleteBtn company={state.company} onDeleted={companyUpdated} />
-  );
+  useEffect(() => {
+    const companyId = `${company?.id || ''}`.trim();
+    if (companyId === '') return
+    setState((s) => ({
+      ...s,
+      loading: true,
+    }))
+    CompanyService.getItemById(companyId, {
+        include: 'LogoAsset',
+      }).then(resp => {
+        setState((s) => ({
+          ...s,
+          company: resp,
+        }))
+      }).catch(err => {
+        message.error(err.response.data.message);
+      }).finally(() => {
+        setState((s) => ({
+          ...s,
+          loading: false,
+        }))
+      })
+  }, [company?.id, state.count])
+
+  const getControls = () => {
+    if (!state.company) {
+      return null
+    }
+    return <CompanyDeleteBtn company={state.company} onDeleted={companyUpdated} />
+  }
 
   return (
     <BackendPage
@@ -50,13 +75,10 @@ const CompanyEditPage = () => {
           controls={getControls()}
         />
       }
-      >
-      {state.company
-        ? <CompanyEditor company={state.company} onSaved={companyUpdated} />
-        : null
-      }
+    >
+      {state.company ? <CompanyEditor company={state.company} onSaved={companyUpdated} /> : null}
     </BackendPage>
-  );
-};
+  )
+}
 
-export default CompanyEditPage;
+export default CompanyEditPage

@@ -1,11 +1,11 @@
 type IError = {
-  message: string,
-  errors: [],
-};
+  message: string
+  errors: []
+}
 
 export const initError: IError = {
   message: '',
   errors: [],
-};
+}
 
-export default IError;
+export default IError

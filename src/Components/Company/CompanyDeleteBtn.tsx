@@ -1,121 +1,113 @@
-import React, { ChangeEvent, useEffect, useState } from 'react';
-import ICompany from '../../Types/Company/ICompany';
-import CompanyService from '../../Services/CompanyService';
-import {FormInputWrapper} from '../../Styles/AppWrapper';
-import Icons from '../Icons';
-import Button, {iButton} from '../Form/Button';
-import Modal from '../Form/Modal';
-import InputBox from '../Form/InputBox';
-import Typography from '../Form/Typography';
-import message from '../Form/message';
+import React, { ChangeEvent, useState } from 'react'
+import ICompany from '../../Types/Company/ICompany'
+import CompanyService from '../../Services/CompanyService'
+import { FormInputWrapper } from '../../Styles/AppWrapper'
+import Icons from '../Icons'
+import Button, { iButton } from '../Form/Button'
+import Modal from '../Form/Modal'
+import InputBox from '../Form/InputBox'
+import Typography from '../Form/Typography'
+import message from '../Form/message'
 
 type iState = {
-  company?: ICompany,
-  confirming: boolean,
-  confirmingNameDiff?: boolean,
-  confirmingName: string,
-  deleting: boolean,
+  confirming: boolean
+  confirmingNameDiff?: boolean
+  confirmingName: string
+  deleting: boolean
 }
 const initialState: iState = {
   confirming: false,
   confirmingName: '',
   deleting: false,
-};
-/**
- *
- * @param company
- */
+}
+
+
+type iCompanyDeleteBtn = iButton & {
+  company: ICompany
+  onDeleted?: (deletedCompany: ICompany) => void;
+  noText?: boolean
+}
 const CompanyDeleteBtn = ({
-  company, onDeleted, noText, children, ...props
-}: iButton & {
-  company?: ICompany,
-  onDeleted?: Function,
-  noText?: boolean,
-}) => {
-  const [state, setState] = useState(initialState);
-
-  useEffect(() => {
-    if (!company) return;
-    setState((s) => ({
-      ...s,
-      company,
-    }));
-  }, [company]);
-
+  company,
+  onDeleted,
+  noText,
+  children,
+  ...props
+}: iCompanyDeleteBtn) => {
+  const [state, setState] = useState(initialState)
   const deleteComp = () => {
-    if (!state.company || !state.company.id) {
-      return;
+    if (!company || !company.id) {
+      return
     }
-    if (state.confirmingName !== state.company.name) {
+    if (state.confirmingName !== company.name) {
       setState({
         ...state,
         confirmingNameDiff: true,
-      });
-      return;
+      })
+      return
     }
     setState({
       ...state,
       deleting: true,
       confirmingNameDiff: undefined,
-    });
-    CompanyService.deleteCompany(state.company.id)
+    })
+    CompanyService.deactivate(company.id)
       .then((res) => {
-        setState(initialState);
-        message.success('Company deleted successfully.');
+        setState(initialState)
+        message.success('Company deleted successfully.')
         setState({
           ...state,
           deleting: false,
-        });
-        if (typeof (onDeleted) === 'function') {
-          onDeleted(res.data);
+        })
+        if (typeof onDeleted === 'function') {
+          onDeleted(res)
         }
       })
       .catch((err) => {
-        message.error(`Error when deleting company: ${err.message}`);
-        setState(initialState);
-      });
-  };
+        message.error(`Error when deleting company: ${err.message}`)
+        setState(initialState)
+      })
+  }
 
   const cancel = () => {
     setState({
       ...state,
       confirming: false,
-    });
-  };
+    })
+  }
 
   const getErrorMsg = () => {
     if (state.confirmingNameDiff === undefined) {
-      return null;
+      return null
     }
 
     return (
-      <Typography.Text type="danger">
-        <Typography.Text type="warning"><Icons.WarningOutlined /></Typography.Text>{' '}
-        {
-          state.confirmingName === ''
-            ? 'Please type in the company name to confirm'
-            : 'Provided name is different from company name'
-        }
+      <Typography.Text type='danger'>
+        <Typography.Text type='warning'>
+          <Icons.WarningOutlined />
+        </Typography.Text>{' '}
+        {state.confirmingName === ''
+          ? 'Please type in the company name to confirm'
+          : 'Provided name is different from company name'}
       </Typography.Text>
-    );
-  };
+    )
+  }
 
   /**
    * rendering
    */
-  if (!state.company) {
-    return null;
-  }
   return (
     <div>
-      <Button {...({
-        type: 'primary',
-        danger: true,
-        icon: <Icons.DeleteOutlined />,
-        ...props,
-      })}
-        onClick={() => setState({ ...state, confirming: true })}>
-        {noText === true ? null : (children || 'Delete')}
+      <Button
+        {...{
+          type: 'primary',
+          danger: true,
+          icon: <Icons.DeleteOutlined />,
+          ...props,
+        }}
+        onClick={() => setState({ ...state, confirming: true })}
+      >
+        {noText === true ? null : children || 'Delete'}
       </Button>
       <Modal
         open={state.confirming === true}
@@ -127,11 +119,13 @@ const CompanyDeleteBtn = ({
         cancelButtonProps={{ type: 'link' }}
       >
         <p>
-          After deleting this company, you will <b>NOT be able to recover it anymore</b>.
-          To avoid accidental deleting, please type in the company name to confirm deletion
+          After deleting this company, you will <b>NOT be able to recover it anymore</b>. To avoid accidental deleting,
+          please type in the company name to confirm deletion
         </p>
         <FormInputWrapper>
-          <div>Please type in <b>{state.company.name}</b> to confirm:</div>
+          <div>
+            Please type in <b>{company.name}</b> to confirm:
+          </div>
           <InputBox
             allowClear
             placeholder={'Type in the company name to confirm'}
@@ -142,8 +136,7 @@ const CompanyDeleteBtn = ({
         {getErrorMsg()}
       </Modal>
     </div>
-  );
-};
+  )
+}
 
-
-export default CompanyDeleteBtn;
+export default CompanyDeleteBtn

@@ -49,8 +49,7 @@ import {
   ClockCircleOutlined,
   CloseOutlined,
   ReloadOutlined,
-} from '@ant-design/icons';
-
+} from '@ant-design/icons'
 
 const Icons = {
   UserOutlined,
@@ -105,4 +104,4 @@ const Icons = {
   ReloadOutlined,
 }
 
-export default Icons;
+export default Icons

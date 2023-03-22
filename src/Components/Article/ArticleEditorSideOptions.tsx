@@ -1,36 +1,32 @@
-import React, { useState } from 'react';
-import { useIntl, FormattedMessage } from 'react-intl';
-import IArticle from '../../Types/Article/IArticle';
-import ICompany from '../../Types/Company/ICompany';
-import ArticleEditorTags from './ArticleEditorTags';
-import IAsset from '../../Types/Asset/IAsset';
-import ArticleEditorAuthorSelector from './ArticleEditorAuthorSelector';
-import ArticleService from '../../Services/ArticleService';
-import InlineRichTextEditor from '../Form/InlineRichTextEditor';
-import {
-  BoxTitleDiv,
-  BoxTitleSuffix,
-  FormInputWrapper,
-} from '../../Styles/AppWrapper';
-import message from '../Form/message';
-import SingleImageUploader from '../Form/SingleImageUploader';
-import Space from '../Form/Space';
-import Switch from '../Form/Switch';
-import InputBox from '../Form/InputBox';
+import React, { useState } from 'react'
+import { useIntl, FormattedMessage } from 'react-intl'
+import IArticle from '../../Types/Article/IArticle'
+import ArticleEditorTags from './ArticleEditorTags'
+import IAsset, {ASSET_TYPE_ITEM_COVER, ASSET_TYPE_ITEM_DESCRIPTION} from '../../Types/Asset/IAsset'
+import ArticleEditorAuthorSelector from './ArticleEditorAuthorSelector'
+import ArticleService from '../../Services/ArticleService'
+import InlineRichTextEditor from '../Form/InlineRichTextEditor'
+import { BoxTitleDiv, BoxTitleSuffix, FormInputWrapper } from '../../Styles/AppWrapper'
+import message from '../Form/message'
+import SingleImageUploader from '../Form/SingleImageUploader'
+import Spin from '../Form/Spin';
 
 type iArticleEditorSideOptions = {
-  article: IArticle,
-  company: ICompany,
-  onUpdate: (fieldName: string, newValue: any) => void,
-  onUpdated?: (newArticle: IArticle) => void,
-  onSetIsSaving?: (saving: boolean) => void;
+  article: IArticle
+  onUpdate: (fieldName: string, newValue: string | boolean | number) => void
+  onUpdated?: (newArticle: IArticle) => void
+  onSetIsSaving?: (saving: boolean) => void
 }
 /**
  *
  */
-const ArticleEditorSideOptions =  ({ article, company, onUpdate, onUpdated, onSetIsSaving }: iArticleEditorSideOptions) => {
+const ArticleEditorSideOptions = ({
+  article,
+  onUpdate,
+  onUpdated,
+  onSetIsSaving,
+}: iArticleEditorSideOptions) => {
   const [isSaving, setIsSaving] = useState(false);
-  const [newEditor, setNewEditor] = useState(article.configObj?.writer || '');
   const intl = useIntl();
 
   const imgUploaded = (newAsset: IAsset | null) => {
@@ -40,11 +36,13 @@ const ArticleEditorSideOptions =  ({ article, company, onUpdate, onUpdated, onSe
     } else {
       setIsSaving(true);
     }
-    ArticleService.updateArticle(article.id, { ...article, images: newAsset === null ? [] : [newAsset] })
+    ArticleService.update(article.id, {
+        coverAssetId: newAsset === null ? null : newAsset.id
+      })
       .then((res) => {
         message.success(newAsset === null ? 'Cover image removed' : 'Cover image updated.');
         if (typeof (onUpdated) === 'function') {
-          onUpdated(res.data);
+          onUpdated(res);
         }
       })
       .catch((err) => {
@@ -59,20 +57,15 @@ const ArticleEditorSideOptions =  ({ article, company, onUpdate, onUpdated, onSe
       })
   };
 
-  const updateEditor = () => {
-    onUpdate('configObj', {
-      ...article.configObj,
-      writer: `${newEditor || ''}`.trim(),
-    })
-  }
-
   return (
-    <div className={'article-editor-side-options'}>
+    <Spin spinning={isSaving} className={'article-editor-side-options'}>
       <FormInputWrapper style={{ width: '100%', height: '192px', background: '#eee' }}>
         <SingleImageUploader
+          assetType={ASSET_TYPE_ITEM_COVER}
           onChange={imgUploaded}
           title={intl.formatMessage({ id: 'cover-image' })}
-          initImgUrl={article.images.length > 0 ? article.images[0].url : undefined}
+          initImgUrl={`${article.CoverAsset?.url || ''}`.trim()}
+          onSetIsSaving={onSetIsSaving}
         />
       </FormInputWrapper>
 
@@ -81,26 +74,14 @@ const ArticleEditorSideOptions =  ({ article, company, onUpdate, onUpdated, onSe
           <FormattedMessage id="author" />
           <BoxTitleSuffix><FormattedMessage id="author-manage" /></BoxTitleSuffix>
         </BoxTitleDiv>
-        <ArticleEditorAuthorSelector article={article} onUpdated={onUpdated} onSetIsSaving={onSetIsSaving} />
-      </FormInputWrapper>
-
-      <FormInputWrapper>
-        <BoxTitleDiv>
-          <FormattedMessage id="Editor" />
-        </BoxTitleDiv>
-        <InputBox
-          value={newEditor}
-          onChange={(e) => setNewEditor(e.target.value)}
-          onBlur={() => updateEditor()}
-          onPressEnter={() => updateEditor()}
-        />
+        <ArticleEditorAuthorSelector article={article} onUpdate={onUpdate} />
       </FormInputWrapper>
 
       <FormInputWrapper>
         <BoxTitleDiv>
           <FormattedMessage id="tags" />
         </BoxTitleDiv>
-        <ArticleEditorTags article={article} company={company} onUpdate={onUpdate} />
+        <ArticleEditorTags article={article} />
       </FormInputWrapper>
 
       <FormInputWrapper>
@@ -111,37 +92,13 @@ const ArticleEditorSideOptions =  ({ article, company, onUpdate, onUpdated, onSe
           </BoxTitleSuffix>
         </BoxTitleDiv>
         <InlineRichTextEditor
+          assetType={ASSET_TYPE_ITEM_DESCRIPTION}
           value={article.excerpt || ''}
           onChange={(newValue: string) => onUpdate('excerpt', newValue)}
         />
       </FormInputWrapper>
-
-      <FormInputWrapper>
-        <BoxTitleDiv>
-          <Space>
-            <span><FormattedMessage id="display-footer" /></span>
-            <Switch checkedChildren={intl.formatMessage({ id: 'yes' })} unCheckedChildren={intl.formatMessage({ id: 'no' })}
-              checked={article.configObj?.ifShowCompanyContact === true}
-              onChange={(checked: boolean) => onUpdate('configObj', {
-                ...article.configObj,
-                ifShowCompanyContact: checked === true ? true : false,
-              })}
-              loading={isSaving}
-            />
-          </Space>
-        </BoxTitleDiv>
-        {article.configObj?.ifShowCompanyContact !== true ? null : (
-          <InlineRichTextEditor
-            value={company.configObj?.defaultContact || ''}
-            onChange={(newValue: string) => onUpdate('configObj', {
-              ...article.configObj,
-              defaultContact: newValue,
-            })}
-          />
-        )}
-      </FormInputWrapper>
-    </div>
+    </Spin>
   );
-};
+}
 
-export default ArticleEditorSideOptions;
+export default ArticleEditorSideOptions

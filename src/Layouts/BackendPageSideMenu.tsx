@@ -1,11 +1,11 @@
-import React from 'react';
-import styled from 'styled-components';
-import { useSelector } from 'react-redux';
-import CompanyService from '../Services/CompanyService';
-import MenuItems, { MENU_ACCESS_LEVEL_COMPANY_ADMIN, MENU_ACCESS_LEVEL_SUPER_ADMIN } from '../Components/Menu/MenuItems';
-import { RootState } from '../Redux/makeReduxStore';
-import Menu from '../Components/Form/Menu';
-import {Link} from 'react-router-dom';
+import React from 'react'
+import styled from 'styled-components'
+import { useSelector } from 'react-redux'
+import MenuItems, { MENU_ACCESS_LEVEL_COMPANY_ADMIN, MENU_ACCESS_LEVEL_SUPER_ADMIN } from '../Components/Menu/MenuItems'
+import { RootState } from '../Redux/makeReduxStore'
+import Menu from '../Components/Form/Menu'
+import { Link } from 'react-router-dom'
+import {ROLE_ADMIN} from '../Types/Company/ICompanyUser';
 
 const SideMenuWrapper = styled.div`
   .ant-menu-item {
@@ -19,58 +19,56 @@ const SideMenuWrapper = styled.div`
     white-space: nowrap;
     text-overflow: ellipsis;
   }
-`;
+`
 const BackendPageSideMenu = () => {
-  const { selectedMenuKey } = useSelector(
-    (s: RootState) => s.backendPage,
-  );
-  const { user, company } = useSelector(
-    (s: RootState) => s.auth,
-  );
+  const { selectedMenuKey } = useSelector((s: RootState) => s.backendPage)
+  const { user, company, companyUsers } = useSelector((s: RootState) => s.auth)
 
-
-  const getMenuItems = ()  => {
+  const getMenuItems = () => {
     return MenuItems.map((item) => {
-      if (CompanyService.isUserCompanyAdmin(user, company) !== true
-        && CompanyService.isUserSuperAdmin(user) !== true
+      if ((companyUsers || []).filter(companyUser => companyUser.companyId === company?.id && companyUser.role === ROLE_ADMIN).length === 0
+        && user?.isSuperAdmin !== true
         && item.access === MENU_ACCESS_LEVEL_COMPANY_ADMIN) {
         return undefined;
       }
-      if (CompanyService.isUserSuperAdmin(user) !== true
-        && item.access === MENU_ACCESS_LEVEL_SUPER_ADMIN) {
-        return undefined;
+      if (user?.isSuperAdmin !== true && item.access === MENU_ACCESS_LEVEL_SUPER_ADMIN) {
+        return undefined
       }
       if (!item.items) {
-        return ({
+        return {
           label: <Link to={item.url}>{item.name}</Link>,
           key: item.key,
           icon: item.icon,
-        });
-      }
-      return ({
-          type: 'group',
-          label: <div className={'group-div'}>{item.name}</div>,
-          key: item.key,
-          children: item.items.map((subItem) => ( {
-            label: <Link type={'link'} to={subItem.url}>{subItem.name}</Link>,
-            key: subItem.key,
-            icon: subItem.icon,
-          }))
         }
-      );
-    }).filter(item => item !== undefined)
+      }
+      return {
+        type: 'group',
+        label: <div className={'group-div'}>{item.name}</div>,
+        key: item.key,
+        children: item.items.map((subItem) => ({
+          label: (
+            <Link type={'link'} to={subItem.url}>
+              {subItem.name}
+            </Link>
+          ),
+          key: subItem.key,
+          icon: subItem.icon,
+        })),
+      }
+    }).filter((item) => item !== undefined)
   }
 
   return (
     <SideMenuWrapper>
       <Menu
-        theme="dark"
+        theme='dark'
         selectedKeys={selectedMenuKey ? [selectedMenuKey] : undefined}
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         items={getMenuItems()}
       />
     </SideMenuWrapper>
-  );
-};
+  )
+}
 
-export default BackendPageSideMenu;
+export default BackendPageSideMenu

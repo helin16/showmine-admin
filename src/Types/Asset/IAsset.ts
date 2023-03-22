@@ -1,15 +1,26 @@
-type IAsset = {
-  id?: string,
-  comment?: null | string,
-  file_size: number, // eslint-disable-line
-  mime_type?: string, // eslint-disable-line
-  url: string,
-  active?: boolean,
-};
+import IBaseModel from '../IBaseModel'
+
+export const ASSET_TYPE_TMP = 'TMP';
+export const ASSET_TYPE_USER_PROFILE = 'USER_PROFILE';
+export const ASSET_TYPE_COMPANY_PROFILE = 'COMPANY_PROFILE';
+export const ASSET_TYPE_ITEM_DESCRIPTION = 'ITEM_DESCRIPTION';
+export const ASSET_TYPE_ITEM_COVER = 'ITEM_COVER';
+
+type IAsset = IBaseModel & {
+  type: string
+  externalAssetId?: string | null
+  fileName: string
+  fileType?: string | null
+  fileSize?: number | null
+  comments?: string
+  url?: string
+  companyId: string
+}
 
 export const initAsset: IAsset = {
-  url: '',
-  file_size: 0,
-};
+  type: '',
+  fileName: '',
+  companyId: '',
+}
 
-export default IAsset;
+export default IAsset

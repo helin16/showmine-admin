@@ -1,15 +1,12 @@
-import React, {useState} from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { RootState } from '../../Redux/makeReduxStore';
-import {changeCompany, changeCompanyPackage} from '../../Redux/reduxers/auth.slice';
-import ICompany from '../../Types/Company/ICompany';
-import Utils from '../../Services/Utils';
-import UserService from '../../Services/UserService';
-import { BACK_END_URL } from '../../UrlMap';
-import Spin from '../Form/Spin';
-import Select from '../Form/Select';
-import message from '../Form/message';
+import React, {useEffect, useState} from 'react'
+import { useSelector } from 'react-redux'
+import { RootState } from '../../Redux/makeReduxStore'
+import ICompany from '../../Types/Company/ICompany'
+import { BACK_END_URL } from '../../UrlMap'
+import Spin from '../Form/Spin'
+import Select from '../Form/Select'
+import message from '../Form/message'
+import AuthService from '../../Services/AuthService';
 import CompanyService from '../../Services/CompanyService';
 
 /**
@@ -17,33 +14,74 @@ import CompanyService from '../../Services/CompanyService';
  */
 const UserCompanySelector = () => {
   const [isSaving, setIsSaving] = useState(false);
-  const { user, company } = useSelector((s: RootState) => s.auth);
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const selectedValue = (company && company.id)
+  const [isLoading, setIsLoading] = useState(false);
+  const [companyMap, setCompanyMap] = useState<{[key: string]: ICompany}>({});
+  const { user, company, companyUsers } = useSelector((s: RootState) => s.auth);
+
+  const getSelectedValue = () => (company && company.id)
     ? { value: company.id, label: company.name }
     : { value: '', label: '' };
 
-  if (!user || !user.userCompany) {
-    return null;
-  }
+  useEffect(() => {
+    if (user?.isSuperAdmin !== true) {
+      setCompanyMap(
+        (companyUsers || [])
+          .map(companyUser => companyUser.Company)
+          .filter(comp => comp !== undefined)
+          .reduce((map, comp) => {
+            return {
+              ...map,
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              [`${comp.id || ''}`]: comp,
+            }
+          }, {})
+      );
+      return;
+    }
+
+    let isCanceled = false;
+    setIsLoading(true);
+    CompanyService.getAll({
+        where: JSON.stringify({isActive: true}),
+        perPage: 9999,
+        currentPage: 1,
+      }).then(resp => {
+        if (isCanceled === true) return;
+        setCompanyMap((resp.data || []).reduce((map, comp) => {
+          return {
+            ...map,
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            [`${comp.id || ''}`]: comp,
+          }
+        }, {}))
+      }).catch(err => {
+        if (isCanceled === true) return;
+        message.error(`Error: ${err.response.data.message}`)
+      }).finally(() => {
+        if (isCanceled === true) return;
+        setIsLoading(false);
+      })
+    return () => {
+      isCanceled = true;
+    }
+  }, [user?.id, user?.isSuperAdmin, companyUsers])
+
   /**
    *
    * @param newValue
    */
   const onChange = (newValue: any) => { // eslint-disable-line
     const newCompanyId = newValue.key;
-    const companies = (user && user.userCompany) ? user.userCompany : [];
-    const companyMap = Utils.convertArrayToObject(companies, 'id');
     setIsSaving(true);
     Promise.all([
-        UserService.setLastVisitCompany(companyMap[newCompanyId]),
-        CompanyService.getPackageDetails(newCompanyId),
+        AuthService.updateMe({
+          lastVisitCompanyId: newCompanyId,
+        }),
       ])
       .then(res => {
-        dispatch(changeCompany({ company: companyMap[newCompanyId] }));
-        dispatch(changeCompanyPackage({ companyPackage: res[1].data }));
-        navigate(BACK_END_URL);
+        window.location.href = BACK_END_URL;
       })
       .catch(err => {
         message.error(err.response.data.message)
@@ -53,19 +91,17 @@ const UserCompanySelector = () => {
       })
   };
 
-  if (user.userCompany.length === 0) {
+  if (Object.keys(companyMap).length === 0) {
     return null;
   }
-  /**
-   *
-   */
+
   return (
-    <Spin spinning={isSaving}>
+    <Spin spinning={isSaving || isLoading}>
       <Select
         labelInValue
         showSearch
         optionFilterProp="children"
-        value={selectedValue}
+        value={getSelectedValue()}
         style={{ width: '160px' }}
         onChange={onChange}
         filterOption={(input, option) => {
@@ -74,19 +110,17 @@ const UserCompanySelector = () => {
           }
           return `${option?.children || ''}`.toLowerCase().indexOf(input.toLowerCase()) >= 0;
         }}
-        // @ts-ignore
         options={
-          user.userCompany.map((comp: ICompany) => {
-            if (!comp.id) return null;
+          Object.values(companyMap).map((comp: ICompany) => {
             return ({
               label: comp.name,
               value: comp.id,
             });
-          }).filter(item => item !== null)
+          })
         }
       />
     </Spin>
   );
-};
+}
 
-export default UserCompanySelector;
+export default UserCompanySelector

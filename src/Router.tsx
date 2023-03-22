@@ -1,8 +1,8 @@
-import AppWrapper, {AppCssWrapper} from './Styles/AppWrapper';
-import {BrowserRouter, Route, Routes} from 'react-router-dom';
-import LoginPage from './Pages/Auth/LoginPage';
-import Page404 from './Pages/Error/Page404';
-import React from 'react';
+import AppWrapper, { AppCssWrapper } from './Styles/AppWrapper'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import LoginPage from './Pages/Auth/LoginPage'
+import Page404 from './Pages/Error/Page404'
+import React from 'react'
 import {
   ARTICLE_DETAILS_URL,
   ARTICLE_LIST_URL,
@@ -17,25 +17,26 @@ import {
   FORGOT_PASSWORD_URL,
   LOGIN_URL,
   MEDIA_LIST_URL,
-  MY_PROFILE_URL, WIZARD_URL
-} from './UrlMap';
-import ForgotPasswordPage from './Pages/Auth/ForgotPasswordPage';
-import ProtectedRoute from './Components/Route/ProtectedRoute';
-import DashBoardPage from './Pages/Dashboard/DashBoardPage';
-import MediaListPage from './Pages/Media/MediaListPage';
-import CommentsListPage from './Pages/Comments/CommentsListPage';
-import MyProfilePage from './Pages/User/MyProfilePage';
-import CompanyAdminRoute from './Components/Route/CompanyAdminRoute';
-import CompanyEditPage from './Pages/Company/CompanyEditPage';
-import BillingPage from './Pages/Company/BillingPage';
-import CompanyUsersPage from './Pages/Company/CompanyUsersPage';
-import SuperAdminRoute from './Components/Route/SuperAdminRoute';
-import CompanyListPage from './Pages/Company/CompanyListPage';
-import CompanyChannelsPage from './Pages/Channel/ChannelsPage';
-import CompanyNewChannelPage from './Pages/Channel/CompanyNewChannelPage';
-import WizardPage from './Pages/User/WizardPage';
-import ArticleListPage from './Pages/Article/ArticleListPage';
-import ArticleDetailsPage from './Pages/Article/ArticleDetailsPage';
+  MY_PROFILE_URL,
+  WIZARD_URL,
+} from './UrlMap'
+import ForgotPasswordPage from './Pages/Auth/ForgotPasswordPage'
+import ProtectedRoute from './Components/Route/ProtectedRoute'
+import DashBoardPage from './Pages/Dashboard/DashBoardPage'
+import MediaListPage from './Pages/Media/MediaListPage'
+import CommentsListPage from './Pages/Comments/CommentsListPage'
+import MyProfilePage from './Pages/User/MyProfilePage'
+import CompanyAdminRoute from './Components/Route/CompanyAdminRoute'
+import CompanyEditPage from './Pages/Company/CompanyEditPage'
+import BillingPage from './Pages/Company/BillingPage'
+import CompanyUsersPage from './Pages/Company/CompanyUsersPage'
+import SuperAdminRoute from './Components/Route/SuperAdminRoute'
+import CompanyListPage from './Pages/Company/CompanyListPage'
+import CompanyChannelsPage from './Pages/Channel/ChannelsPage'
+import CompanyNewChannelPage from './Pages/Channel/CompanyNewChannelPage'
+import WizardPage from './Pages/User/WizardPage'
+import ArticleListPage from './Pages/Article/ArticleListPage'
+import ArticleDetailsPage from './Pages/Article/ArticleDetailsPage'
 
 const Router = () => {
   return (
@@ -44,55 +45,133 @@ const Router = () => {
       <AppWrapper className={'app-wrapper'}>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<LoginPage />}/>
-            <Route path={LOGIN_URL} element={<LoginPage />}/>
-            <Route path={FORGOT_PASSWORD_URL} element={<ForgotPasswordPage />}/>
+            <Route path='/' element={<LoginPage />} />
+            <Route path={LOGIN_URL} element={<LoginPage />} />
+            <Route path={FORGOT_PASSWORD_URL} element={<ForgotPasswordPage />} />
 
-            <Route path={MY_PROFILE_URL}
-                   element={<ProtectedRoute><MyProfilePage /></ProtectedRoute>} />
+            <Route
+              path={MY_PROFILE_URL}
+              element={
+                <ProtectedRoute>
+                  <MyProfilePage />
+                </ProtectedRoute>
+              }
+            />
 
             <Route
               path={BACK_END_URL}
-              element={<ProtectedRoute><DashBoardPage /></ProtectedRoute>} />
+              element={
+                <ProtectedRoute>
+                  <DashBoardPage />
+                </ProtectedRoute>
+              }
+            />
 
             <Route
               path={ARTICLE_LIST_URL}
-              element={<ProtectedRoute><ArticleListPage /></ProtectedRoute>} />
+              element={
+                <ProtectedRoute>
+                  <ArticleListPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path={ARTICLE_DETAILS_URL}
-              element={<ProtectedRoute><ArticleDetailsPage /></ProtectedRoute>} />
+              element={
+                <ProtectedRoute>
+                  <ArticleDetailsPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path={COMMENTS_LIST_URL}
-              element={<ProtectedRoute><CommentsListPage /></ProtectedRoute>} />
+              element={
+                <ProtectedRoute>
+                  <CommentsListPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path={MEDIA_LIST_URL}
-              element={<ProtectedRoute><MediaListPage /></ProtectedRoute>} />
+              element={
+                <ProtectedRoute>
+                  <MediaListPage />
+                </ProtectedRoute>
+              }
+            />
 
             <Route
               path={WIZARD_URL}
-              element={<ProtectedRoute><WizardPage /></ProtectedRoute>} />
+              element={
+                <ProtectedRoute>
+                  <WizardPage />
+                </ProtectedRoute>
+              }
+            />
 
             <Route
               path={COMPANY_ADMIN_URL}
-              element={<ProtectedRoute><CompanyAdminRoute><CompanyEditPage /></CompanyAdminRoute></ProtectedRoute>} />
+              element={
+                <ProtectedRoute>
+                  <CompanyAdminRoute>
+                    <CompanyEditPage />
+                  </CompanyAdminRoute>
+                </ProtectedRoute>
+              }
+            />
             <Route
               path={COMPANY_BILLING_URL}
-              element={<ProtectedRoute><CompanyAdminRoute><BillingPage /></CompanyAdminRoute></ProtectedRoute>} />
+              element={
+                <ProtectedRoute>
+                  <CompanyAdminRoute>
+                    <BillingPage />
+                  </CompanyAdminRoute>
+                </ProtectedRoute>
+              }
+            />
             <Route
               path={COMPANY_CHANNEL_NEW_URL}
-              element={<ProtectedRoute><CompanyAdminRoute><CompanyNewChannelPage /></CompanyAdminRoute></ProtectedRoute>} />
+              element={
+                <ProtectedRoute>
+                  <CompanyAdminRoute>
+                    <CompanyNewChannelPage />
+                  </CompanyAdminRoute>
+                </ProtectedRoute>
+              }
+            />
             <Route
               path={COMPANY_CHANNELS_URL}
-              element={<ProtectedRoute><CompanyAdminRoute><CompanyChannelsPage /></CompanyAdminRoute></ProtectedRoute>} />
+              element={
+                <ProtectedRoute>
+                  <CompanyAdminRoute>
+                    <CompanyChannelsPage />
+                  </CompanyAdminRoute>
+                </ProtectedRoute>
+              }
+            />
             <Route
               path={COMPANY_USERS_URL}
-              element={<ProtectedRoute><CompanyAdminRoute><CompanyUsersPage /></CompanyAdminRoute></ProtectedRoute>} />
+              element={
+                <ProtectedRoute>
+                  <CompanyAdminRoute>
+                    <CompanyUsersPage />
+                  </CompanyAdminRoute>
+                </ProtectedRoute>
+              }
+            />
 
             <Route
               path={COMPANY_LIST_URL}
-              element={<ProtectedRoute><SuperAdminRoute><CompanyListPage /></SuperAdminRoute></ProtectedRoute>} />
+              element={
+                <ProtectedRoute>
+                  <SuperAdminRoute>
+                    <CompanyListPage />
+                  </SuperAdminRoute>
+                </ProtectedRoute>
+              }
+            />
 
-            <Route path="*" element={<Page404 />} />
+            <Route path='*' element={<Page404 />} />
           </Routes>
         </BrowserRouter>
       </AppWrapper>
@@ -100,4 +179,4 @@ const Router = () => {
   )
 }
 
-export default Router;
+export default Router

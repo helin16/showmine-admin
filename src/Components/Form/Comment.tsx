@@ -1,20 +1,19 @@
-import styled from 'styled-components';
+import styled from 'styled-components'
 
 type iComment = {
-  author: any;
-  avatar: any;
-  actions: any;
-  content: any;
-  children?: any;
-  datetime: any;
+  author: any
+  avatar: any
+  actions: any
+  content: any
+  children?: any
+  datetime: any
 }
-
 
 const Wrapper = styled.div`
   position: relative;
   background-color: inherit;
   width: 100%;
-  
+
   .ant-comment-inner {
     display: flex;
     padding: 16px 0;
@@ -39,7 +38,7 @@ const Wrapper = styled.div`
         justify-content: flex-start;
         margin-bottom: 4px;
         font-size: 14px;
-        
+
         > * {
           padding-right: 8px;
           font-size: 12px;
@@ -48,7 +47,7 @@ const Wrapper = styled.div`
 
         .ant-comment-content-author-name {
           color: #00000073;
-          transition: color .3s;
+          transition: color 0.3s;
         }
 
         .ant-comment-content-author-time {
@@ -65,25 +64,19 @@ const Wrapper = styled.div`
       }
     }
   }
-`;
+`
 const Comment = ({ author, datetime, actions, avatar, content, children }: iComment) => {
   return (
     <Wrapper className={'ant-comment'}>
       <div className={'ant-comment-inner'}>
-        <div className={'ant-comment-avatar'}>
-          {avatar}
-        </div>
+        <div className={'ant-comment-avatar'}>{avatar}</div>
         <div className={'ant-comment-content'}>
           <div className={'ant-comment-content-author'}>
             <span className={'ant-comment-content-author-name'}>{author}</span>
             <span className={'ant-comment-content-author-time'}>{datetime}</span>
           </div>
-          <div className={'ant-comment-content-detail'}>
-            {content}
-          </div>
-          <div className={'ant-comment-actions'}>
-            {actions}
-          </div>
+          <div className={'ant-comment-content-detail'}>{content}</div>
+          <div className={'ant-comment-actions'}>{actions}</div>
           {children}
         </div>
       </div>
@@ -91,4 +84,4 @@ const Comment = ({ author, datetime, actions, avatar, content, children }: iComm
   )
 }
 
-export default Comment;
+export default Comment

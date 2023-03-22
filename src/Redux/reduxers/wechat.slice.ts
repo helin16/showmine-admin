@@ -1,19 +1,19 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import wx from 'wechat-jssdk-ts';
-import IError from '../../Types/IError';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import wx from 'wechat-jssdk-ts'
+import IError from '../../Types/IError'
 
-export type WeChatSliceState ={
+export type WeChatSliceState = {
   isInWeChat: boolean
-  wx?: typeof wx,
-  loadJsError?: IError,
-};
+  wx?: typeof wx
+  loadJsError?: IError
+}
 
 /**
  * Initial State
  */
 const initialState: WeChatSliceState = {
   isInWeChat: false,
-};
+}
 
 /**
  * Actions
@@ -28,7 +28,7 @@ const actions = {
     wx: action.payload.wx,
     loadJsError: action.payload.loadJsError,
   }),
-};
+}
 /**
  * Slice
  */
@@ -36,14 +36,12 @@ const WeChatSlice = createSlice({
   name: 'WeChat',
   initialState,
   reducers: actions,
-});
+})
 /**
  * action
  */
-export const {
-  loadedWeChatJs, openedInWeChat,
-} = WeChatSlice.actions;
+export const { loadedWeChatJs, openedInWeChat } = WeChatSlice.actions
 /**
  * reducer
  */
-export default WeChatSlice.reducer;
+export default WeChatSlice.reducer

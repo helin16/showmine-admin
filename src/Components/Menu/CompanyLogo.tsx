@@ -1,7 +1,7 @@
-import React from 'react';
-import styled from 'styled-components';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../Redux/makeReduxStore';
+import React from 'react'
+import styled from 'styled-components'
+import { useSelector } from 'react-redux'
+import { RootState } from '../../Redux/makeReduxStore'
 
 const CompanyName = styled.div`
   width: 100%;
@@ -11,16 +11,14 @@ const CompanyName = styled.div`
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-`;
+`
 
 const CompanyLogo = () => {
-  const { company } = useSelector((state: RootState) => state.auth);
+  const { company } = useSelector((state: RootState) => state.auth)
   if (company === undefined || company === null || !('name' in company)) {
-    return null;
+    return null
   }
-  return (
-    <CompanyName>{ company.name }</CompanyName>
-  );
-};
+  return <CompanyName>{company.name}</CompanyName>
+}
 
-export default CompanyLogo;
+export default CompanyLogo

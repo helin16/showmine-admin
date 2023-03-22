@@ -1,11 +1,11 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit'
 
-export type BillingPageState ={
-  showPlans: boolean,
-  showConfirm: boolean,
-  showChoosedPlan: boolean,
-  showInvoice: boolean,
-};
+export type BillingPageState = {
+  showPlans: boolean
+  showConfirm: boolean
+  showChoosedPlan: boolean
+  showInvoice: boolean
+}
 
 /**
  * Initial State
@@ -15,7 +15,7 @@ const initialState: BillingPageState = {
   showConfirm: false,
   showChoosedPlan: false,
   showInvoice: false,
-};
+}
 
 /**
  * Actions
@@ -53,7 +53,7 @@ const actions = {
     ...state,
     showInvoice: false,
   }),
-};
+}
 /**
  * Slice
  */
@@ -61,7 +61,7 @@ const BillingPageSlice = createSlice({
   name: 'BillingPage',
   initialState,
   reducers: actions,
-});
+})
 /**
  * action
  */
@@ -74,8 +74,8 @@ export const {
   hideChoosedPlan,
   displayInvoice,
   hideInvoice,
-} = BillingPageSlice.actions;
+} = BillingPageSlice.actions
 /**
  * reducer
  */
-export default BillingPageSlice.reducer;
+export default BillingPageSlice.reducer

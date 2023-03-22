@@ -1,6 +1,6 @@
-import React, {useEffect} from 'react';
-import styled from 'styled-components';
-import {pageMinHeight} from '../Styles/AppWrapper';
+import React, { useEffect } from 'react'
+import styled from 'styled-components'
+import { pageMinHeight } from '../Styles/AppWrapper'
 
 const AuthPageWrapper = styled.div`
   display: flex;
@@ -11,7 +11,7 @@ const AuthPageWrapper = styled.div`
   .row {
     display: flex;
     justify-content: center;
-    
+
     .operations {
       width: 80%;
       .page-box {
@@ -19,14 +19,12 @@ const AuthPageWrapper = styled.div`
       }
     }
   }
-`;
-const AuthPage =  ({ children, description }: {
-  children: React.ReactNode, description?: React.ReactNode
-}) => {
+`
+const AuthPage = ({ children, description }: { children: React.ReactNode; description?: React.ReactNode }) => {
   useEffect(() => {
-    document.body.classList.add('auth-page-body');
+    document.body.classList.add('auth-page-body')
     return () => {
-      document.body.classList.remove('auth-page-body');
+      document.body.classList.remove('auth-page-body')
     }
   }, [])
 
@@ -34,20 +32,16 @@ const AuthPage =  ({ children, description }: {
     <AuthPageWrapper className={'auth-page-wrapper'}>
       <div className={`row ${description ? '' : 'no-description'}`}>
         <div className={'operations col'}>
-          <div className={'inner-wrapper'}>
-            {children}
-          </div>
+          <div className={'inner-wrapper'}>{children}</div>
         </div>
         {!description ? null : (
           <div className={'description col'}>
-            <div className={'inner-wrapper'}>
-              {description}
-            </div>
+            <div className={'inner-wrapper'}>{description}</div>
           </div>
         )}
       </div>
     </AuthPageWrapper>
-  );
-};
+  )
+}
 
-export default AuthPage;
+export default AuthPage

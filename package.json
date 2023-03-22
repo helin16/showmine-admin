@@ -33,8 +33,12 @@
   "scripts": {
     "start": "GENERATE_SOURCEMAP=false react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "TZ=UTC react-scripts test",
+    "test:watch": "TZ=UTC react-scripts test",
     "eject": "react-scripts eject",
+    "lint": "eslint src/**/*.{js,jsx,ts,tsx,json}",
+    "lint:fix": "eslint --fix 'src/**/*.{js,jsx,ts,tsx,json}'",
+    "format": "prettier --write 'src/**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc",
     "prepare": "husky install"
   },
   "eslintConfig": {
@@ -56,16 +60,21 @@
     ]
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^14.0.0",
-    "@testing-library/user-event": "^13.2.1",
     "@types/big.js": "^6.1.6",
-    "@types/jest": "^27.0.1",
     "@types/lodash": "^4.14.191",
     "@types/node": "^16.7.13",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "@types/styled-components": "^5.1.26",
+    "@typescript-eslint/eslint-plugin": "^5.55.0",
+    "@typescript-eslint/parser": "^5.55.0",
+    "eslint": "^8.36.0",
+    "eslint-config-prettier": "^8.7.0",
+    "eslint-import-resolver-typescript": "^3.5.3",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
     "husky": "^8.0.0",
     "lint-staged": "^13.1.2",
     "prettier": "^2.8.4"
@@ -76,6 +85,42 @@
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
+    }
+  },
+  "jest": {
+    "collectCoverageFrom": [
+      "src/**/*.{js,ts,jsx,tsx}",
+      "!src/**/*.d.ts",
+      "!src/index.tsx"
+    ],
+    "coveragePathIgnorePatterns": [
+      "./src/Types/",
+      "./src/index.tsx",
+      "./src/App.tsx",
+      "./src/Redux/makeReduxStore.ts",
+      "./src/reportWebVitals.ts"
+    ],
+    "coverageReporters": [
+      "json",
+      "lcov",
+      "text-summary",
+      "text",
+      "clover",
+      "html"
+    ],
+    "transform": {
+      "^.+\\.(js|jsx|ts|tsx)$": "<rootDir>/node_modules/.bin/ts-jest"
+    },
+    "transformIgnorePatterns": [
+      "[/\\\\]node_modules[/\\\\].+\\.(js|jsx|ts|tsx)$",
+      "^.+\\.module\\.(css|sass|scss)$"
+    ],
+    "moduleNameMapper": {
+      "^react-native$": "react-native-web",
+      "^react-select/src/types$": "react-select/src/types",
+      "^.+\\.module\\.(css|sass|scss)$": "identity-obj-proxy",
+      "src/(.*)$": "<rootDir>/src/$1",
+      "snapshotSerializers": "enzyme-to-json/serializer"
     }
   }
 }

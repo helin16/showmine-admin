@@ -1,79 +1,45 @@
-import RestfulService from './RestfulService';
-import CompanyService from './CompanyService';
-import LocalStorageService from './LocalStorageService';
-import { LOCAL_STROAGE_KEY_FOR_TOKEN } from '../Constants';
-import { initialCompany } from '../Types/Company/ICompany';
-import IUser from '../Types/User/IUser';
+import LocalStorageService from './LocalStorageService'
+import IUser from '../Types/User/IUser'
+import AppService, { iConfigParams } from './AppService'
+import ICompanyUser from '../Types/Company/ICompanyUser';
 
+const endPoint = '/auth'
 const setLocalAuthToken = (authToken: string) => {
-  LocalStorageService.set(
-    LOCAL_STROAGE_KEY_FOR_TOKEN,
-    authToken,
-  );
-};
+  LocalStorageService.setToken(authToken)
+}
 
 const getLocalAuthToken = () => {
-  const token = LocalStorageService.get(LOCAL_STROAGE_KEY_FOR_TOKEN);
-  return typeof (token) !== 'string' ? '' : token;
-};
+  return LocalStorageService.getToken()
+}
 
 const removeLocalAuthToken = () => {
-  LocalStorageService.delete(LOCAL_STROAGE_KEY_FOR_TOKEN);
-};
-const login = async (email: string, password: string) => RestfulService.post('/user/normal-login', { email, password });
+  LocalStorageService.removeToken()
+}
 
-const getMe = async (config: (object | undefined) = undefined) => RestfulService.get('/user/me', {}, config)
-  .then((res) => ({
-    ...res,
-    data: {
-      ...res.data,
-      last_visit_company: (
-        (res.data.last_visit_company && res.data.last_visit_company !== null)
-          ? CompanyService.formatCompanyObj(res.data.last_visit_company) : initialCompany
-      ),
-    },
-  }));
+const login = async (email: string, password: string) => {
+  return AppService.post(endPoint, { email, password }).then((resp) => resp.data)
+}
 
-const putMe = async (user: IUser) => RestfulService.put('/user/me', user);
+type iMeData = {
+  user: IUser,
+  companies: ICompanyUser[];
+}
 
-const confirmEmail = async (token: string, newEmail: string) => RestfulService.post('/user/confirm-email', { token, newEmail });
+const getMe = async (config: object | undefined = undefined): Promise<iMeData> => {
+  return AppService.get(`${endPoint}/me`, {}, config).then((res) => res.data)
+}
 
-const getWeChatLoginUrl = async (data: object = {}) => RestfulService.post('/user/generateLoginSubscribeQr', data);
-
-const checkWeChatLoginUser = async (subscribeLoginLogId: string) => RestfulService.get(`/user/checkSubscribeLoginLog/${subscribeLoginLogId}`);
-
-const validateTmpLoginCode = async (code: string) => RestfulService.post('/user/validateLoginCode', { login_code: code });
-
-const signUp = async (params: {companyName: string, password: string, email: string}) => RestfulService.post('/company/apply', { ...params, comfirm: params.password, phone: 'not provided' });
-
-const retrievePassword = async (email: string) => RestfulService.post('/user/send-reset-email', { email });
-
-const resetPassword = (tempToken: string, newPassword: string) => RestfulService.post('/user/new-password', { password: newPassword }, {
-  headers: RestfulService.getAuthorizationHeader(tempToken),
-});
-
-const cancel = (msg?: string) => {
-  RestfulService.cancel(msg);
-};
-
-const getFacebookLoginUrl = async () => RestfulService.get('/social-login/facebook');
+const updateMe = async (data: iConfigParams, config?: iConfigParams): Promise<iMeData> => {
+  return AppService.put(`${endPoint}/me`, data, config).then((res) => res.data)
+}
 
 const AuthService = {
-  signUp,
   login,
   getMe,
-  putMe,
-  cancel,
-  getWeChatLoginUrl,
-  checkWeChatLoginUser,
-  validateTmpLoginCode,
-  retrievePassword,
-  resetPassword,
+  updateMe,
   setLocalAuthToken,
   getLocalAuthToken,
   removeLocalAuthToken,
-  confirmEmail,
-  getFacebookLoginUrl,
-};
+}
 
-export default AuthService;
+export default AuthService

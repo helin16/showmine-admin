@@ -1,22 +1,34 @@
-import RestfulService from './RestfulService';
+import AppService, { iConfigParams } from './AppService'
+import IResList from '../Types/IResList'
+import IChannel from '../Types/Channel/IChannel'
 
-const endPoint = '/company/channelConfig';
-const getChannelsUnderCompany = async (companyId: string, params: object = {}) => RestfulService.get(`${endPoint}/${companyId}`, { ...params, showAll: true });
+const endPoint = '/channel'
+const getAll = async (params?: iConfigParams, config?: iConfigParams): Promise<IResList<IChannel>> => {
+  return AppService.get(endPoint, params, config).then((resp) => resp.data)
+}
 
-const getChannelDetails = async (id: string) => RestfulService.get(`${endPoint}/${id}`);
+const getItemById = async (id: string, params?: iConfigParams, config?: iConfigParams): Promise<IChannel> => {
+  return AppService.get(`${endPoint}/${id}`, params, config).then((resp) => resp.data)
+}
 
-const createChannel = async (params: object) => RestfulService.post(endPoint, params);
+const create = async (params: iConfigParams, config?: iConfigParams): Promise<IChannel> => {
+  return AppService.post(endPoint, params, config).then((resp) => resp.data)
+}
 
-const updateChannel = async (channelId: string, params: object) => RestfulService.put(`${endPoint}/${channelId}`, params);
+const update = async (id: string, params: iConfigParams, config?: iConfigParams): Promise<IChannel> => {
+  return AppService.put(`${endPoint}/${id}`, params, config).then((resp) => resp.data)
+}
 
-const deleteChannel = async (channelId: string) => RestfulService.delete(`${endPoint}/${channelId}`);
+const deactivate = async (id: string, params?: iConfigParams, config?: iConfigParams): Promise<IChannel> => {
+  return AppService.delete(`${endPoint}/${id}`, params, config).then((resp) => resp.data)
+}
 
 const ChannelService = {
-  getChannelDetails,
-  createChannel,
-  updateChannel,
-  deleteChannel,
-  getChannelsUnderCompany,
-};
+  getAll,
+  getItemById,
+  create,
+  update,
+  deactivate,
+}
 
-export default ChannelService;
+export default ChannelService

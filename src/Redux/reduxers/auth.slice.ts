@@ -1,12 +1,12 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import ISession from '../../Types/Auth/ISession';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import ISession from '../../Types/Auth/ISession'
 
 /**
  * Initial State
  */
 const initialState: ISession = {
   isAuthenticating: false,
-};
+}
 
 /**
  * Actions
@@ -16,25 +16,21 @@ const actions = {
     ...state,
     isAuthenticating: action.payload.isAuthenticating || false,
   }),
-  isAuthenticated: (
-    state: ISession = initialState, action: PayloadAction<ISession>
-  ) => ({
+  isAuthenticated: (state: ISession = initialState, action: PayloadAction<ISession>) => ({
     ...state,
     isAuthenticated: true,
     user: action.payload.user,
     company: action.payload.company,
-    companyPackage: action.payload.companyPackage,
+    // companyPackage: action.payload.companyPackage,
   }),
-  changeCompany: (state: ISession = initialState,
-                  action: PayloadAction<ISession>) => ({
+  changeCompany: (state: ISession = initialState, action: PayloadAction<ISession>) => ({
     ...state,
     company: action.payload.company,
-    companyPackage: action.payload.companyPackage,
+    // companyPackage: action.payload.companyPackage,
   }),
-  changeCompanyPackage: (state: ISession = initialState,
-                         action: PayloadAction<ISession>) => ({
+  changeCompanyPackage: (state: ISession = initialState, action: PayloadAction<ISession>) => ({
     ...state,
-    companyPackage: action.payload.companyPackage,
+    // companyPackage: action.payload.companyPackage,
   }),
   removedAuthentication: (state: ISession = initialState) => ({
     ...state,
@@ -43,7 +39,7 @@ const actions = {
     company: undefined,
     companyPackage: undefined,
   }),
-};
+}
 /**
  * Slice
  */
@@ -51,18 +47,13 @@ const AuthSlice = createSlice({
   name: 'Auth',
   initialState,
   reducers: actions,
-});
+})
 /**
  * action
  */
-export const {
-  changeAuthenticating,
-  isAuthenticated,
-  removedAuthentication,
-  changeCompany,
-  changeCompanyPackage,
-} = AuthSlice.actions;
+export const { changeAuthenticating, isAuthenticated, removedAuthentication, changeCompany, changeCompanyPackage } =
+  AuthSlice.actions
 /**
  * reducer
  */
-export default AuthSlice.reducer;
+export default AuthSlice.reducer

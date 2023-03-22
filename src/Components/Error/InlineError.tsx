@@ -1,21 +1,15 @@
-import React from 'react';
-import IError from '../../Types/IError';
-import Alert from '../Form/Alert';
+import React from 'react'
+import IError from '../../Types/IError'
+import Alert from '../Form/Alert'
 
-const InlineError = (props: { error: IError | undefined}) => {
+const InlineError = (props: { error: IError | undefined }) => {
   if (props.error === undefined) {
-    return (<></>);
+    return <></>
   }
 
-  const { message } = props.error;
+  const { message } = props.error
 
-  return (
-    <Alert
-      {...props}
-      type="error"
-      message={message}
-    />
-  );
-};
+  return <Alert {...props} type='error' message={message} />
+}
 
-export default InlineError;
+export default InlineError

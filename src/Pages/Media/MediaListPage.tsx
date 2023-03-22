@@ -1,25 +1,24 @@
-import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../Redux/makeReduxStore';
-import { MENU_KEY_MEDIA } from '../../Components/Menu/MenuItems';
-import translate from '../../i18n/translate';
-import BackendPage from '../../Layouts/BackendPage';
-import {listGutter} from '../../Styles/AppWrapper';
-import Card from '../../Components/Form/Card';
-import BackendPageContentTitle from '../../Layouts/BackendPageContentTitle';
-import CompanyMediaUsage from '../../Components/Media/CompanyMediaUsage';
-import MediaList from '../../Components/Media/MediaList';
-import styled from 'styled-components';
-import Row from '../../Components/Form/Row';
-import Col from '../../Components/Form/Col';
-import Search from '../../Components/Form/Search';
-
+import React, { useState } from 'react'
+import { useSelector } from 'react-redux'
+import { RootState } from '../../Redux/makeReduxStore'
+import { MENU_KEY_MEDIA } from '../../Components/Menu/MenuItems'
+import translate from '../../i18n/translate'
+import BackendPage from '../../Layouts/BackendPage'
+import { listGutter } from '../../Styles/AppWrapper'
+import Card from '../../Components/Form/Card'
+import BackendPageContentTitle from '../../Layouts/BackendPageContentTitle'
+import CompanyMediaUsage from '../../Components/Media/CompanyMediaUsage'
+import MediaList from '../../Components/Media/MediaList'
+import styled from 'styled-components'
+import Row from '../../Components/Form/Row'
+import Col from '../../Components/Form/Col'
+import Search from '../../Components/Form/Search'
 
 const initialState = {
   keyword: '',
   sortingField: 'updated_at',
   sortingDirection: 'desc',
-};
+}
 
 const Wrapper = styled.div`
   .search-box {
@@ -30,13 +29,13 @@ const Wrapper = styled.div`
   .ant-input-affix-wrapper {
     border: none;
   }
-`;
+`
 
 const MediaListPage = () => {
-  const { company } = useSelector((state: RootState) => state.auth);
-  const [state, setState] = useState(initialState);
+  const { company } = useSelector((state: RootState) => state.auth)
+  const [state, setState] = useState(initialState)
   if (!company) {
-    return null;
+    return null
   }
   /**
    *
@@ -46,8 +45,8 @@ const MediaListPage = () => {
     setState({
       ...state,
       keyword: searchText,
-    });
-  };
+    })
+  }
 
   return (
     <BackendPage selectedMenu={MENU_KEY_MEDIA} ContentHeader={<BackendPageContentTitle title={translate('media')} />}>
@@ -69,15 +68,10 @@ const MediaListPage = () => {
             </Card>
           </Col>
         </Row>
-        <Card>
-          { company
-            ? <MediaList companyId={company.id} keyword={state.keyword} />
-            : null
-          }
-        </Card>
+        <Card>{company ? <MediaList keyword={state.keyword} /> : null}</Card>
       </Wrapper>
     </BackendPage>
-  );
-};
+  )
+}
 
-export default MediaListPage;
+export default MediaListPage

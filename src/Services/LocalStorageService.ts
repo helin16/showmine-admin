@@ -1,45 +1,55 @@
-const localStorageKey = 'shlocal';
+const getTokenName = () => {
+  return process.env.NEXT_PUBLIC_LOCAL_USER_TOKEN_NAME || 'token'
+}
 
-class LocalStorageService {
-  static get = (key: string): object => {
-    const obj = LocalStorageService.getLocalObj();
-    if (!(key in obj)) {
-      return {};
-    }
-    // @ts-ignore
-    return obj[key];
-  }
+const getCompanyIdName = () => {
+  return process.env.NEXT_PUBLIC_LOCAL_COMPANY_ID_NAME || 'comid'
+}
 
-  static set = (key: string, value: object | string): void => {
-    const obj = LocalStorageService.getLocalObj();
-    LocalStorageService.setLocalObj({
-      ...obj,
-      [key]: value,
-    });
-  }
-
-  static delete = (key: string): void => {
-    const obj = LocalStorageService.getLocalObj();
-    // @ts-ignore
-    delete obj[key];
-    LocalStorageService.setLocalObj(obj);
-  }
-
-  static clear = (): void => {
-    LocalStorageService.setLocalObj({});
-  }
-
-  private static getLocalObj = (): object => {
-    const item: null|string = localStorage.getItem(`${localStorageKey}`);
-    if (item === null) {
-      return {};
-    }
-    return JSON.parse(item);
-  }
-
-  private static setLocalObj = (value: object): void => {
-    localStorage.setItem(`${localStorageKey}`, JSON.stringify(value));
+const getToken = () => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem(getTokenName())
   }
 }
 
-export default LocalStorageService;
+const setToken = (newToken: string) => {
+  if (typeof window !== 'undefined') {
+    return localStorage.setItem(getTokenName(), newToken)
+  }
+}
+
+const setCompanyId = (compId: string) => {
+  if (typeof window !== 'undefined') {
+    return localStorage.setItem(getCompanyIdName(), compId)
+  }
+}
+
+const getCompanyId = () => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem(getCompanyIdName())
+  }
+}
+
+const removeCompanyId = () => {
+  if (typeof window !== 'undefined') {
+    return localStorage.removeItem(getCompanyIdName())
+  }
+}
+
+const removeToken = () => {
+  if (typeof window !== 'undefined') {
+    return localStorage.removeItem(getTokenName())
+  }
+}
+
+const LocalStorageService = {
+  getToken,
+  setToken,
+  removeToken,
+
+  setCompanyId,
+  getCompanyId,
+  removeCompanyId,
+}
+
+export default LocalStorageService

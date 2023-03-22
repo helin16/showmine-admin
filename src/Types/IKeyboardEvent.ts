@@ -1,7 +1,7 @@
-import { KeyboardEvent } from 'react';
+import { KeyboardEvent } from 'react'
 
 interface IKeyboardEvent<T> extends KeyboardEvent<T> {
-  target: HTMLInputElement;
+  target: HTMLInputElement
 }
 
-export default IKeyboardEvent;
+export default IKeyboardEvent

@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import styled from 'styled-components';
-import RichTextEditor from './RichTextEditor';
-import { inlineInputBgColor, InlineInputDiv, inlineInputPadding } from '../../Styles/AppWrapper';
+import React, { useEffect, useState } from 'react'
+import styled from 'styled-components'
+import RichTextEditor from './RichTextEditor'
+import { inlineInputBgColor, InlineInputDiv, inlineInputPadding } from '../../Styles/AppWrapper'
 
-const [paddingX] = inlineInputPadding.split(' ');
+const [paddingX] = inlineInputPadding.split(' ')
 const InlineRichTextEditorDiv = styled(InlineInputDiv)`
   min-height: 80px;
   padding: 0px;
@@ -23,23 +23,17 @@ const InlineRichTextEditorDiv = styled(InlineInputDiv)`
       height: 100%;
     }
   }
-`;
+`
 const initState = {
   value: null,
   height: undefined,
   maxHeight: undefined,
-};
-/**
- *
- * @param value
- * @param height
- * @param onChange
- * @param props
- */
-const InlineRichTextEditor =  ({
-  value, height, maxHeight, onChange, ...props
-}: React.ComponentProps<any>) => { // eslint-disable-line
-  const [state, setState] = useState(initState);
+}
+
+// eslint-disable-next-line react/prop-types
+const InlineRichTextEditor = ({ value, height, maxHeight, onChange, ...props }: React.ComponentProps<any>) => {
+  // eslint-disable-line
+  const [state, setState] = useState(initState)
 
   useEffect(() => {
     setState((s) => ({
@@ -47,32 +41,27 @@ const InlineRichTextEditor =  ({
       value,
       height,
       maxHeight,
-    }));
-  }, [value, height, maxHeight]);
+    }))
+  }, [value, height, maxHeight])
 
   const valueChanged = (content: null) => {
-    const isDiff = (content !== state.value);
+    const isDiff = content !== state.value
     setState({
       ...state,
       value: content,
-    });
-    if (typeof (onChange) === 'function' && isDiff === true) {
-      onChange(content);
+    })
+    if (typeof onChange === 'function' && isDiff === true) {
+      onChange(content)
     }
-  };
+  }
 
-  const getDivStyle = () => ({ height: state.height, maxHeight: state.maxHeight || state.height });
+  const getDivStyle = () => ({ height: state.height, maxHeight: state.maxHeight || state.height })
 
   return (
     <InlineRichTextEditorDiv style={getDivStyle()} className={state.height ? 'has-height ' : ''}>
-      <RichTextEditor {...props}
-        isInLine
-        className={'inline-input'}
-        value={state.value}
-        onChange={valueChanged}
-      />
+      <RichTextEditor {...props} isInLine className={'inline-input'} value={state.value} onChange={valueChanged} />
     </InlineRichTextEditorDiv>
-  );
-};
+  )
+}
 
 export default InlineRichTextEditor;

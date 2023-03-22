@@ -1,8 +1,8 @@
-import {Select as AntdSelect, SelectProps} from 'antd';
+import { Select as AntdSelect, SelectProps } from 'antd'
 
-type iSelect = SelectProps;
-const Select = ({className, ...props}: iSelect) => {
-  return <AntdSelect {...props} className={`app-Select ${className || ''}`} />;
-};
+type iSelect = SelectProps
+const Select = ({ className, ...props }: iSelect) => {
+  return <AntdSelect {...props} className={`app-Select ${className || ''}`} />
+}
 
-export default Select;
+export default Select

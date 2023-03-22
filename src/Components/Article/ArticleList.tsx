@@ -1,39 +1,38 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import IArticle, {iSearchCriteria} from '../../Types/Article/IArticle';
-import ArticleService from '../../Services/ArticleService';
-import LoadMoreBtn from '../Form/LoadMoreBtn';
-import { listGutter} from '../../Styles/AppWrapper';
-import { ARTICLE_DETAILS_URL, getUrl } from '../../UrlMap';
-import {initError} from '../../Types/IError';
-import {InitialList} from '../../Types/IResList';
-import List, {ListItem} from '../Form/List';
-import Dropdown from '../Form/Dropdown';
-import ArticleDeleteBtn from './Buttons/ArticleDeleteBtn';
-import Icons from '../Icons';
-import ArticleCard from './ArticleCard';
-import styled from 'styled-components';
+import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import IArticle from '../../Types/Article/IArticle'
+import ArticleService from '../../Services/ArticleService'
+import LoadMoreBtn from '../Form/LoadMoreBtn'
+import { listGutter } from '../../Styles/AppWrapper'
+import { ARTICLE_DETAILS_URL, getUrl } from '../../UrlMap'
+import List, { ListItem } from '../Form/List'
+import Dropdown from '../Form/Dropdown'
+import ArticleDeleteBtn from './Buttons/ArticleDeleteBtn'
+import Icons from '../Icons'
+import ArticleCard from './ArticleCard'
+import styled from 'styled-components'
+import IResList from '../../Types/IResList'
+import ICompany from '../../Types/Company/ICompany';
+import {iSearchParams} from '../../Pages/Article/ArticleListPage';
+import {OP_LIKE} from '../../Helpers/ServiceHelper';
+import message from '../Form/message';
 
-const defaultSearchCriteria: iSearchCriteria = {
-  is_draft: 0, // eslint-disable-line
-  is_end: 0, // eslint-disable-line
-  is_published: 0, // eslint-disable-line
-  'key-word': '',
-};
 
-const initialState = {
+type iState = {
+  initLoading: boolean
+  loadingMore: boolean
+  searchParams: iSearchParams
+  page: number
+  pageSize: number
+  articleList?: IResList<IArticle>
+}
+const initialState: iState = {
   initLoading: false,
   loadingMore: false,
-  loadingErr: initError,
-  articleList: InitialList,
-  searchParams: defaultSearchCriteria,
+  searchParams: {keyWord: '', extraStatus: {}},
   page: 0,
   pageSize: 12,
-};
-type iArticleList = {
-  companyId?: string,
-  searchParams?: iSearchCriteria
-};
+}
 const Wrapper = styled.div`
   .article-item {
     .article-cover-img-div {
@@ -48,44 +47,60 @@ const Wrapper = styled.div`
       }
     }
   }
-`;
-const ArticleList = ({ companyId, searchParams }: iArticleList) => {
+`
+type iArticleList = {
+  company: ICompany;
+  searchParams?: iSearchParams;
+}
+const ArticleList = ({ company, searchParams }: iArticleList) => {
   const [state, setState] = useState(initialState);
+
   /**
    * searchParams changed
    */
   useEffect(() => {
-    if (!companyId) return;
+    if (`${company.id || ''}`.trim() === '') return;
     setState({
       ...initialState,
-      searchParams: searchParams || defaultSearchCriteria,
+      ...(searchParams ? {searchParams} : {}),
       page: 1,
     });
-  }, [searchParams, companyId]);
+  }, [JSON.stringify(searchParams), company.id]);
   /**
    * getting the articles
    */
   useEffect(() => {
-    if (state.page <= 0 || `${companyId || ''}`.trim() === '') {
+    const companyId = `${company.id || ''}`.trim();
+    if (state.page <= 0 || companyId === '') {
       return;
     }
     let isCancelled = false;
     setState((st) => ({
       ...st,
       initLoading: st.page === 1,
-      loadingErr: initError,
+      loadingMore: st.page > 1,
     }));
-    ArticleService.getAllArticlesUnderACompany(`${companyId || ''}`, { ...state.searchParams, page: state.page, 'page-size': state.pageSize })
+    ArticleService.getAll({
+        perPage: state.pageSize,
+        currentPage: state.page,
+        sort: 'createdAt:DESC',
+        where: JSON.stringify({
+          isActive: true,
+          ...state.searchParams?.extraStatus,
+          ...(`${state.searchParams.keyWord || ''}`.trim() === '' ? {} : {
+            title: {[OP_LIKE]: `%${`${state.searchParams.keyWord || ''}`.trim()}%`}
+          })
+        }),
+        include: 'CoverAsset,CreatedBy'
+      })
       .then((res) => {
         if (!isCancelled) {
           setState((st) => ({
             ...st,
             articleList: {
-              ...res.data,
-              data: st.articleList.data.concat(res.data.data),
+              ...res,
+              data: (st.articleList?.data || []).concat(res.data),
             },
-            initLoading: false,
-            loadingMore: false,
           }));
         }
       })
@@ -93,18 +108,24 @@ const ArticleList = ({ companyId, searchParams }: iArticleList) => {
         if (!isCancelled) {
           setState((st) => ({
             ...st,
-            loadingErr: error.data,
             initLoading: false,
             loadingMore: false,
           }));
         }
+        message.error(error.response.data.message);
+      })
+      .finally(() => {
+        setState((st) => ({
+          ...st,
+          initLoading: false,
+          loadingMore: false,
+        }));
       });
     // clean up
     return () => { // eslint-disable-line
       isCancelled = true;
     };
-  }, [companyId, state.searchParams, state.page, state.pageSize]);
-
+  }, [company.id, state.searchParams, state.page, state.pageSize]);
   /**
    * loading more results
    */
@@ -117,16 +138,19 @@ const ArticleList = ({ companyId, searchParams }: iArticleList) => {
   };
 
   const handleDeleted = (deletedArticle: IArticle) => {
+    if (!state.articleList) {
+      return;
+    }
     setState({
       ...state,
       articleList: {
         ...state.articleList,
-        data: state.articleList.data.filter((item: IArticle) => item.id !== deletedArticle.id),
+        data: (state.articleList?.data || []).filter((item: IArticle) => item.id !== deletedArticle.id),
       },
     });
   };
 
-  if (companyId === undefined) {
+  if (!company || !company.id) {
     return null;
   }
 
@@ -141,7 +165,7 @@ const ArticleList = ({ companyId, searchParams }: iArticleList) => {
             loading={state.loadingMore}
             showing={
                !state.initLoading
-               && (state.articleList.current_page < state.articleList.last_page)
+               && ((state.articleList?.currentPage || 0) < (state.articleList?.pages || 0))
             }
           />
         }
@@ -154,7 +178,7 @@ const ArticleList = ({ companyId, searchParams }: iArticleList) => {
           xl: 4,
           xxl: 6,
         }}
-        dataSource={state.articleList.data}
+        dataSource={state.articleList?.data || []}
         renderItem={(article: IArticle) => (
           <ListItem>
             <Dropdown
@@ -178,6 +202,7 @@ const ArticleList = ({ companyId, searchParams }: iArticleList) => {
       />
     </Wrapper>
   );
-};
 
-export default ArticleList;
+}
+
+export default ArticleList

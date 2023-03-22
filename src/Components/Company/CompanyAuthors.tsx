@@ -1,136 +1,145 @@
-import React, { ChangeEvent, useEffect, useState } from 'react';
-import styled from 'styled-components';
-import ICompanyAuthor, {initialCompanyAuthor} from '../../Types/Company/ICompanyAuthor';
-import IKeyboardEvent from '../../Types/IKeyboardEvent';
-import translate from '../../i18n/translate';
+import React, { ChangeEvent, useEffect, useState } from 'react'
+import styled from 'styled-components'
+import translate from '../../i18n/translate'
 import {
   BoxTitleDiv,
   FormInputWrapper,
   InlineInputDiv,
   inlineInputPaddingHalf,
-  primaryBtnBgColor
-} from '../../Styles/AppWrapper';
-import InputBox from '../Form/InputBox';
-import Icons from '../Icons';
-import Tag from '../Form/Tag';
-import Popover from '../Form/Popover';
+  primaryBtnBgColor,
+} from '../../Styles/AppWrapper'
+import InputBox from '../Form/InputBox'
+import Icons from '../Icons'
+import Tag from '../Form/Tag'
+import AuthorService from '../../Services/AuthorService'
+import message from '../Form/message'
+import IAuthor from '../../Types/Article/IAuthor';
+import MathHelper from '../../Helpers/MathHelper';
+import Modal from '../Form/Modal';
+import Spin from '../Form/Spin';
 
-type iState = {
-  authors: ICompanyAuthor[],
-  editingAuthor?: any, // eslint-disable-line
-}
-const initState: iState = {
-  authors: [],
-};
 const AuthorsWrapper = styled(InlineInputDiv)`
   .author-tag-div {
     padding: ${inlineInputPaddingHalf};
     margin-bottom: 8px;
-    &.new-author{
+    &.new-author {
       cursor: pointer;
     }
   }
-`;
+`
 /**
  *
  * @param authors
  * @param onDelete
  */
-const CompanyAuthors =  ({ authors, onChange }: {authors: ICompanyAuthor[], onChange?: Function}) => {
-  const [state, setState] = useState(initState);
+const CompanyAuthors = () => {
+  const [count, setCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [authorsMap, setAuthorsMap] = useState<{ [key: string]: IAuthor }>({});
+  const [editingAuthor, setEditingAuthor] = useState<IAuthor | null | {name: string; url?: string}>(null);
 
   useEffect(() => {
-    if (!authors || authors.length === 0) return;
-    setState((s) => ({
-      ...s,
-      authors: authors.filter((author) => author !== null),
-    }));
-  }, [authors]);
+    setIsLoading(true);
+    AuthorService.getAll({
+        where: JSON.stringify({ isActive: true }), perPage: 99999
+      }).then(resp => {
+        setAuthorsMap(
+          (resp.data || []).reduce((map, author) => ({...map, [author.id || '']: author}), {}),
+        );
+        setEditingAuthor(null);
+      }).catch(err => {
+          message.error(`${err.message}`);
+      }).finally(() => {
+        setIsLoading(false);
+      })
+  }, [count]);
 
-  const deleteAuthor = (index: number) => {
-    state.authors.splice(index, 1).filter((author) => author !== null);
-    setState({
-      ...state,
-      authors: state.authors,
-    });
-    if (typeof (onChange) === 'function') {
-      onChange(state.authors);
+  const deleteAuthor = (author: IAuthor) => {
+    const authorId = `${author.id || ''}`.trim();
+    if (authorId === '') {
+      return;
     }
+    setIsSaving(true);
+    AuthorService.deactivate(authorId)
+      .then(resp => {
+        message.success(`Author(${author.name}) deleted.`)
+      }).catch(err => {
+        message.error(err.response.data.message);
+      }).finally(() => {
+        setIsSaving(false);
+        setCount(MathHelper.add(count, 1));
+      })
   };
 
-  const changeAuthor = (index: number, fieldName: string, newValue: string) => {
-    const newAuthor = {
-      ...state.authors[index],
-      [fieldName]: newValue,
-    };
-    if (newAuthor.author === '' && newAuthor.authorLink === '') {
-      deleteAuthor(index);
-    } else {
-      state.authors[index] = newAuthor;
-      setState({
-        ...state,
-        authors: state.authors,
-      });
+  const changeAuthor = (author: IAuthor, data: {[key: string]: string}) => {
+    const authorId = `${author.id || ''}`.trim();
+    if (authorId === '') {
+      return;
     }
+    setIsSaving(true);
+    AuthorService.update(authorId, data)
+      .then(resp => {
+        message.success(`Author(${author.name}) updated.`)
+      }).catch(err => {
+      message.error(err.response.data.message);
+    }).finally(() => {
+      setIsSaving(false);
+      setCount(MathHelper.add(count, 1));
+    })
   };
 
-  const saveAuthor = (index: number, fieldName: string, newValue: string) => {
-    const newAuthor = {
-      ...state.authors[index],
-      [fieldName]: newValue,
-    };
-    if (newAuthor.author === '' && newAuthor.authorLink === '') {
-      deleteAuthor(index);
-    } else {
-      state.authors[index] = newAuthor;
-      state.authors = state.authors.filter((author) => author !== null);
-      setState({
-        ...state,
-        authors: state.authors,
-      });
-      if (typeof (onChange) === 'function'
-        && state.editingAuthor !== undefined
-        && state.editingAuthor[fieldName] !== newValue) {
-        onChange(state.authors);
-      }
+  const saveAuthor = () => {
+    if (editingAuthor === null) { return }
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const authorId = `${editingAuthor?.id || ''}`.trim();
+    if (editingAuthor !== null && authorId !== '') {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      return changeAuthor(editingAuthor, editingAuthor);
     }
-    selectedAnAuthor();
+    setIsSaving(true);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    AuthorService.create(editingAuthor)
+      .then(resp => {
+        message.success(`Author(${resp.name}) created.`)
+      }).catch(err => {
+      message.error(err.response.data.message);
+    }).finally(() => {
+      setIsSaving(false);
+      setCount(MathHelper.add(count, 1));
+    })
   };
 
-  const selectedAnAuthor = (author?: ICompanyAuthor) => {
-    setState({
-      ...state,
-      editingAuthor: author,
-    });
-  };
 
-  const newAuthor = () => {
-    state.authors.push({
-      ...initialCompanyAuthor,
-      author: translate('new-author'),
-    });
-    setState({
-      ...state,
-      authors: state.authors,
-    });
-    if (typeof (onChange) === 'function') {
-      onChange(state.authors);
+  const getAuthorPopoverDiv = () => {
+    if (editingAuthor === null) {
+      return null;
     }
-  };
-
-  const getAuthorPopoverDiv = (author: ICompanyAuthor, index: number) => (
-      <div>
+    return (
+      <Modal
+        open={true}
+        title={'Save Author'}
+        onOk={() => saveAuthor()}
+        okText={'save'}
+        okButtonProps={{ icon: <Icons.DeleteOutlined />, loading: isSaving === true }}
+        onCancel={() => {
+          setEditingAuthor(null)
+        }}
+        cancelButtonProps={{ type: 'text' }}
+      >
         <FormInputWrapper>
           <BoxTitleDiv>{translate('name')}</BoxTitleDiv>
           <InputBox
             allowClear
             placeholder={translate('author-name')}
             prefix={<Icons.UserOutlined />}
-            value={author.author}
-            onClick={() => selectedAnAuthor(author)}
-            onChange={ (e: ChangeEvent<HTMLInputElement>) => changeAuthor(index, 'author', e.target.value)}
-            onPressEnter={(e: IKeyboardEvent<HTMLInputElement>) => saveAuthor(index, 'author', e.target.value)}
-            onBlur={(e: ChangeEvent<HTMLInputElement>) => saveAuthor(index, 'author', e.target.value)}
+            value={editingAuthor?.name || ''}
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            onChange={ (e: ChangeEvent<HTMLInputElement>) => setEditingAuthor({...(editingAuthor || {}), name: e.target.value})}
           />
         </FormInputWrapper>
         <FormInputWrapper>
@@ -138,39 +147,42 @@ const CompanyAuthors =  ({ authors, onChange }: {authors: ICompanyAuthor[], onCh
           <InputBox
             allowClear
             placeholder={translate('url')}
-            value={author.authorLink}
+            value={editingAuthor?.url || ''}
             prefix={<Icons.LinkOutlined />}
-            onClick={() => selectedAnAuthor(author)}
-            onChange={ (e: ChangeEvent<HTMLInputElement>) => changeAuthor(index, 'authorLink', e.target.value)}
-            onPressEnter={(e: IKeyboardEvent<HTMLInputElement>) => saveAuthor(index, 'authorLink', e.target.value)}
-            onBlur={(e: ChangeEvent<HTMLInputElement>) => saveAuthor(index, 'authorLink', e.target.value)}
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            onChange={ (e: ChangeEvent<HTMLInputElement>) => setEditingAuthor({...(editingAuthor || {}), url: e.target.value})}
           />
         </FormInputWrapper>
-      </div>
-  );
+      </Modal>
+    )
+  };
   /**
    * Render
    */
   return (
     <AuthorsWrapper>
-      {state.authors.map((author: ICompanyAuthor, index: number) => {
-        if (author === null) return null;
-        return (
-          <Popover key={index} placement="topLeft" content={getAuthorPopoverDiv(author, index)}>
-            <Tag className={'author-tag-div'}
-                 closable={true}
-                 onClose={() => deleteAuthor(index)}>
-              {author.author}
+      <Spin spinning={isLoading || isSaving}>
+        {Object.values(authorsMap).map((author: IAuthor) => {
+          if (author === null) return null;
+          return (
+            <Tag
+              key={author.id}
+              className={'author-tag-div'}
+              closable={true}
+              onClick={() => setEditingAuthor(author)}
+              onClose={() => deleteAuthor(author)}>
+              {author.name}
             </Tag>
-          </Popover>
-        );
-      })}
-      <Tag className={'author-tag-div new-author'} color={primaryBtnBgColor} onClick={newAuthor}>
-        <Icons.PlusOutlined /> {translate('new-author')}
-      </Tag>
+          );
+        })}
+        <Tag className={'author-tag-div new-author'} color={primaryBtnBgColor} onClick={() => setEditingAuthor({name: '', url: ''})}>
+          <Icons.PlusOutlined /> {translate('new-author')}
+        </Tag>
+      </Spin>
+      {getAuthorPopoverDiv()}
     </AuthorsWrapper>
   );
-};
+}
 
-
-export default CompanyAuthors;
+export default CompanyAuthors

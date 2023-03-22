@@ -1,32 +1,23 @@
-import ICompany from '../Company/ICompany';
+import ICompany from '../Company/ICompany'
+import IBaseModel from '../IBaseModel'
+import IAsset from '../Asset/IAsset'
 
-type IUser = {
-  id?: string,
-  // eslint-disable-next-line
-  is_admin: boolean,  // whether is super admin
-  email: string,
-  title: string,
-  first_name: string, // eslint-disable-line
-  last_name: string, // eslint-disable-line
-  mobile: string,
-  nick_name: string // eslint-disable-line
-
-  address?: [],
-  address_id: string | null, // eslint-disable-line
-  adminOfCompanyIds: string[],
-
-  avatar_asset: string, // eslint-disable-line
-  avatar_img: string, // eslint-disable-line
-  channel_id: string, // eslint-disable-line
-  language_id: string, // eslint-disable-line
-  sex_id: string, // eslint-disable-line
-
-  last_visit_company?: ICompany, // eslint-disable-line
-  last_visit_company_id: string, // eslint-disable-line
-  userCompany: ICompany[],
-
-  wechat_is_subscriber: boolean, // eslint-disable-line
-  password?: string, // eslint-disable-line
+type IUser = IBaseModel & {
+  firstName: string
+  lastName: string
+  nickName: string
+  email?: string
+  mobile?: string
+  config?: any
+  password?: string
+  lastVisitCompanyId?: string
+  avatarAssetId?: string
+  isSuperAdmin?: boolean
+  lastLoginAt?: Date | string | null
+  isOnline: boolean
+  languageCode: string | null
+  LastVisitCompany?: ICompany
+  AvatarAsset?: IAsset
 }
 
-export default IUser;
+export default IUser

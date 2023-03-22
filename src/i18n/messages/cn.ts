@@ -1,12 +1,13 @@
-import { LOCALES } from '../../Constants';
+/* eslint-disable camelcase */
+import { LOCALES } from '../../Constants'
 
 const LanguageCN = {
   [LOCALES.CHINESE]: {
     homePage: '主页',
     pageNotExists: '抱歉，您访问的页面不存在。',
-    'edit-file': 'Edit {file} and save to reload.',
+    'editFile': 'Edit {file} and save to reload.',
     hello: 'Hello',
-    'demo-placeholder': 'Placeholder sample',
+    demoPlaceholder: 'Placeholder sample',
     nickname: '昵称',
     'nickname-placeholder': '对外开放的名字',
     'first-name': '名',
@@ -22,7 +23,7 @@ const LanguageCN = {
     password: '密码',
     'confirm-password': '确定密码',
     'confirm-password-diff': '请确定密码是不同的',
-    confirm: '请确认',
+    confirm: '确认',
     'not-authorize': '您还未被授权，请登录后重试',
     'upload-area': '点击或拖拽文件到此处上传',
     dashboard: '仪表盘',
@@ -220,9 +221,10 @@ const LanguageCN = {
     'total-items': '共有{total}项',
     'user-update-success': '用户信息更新成功',
     'back-to-login': 'Back to login',
-
+    unPublishConfirm: '您即将取消发布此内容。您确定要继续吗？',
+    unPublish: '取消发布',
     upgrade: '升级',
   },
-};
+}
 
-export default LanguageCN;
+export default LanguageCN

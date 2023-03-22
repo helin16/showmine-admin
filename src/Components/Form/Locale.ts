@@ -1,9 +1,9 @@
-import enUS from 'antd/es/locale/en_US';
-import zhCN from 'antd/es/locale/zh_CN';
+import enUS from 'antd/es/locale/en_US'
+import zhCN from 'antd/es/locale/zh_CN'
 
 const Locale = {
   enUS,
   zhCN,
 }
 
-export default Locale;
+export default Locale

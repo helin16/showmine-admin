@@ -1,32 +1,23 @@
-import React from 'react';
-import IUser from '../../Types/User/IUser';
-import Icons from '../Icons';
-import Avatar from '../Form/Avatar';
+import React from 'react'
+import IUser from '../../Types/User/IUser'
+import Icons from '../Icons'
+import Avatar from '../Form/Avatar'
 
 type iUserAvatar = {
-  user?: IUser | null,
-  size?: number | 'small' | 'large' | 'default',
+  user?: IUser | null
+  size?: number | 'small' | 'large' | 'default'
 }
 
 const UserAvatar = ({ user, size }: iUserAvatar) => {
   if (!user || user === null) {
-    return (
-      <Avatar icon={<Icons.UserOutlined />} size={size}/>
-    );
+    return <Avatar icon={<Icons.UserOutlined />} size={size} />
   }
 
-  if (user.avatar_img !== '') {
-    return (
-      <Avatar src={user.avatar_img} size={size}></Avatar>
-    );
+  const avatarUrl = `${user.AvatarAsset?.url || ''}`.trim()
+  if (avatarUrl !== '') {
+    return <Avatar src={avatarUrl} size={size}></Avatar>
   }
-  return (
-    <Avatar size={size}>
-      {
-        user?.nick_name // eslint-disable-line
-      }
-    </Avatar>
-  );
-};
+  return <Avatar size={size}>{user?.nickName}</Avatar>
+}
 
-export default UserAvatar;
+export default UserAvatar

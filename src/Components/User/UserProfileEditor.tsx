@@ -1,39 +1,34 @@
-import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import styled from 'styled-components';
-import { Link } from 'react-router-dom';
-import { MailFilled, MobileFilled } from '@ant-design/icons';
-import { useIntl, FormattedMessage } from 'react-intl';
-import { WIZARD_URL } from '../../UrlMap';
-import { RootState } from '../../Redux/makeReduxStore';
-import { changeLocale } from '../../Redux/reduxers/app.slice';
-import IUser from '../../Types/User/IUser';
-import SingleImageUploader from '../Form/SingleImageUploader';
-import InlineInput from '../Form/InlineInput';
-import PasswordConfirm from '../Auth/PasswordConfirm';
-import AuthService from '../../Services/AuthService';
-import {
-  isAuthenticated as isAuthed,
-} from '../../Redux/reduxers/auth.slice';
-import message from '../Form/message';
-import Row from '../Form/Row';
-import Col from '../Form/Col';
-import Space from '../Form/Space';
-import Button from '../Form/Button';
-import {BoxTitleDiv, FormInputWrapper, listGutter} from '../../Styles/AppWrapper';
-import Divider from '../Form/Divider';
-import {RadioButton, RadioGroup} from '../Form/Radio';
-import {LANGUAGE_ID_ENGLISH} from '../../Constants';
-import Spin from '../Form/Spin';
-import IAsset from '../../Types/Asset/IAsset';
-import Locale from '../Form/Locale';
+import React, { useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import styled from 'styled-components'
+import { Link } from 'react-router-dom'
+import { MailFilled, MobileFilled } from '@ant-design/icons'
+import { useIntl, FormattedMessage } from 'react-intl'
+import { WIZARD_URL } from '../../UrlMap'
+import { RootState } from '../../Redux/makeReduxStore'
+import { changeLocale } from '../../Redux/reduxers/app.slice'
+import IUser from '../../Types/User/IUser'
+import SingleImageUploader from '../Form/SingleImageUploader'
+import InlineInput from '../Form/InlineInput'
+import PasswordConfirm from '../Auth/PasswordConfirm'
+import AuthService from '../../Services/AuthService'
+import message from '../Form/message'
+import Row from '../Form/Row'
+import Col from '../Form/Col'
+import Space from '../Form/Space'
+import Button from '../Form/Button'
+import { BoxTitleDiv, FormInputWrapper, listGutter } from '../../Styles/AppWrapper'
+import Divider from '../Form/Divider'
+import { RadioButton, RadioGroup } from '../Form/Radio'
+import Spin from '../Form/Spin'
+import IAsset from '../../Types/Asset/IAsset'
+import Locale from '../Form/Locale'
+import {isAuthenticated as isAuthed} from '../../Redux/reduxers/auth.slice';
 
-const Wrapper = styled.div`
-
-`;
-const UserProfileEditor =({ user }: {user: IUser}) => {
-  const appState = useSelector(
-    (s: RootState) => s.app,
+const Wrapper = styled.div``
+const UserProfileEditor = ({ user }: { user: IUser }) => {
+  const {app: appState, auth: authState} = useSelector(
+    (s: RootState) => s,
   );
   const dispatch = useDispatch();
   const intl = useIntl();
@@ -45,52 +40,19 @@ const UserProfileEditor =({ user }: {user: IUser}) => {
     isSaving: false,
   });
 
-  const resetPassword = (password: string, confirmedPassword: string) => {
-    if (password === confirmedPassword) {
-      setState({
-        ...state,
-        password,
-        confirmedPassword,
-        buttonDisable: false,
-      });
-    } else {
-      setState({
-        ...state,
-        buttonDisable: true,
-      });
-      message.error(intl.formatMessage({ id: 'confirm-password-diff' }));
-    }
-  };
-
-  const saveUser = () => {
-    const mUser = { ...state.user };
-    if (state.password === state.confirmedPassword) {
-      mUser.password = state.password;
-    } else {
-      message.error(intl.formatMessage({ id: 'confirm-password-diff' }));
-    }
+  const modifyUser = (newData: { [key: string]: string | null }) => {
     setState({
       ...state,
       isSaving: true,
     })
-    AuthService.putMe(mUser)
-      .then((putResult) => {
-        if (putResult.data.success) {
-          AuthService.getMe().then((res) => {
-            dispatch(isAuthed({
-              user: res.data,
-              company: res.data.last_visit_company,
-            }));
-            setState((s) => ({
-              ...s,
-              authenticating: false,
-            }));
-            message.success(intl.formatMessage({ id: 'user-update-success' }));
-          });
-        }
+    AuthService.updateMe(newData)
+      .then((res) => {
+        message.success('Profile updated.')
+        dispatch(isAuthed({...authState, user: res.user}));
+        dispatch(changeLocale({ ...appState, locale: `${res.user.languageCode}` === Locale.enUS.locale ? Locale.enUS : Locale.zhCN}));
       })
       .catch(err => {
-        message.error(err.data.message);
+        message.error(err.response.data.message);
       })
       .finally(() => {
         setState({
@@ -100,28 +62,6 @@ const UserProfileEditor =({ user }: {user: IUser}) => {
       });
   };
 
-  const modifyUser = (index: string, value: any) => {
-    if (index === 'language') {
-      if (value === 'en') {
-        setState({
-          ...state,
-          user: {
-            ...state.user,
-            language_id: LANGUAGE_ID_ENGLISH,
-          },
-        });
-      }
-    } else {
-      setState({
-        ...state,
-        user: {
-          ...state.user,
-          [index]: value,
-        },
-      });
-    }
-  };
-
   return (
     <Wrapper>
       <Spin spinning={state.isSaving}>
@@ -129,13 +69,9 @@ const UserProfileEditor =({ user }: {user: IUser}) => {
           <Col xs={24} sm={24} md={6} style={{ height: '160px' }}>
             <Space direction="vertical">
               <SingleImageUploader
-                initImgUrl={user.avatar_img}
-                onChange={(newAsset: IAsset) => modifyUser('avatar_asset', newAsset)}/>
-              <Link to={WIZARD_URL}>
-                <Button type="primary" size="large">
-                  {intl.formatMessage({ id: 'get-started' })}
-                </Button>
-              </Link>
+                onSetIsSaving={(saving) => setState({...state, isSaving: saving})}
+                initImgUrl={user.AvatarAsset?.url || ''}
+                onChange={(newAsset: IAsset | null) => modifyUser({ avatarAssetId: `${newAsset?.id || ''}`.trim() === '' ? null : `${newAsset?.id || ''}`}) }/>
             </Space>
           </Col>
           <Col md={18}>
@@ -144,10 +80,10 @@ const UserProfileEditor =({ user }: {user: IUser}) => {
                 <FormInputWrapper>
                   <BoxTitleDiv><FormattedMessage id='nickname' /></BoxTitleDiv>
                   <InlineInput
-                    value={user.nick_name}
+                    value={user.nickName || ''}
                     allowClear
                     placeholder={intl.formatMessage({ id: 'nickname-placeholder' })}
-                    onChange={(newValue: string) => { modifyUser('nick_name', newValue); }}
+                    onChange={(newValue: string) => { modifyUser({nickName: newValue}) }}
                   />
                 </FormInputWrapper>
               </Col>
@@ -155,10 +91,10 @@ const UserProfileEditor =({ user }: {user: IUser}) => {
                 <FormInputWrapper>
                   <BoxTitleDiv>{intl.formatMessage({ id: 'first-name' })}:</BoxTitleDiv>
                   <InlineInput
-                    value={user.first_name}
+                    value={user.firstName || ''}
                     allowClear
                     placeholder={intl.formatMessage({ id: 'first-name' })}
-                    onChange={(newValue: string) => { modifyUser('first_name', newValue); }}
+                    onChange={(newValue: string) => { modifyUser({firstName: newValue}) }}
                   />
                 </FormInputWrapper>
               </Col>
@@ -166,10 +102,10 @@ const UserProfileEditor =({ user }: {user: IUser}) => {
                 <FormInputWrapper>
                   <BoxTitleDiv>{intl.formatMessage({ id: 'last-name' })}:</BoxTitleDiv>
                   <InlineInput
-                    value={user.last_name}
+                    value={user.lastName || ''}
                     allowClear
                     placeholder={intl.formatMessage({ id: 'last-name' })}
-                    onChange={(newValue: string) => { modifyUser('last_name', newValue); }}
+                    onChange={(newValue: string) => { modifyUser({lastName: newValue}); }}
                   />
                 </FormInputWrapper>
               </Col>
@@ -180,8 +116,8 @@ const UserProfileEditor =({ user }: {user: IUser}) => {
                     allowClear
                     placeholder={intl.formatMessage({ id: 'email-placeholder' })}
                     prefix={<MailFilled/>}
-                    value={user.email}
-                    onChange={(newValue: string) => { modifyUser('email', newValue); }}
+                    value={user.email || ''}
+                    onChange={(newValue: string) => { modifyUser({email: newValue}); }}
                   />
                 </FormInputWrapper>
               </Col>
@@ -192,8 +128,8 @@ const UserProfileEditor =({ user }: {user: IUser}) => {
                     allowClear
                     placeholder={intl.formatMessage({ id: 'mobile-number-placeholder' })}
                     prefix={<MobileFilled />}
-                    value={user.mobile}
-                    onChange={(newValue: string) => { modifyUser('mobile', newValue); }}
+                    value={user.mobile || ''}
+                    onChange={(newValue: string) => { modifyUser({mobile: newValue}); }}
                   />
                 </FormInputWrapper>
               </Col>
@@ -202,9 +138,7 @@ const UserProfileEditor =({ user }: {user: IUser}) => {
                   <BoxTitleDiv>{intl.formatMessage({ id: 'language' })}:</BoxTitleDiv>
                   <RadioGroup buttonStyle="solid" value={appState.locale}
                     onChange={ (e) => {
-                      // setLocale( e.target.value );
-                      dispatch(changeLocale({ ...appState, locale: e.target.value }));
-                      modifyUser('language', e.target.value.locale);
+                      modifyUser({languageCode: e.target.value.locale}, );
                     }}
                   >
                     <RadioButton key="en" value={Locale.enUS}>
@@ -227,22 +161,17 @@ const UserProfileEditor =({ user }: {user: IUser}) => {
               </Col>
               <Col md={24}>
                 <PasswordConfirm
-                  onConfirm={resetPassword}
+                  onConfirm={(password) => modifyUser({password})}
                   labelText={intl.formatMessage({ id: 'new-password' })}
-                  btnText={intl.formatMessage({ id: 'confirm-reset' })}
+                  btnText={intl.formatMessage({ id: 'confirm' })}
                 />
               </Col>
             </Row>
           </Col>
         </Row>
-        <Row>
-          <Col className={'text-right'} sm={24}>
-            <Button type="primary" loading={state.isSaving} size="large" disabled={state.buttonDisable} onClick={() => saveUser()}>Save</Button>
-          </Col>
-        </Row>
       </Spin>
     </Wrapper>
   );
-};
+}
 
-export default UserProfileEditor;
+export default UserProfileEditor
