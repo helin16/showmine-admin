@@ -1,48 +1,69 @@
-import React from 'react'
+import React, {useEffect, useState} from 'react'
 import IUser from '../../Types/User/IUser'
 import EmptyStats from './EmptyStats'
 import Donut from '../Charts/Donut'
+import IItemVisit from '../../Types/Article/IItemVisit';
+import MathHelper from '../../Helpers/MathHelper';
 
-const VisitsBySharerChart = () => {
-  return null
-  // const translateType = (sharer: IUser | null) => {
-  //   if (sharer === null) {
-  //     return 'Unknown';
-  //   }
-  //   return sharer.nick_name;
-  // };
-  //
-  // const data = items.filter((item: IStatsItem) => item.sharer !== null)
-  //   .sort((item1: IStatsItem, item2: IStatsItem) => item2.total - item1.total)
-  //   .map((item: IStatsItem) => ({ type: translateType(item.sharer), value: item.total }));
-  //
-  // const config = {
-  //   forceFit: true,
-  //   title: {
-  //     visible: true,
-  //     text: title,
-  //   },
-  //   description: {
-  //     visible: false,
-  //     text: '',
-  //   },
-  //   legend: {
-  //     visible: true,
-  //     flipPage: true,
-  //   },
-  //   radius: 0.8,
-  //   data,
-  //   angleField: 'value',
-  //   colorField: 'type',
-  //   label: {
-  //     visible: true,
-  //     type: 'inner',
-  //   },
-  // };
-  // if (data.length === 0) {
-  //   return <EmptyStats title={title} />;
-  // }
-  // return <Donut {...config} />;
+type iVisitsBySharerChart = {
+  title?: string;
+  itemVisits: IItemVisit[];
+}
+type iMap = {[key: string]: number};
+const VisitsBySharerChart = ({title, itemVisits}: iVisitsBySharerChart) => {
+  const[visitsMap, setVisitsMap] = useState<iMap>({});
+
+  useEffect(() => {
+    const translateType = (sharer?: IUser) => {
+      if (!sharer) {
+        return 'Unknown';
+      }
+      return sharer.nickName;
+    };
+
+    setVisitsMap(
+      itemVisits.reduce((map: iMap, itemVisit) => {
+        const sharerName = translateType(itemVisit.SharedBy);
+        return {
+          ...map,
+          [sharerName]: MathHelper.add(map[sharerName] || 0, 1)
+        }
+      }, {})
+    )
+  }, [itemVisits]);
+
+
+
+  const data = Object.keys(visitsMap)
+    .map((key) => ({ type: key, value: visitsMap[key] }));
+
+  const config = {
+    forceFit: true,
+    title: {
+      visible: true,
+      text: title,
+    },
+    description: {
+      visible: false,
+      text: '',
+    },
+    legend: {
+      visible: true,
+      flipPage: true,
+    },
+    radius: 0.8,
+    data,
+    angleField: 'value',
+    colorField: 'type',
+    label: {
+      visible: true,
+      type: 'inner',
+    },
+  };
+  if (data.length === 0) {
+    return <EmptyStats title={title || ''} />;
+  }
+  return <Donut {...config} />;
 }
 
 export default VisitsBySharerChart

@@ -27,7 +27,7 @@ const ArticleStatsBtn = ({ article, children, ...props }: iButton & { article?: 
     })
   }
 
-  if (!state.article) {
+  if (!article) {
     return null
   }
 
