@@ -18,7 +18,7 @@ import Dropdown from '../Form/Dropdown'
 import { useSelector } from 'react-redux'
 import { RootState } from '../../Redux/makeReduxStore'
 import { OP_GTE } from '../../Helpers/ServiceHelper'
-import IItemVisit from '../../Types/Article/IItemVisit'
+import IItemVisit from '../../Types/Article/IItemVisit';
 
 const StatsWrapper = styled.div``
 

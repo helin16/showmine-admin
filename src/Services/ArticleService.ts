@@ -23,12 +23,17 @@ const deactivate = async (id: string, params?: iConfigParams, config?: iConfigPa
   return AppService.delete(`${endPoint}/${id}`, params, config).then((resp) => resp.data)
 }
 
+const getPreviewUrl = (id: string) => {
+  return `${process.env.REACT_APP_REST_END_POINT || ''}/item/redirect?itemId=${id}`;
+}
+
 const ArticleService = {
   getAll,
   getItemById,
   create,
   update,
   deactivate,
+  getPreviewUrl,
 }
 
 export default ArticleService
