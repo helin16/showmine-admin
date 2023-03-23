@@ -14,22 +14,18 @@ import Row from '../../Components/Form/Row'
 import Col from '../../Components/Form/Col'
 import Button from '../../Components/Form/Button'
 import Icons from '../../Components/Icons'
-import { useNavigate } from 'react-router-dom'
 import { listGutter } from '../../Styles/AppWrapper'
 import translate from '../../i18n/translate'
 import Card from '../../Components/Form/Card'
+import {useIntl} from 'react-intl';
 
 const DashBoardPage = () => {
   const { company } = useSelector((s: RootState) => s.auth)
-  const navigate = useNavigate()
+  const intl = useIntl()
 
   if (!company) {
     return null
   }
-  // if (!company.co) {
-  //   navigate(WIZARD_URL);
-  //   return null;
-  // }
 
   return (
     <BackendPage
@@ -39,7 +35,7 @@ const DashBoardPage = () => {
           title={translate('dashboard')}
           controls={
             <Button type='primary' icon={<Icons.PlusOutlined />} href={ARTICLE_DETAILS_URL}>
-              {translate('new-article')}
+              {intl.formatMessage({id: 'new-article'})}
             </Button>
           }
         />

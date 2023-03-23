@@ -224,6 +224,7 @@ const LanguageCN = {
     unPublishConfirm: '您即将取消发布此内容。您确定要继续吗？',
     unPublish: '取消发布',
     upgrade: '升级',
+    confirmingLogout: '您确定要登出吗？',
   },
 }
 

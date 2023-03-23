@@ -12,6 +12,11 @@ import Alert from '../Form/Alert'
 import Icons from '../Icons'
 import SkeletonImage from '../Form/SkeletonImage'
 import { useNavigate } from 'react-router-dom'
+import QRCode from 'qrcode.react';
+import WeChatService from '../../Services/WeChatService';
+import message from '../Form/message';
+import MathHelper from '../../Helpers/MathHelper';
+import Button from '../Form/Button';
 
 const WeChatQRCodeDiv = styled.div`
   text-align: center;
@@ -38,174 +43,137 @@ const initialState = {
     qrcode: '',
   },
 }
+
 /**
  * WeChatLoginForm
  * @constructor
  */
 const WeChatLoginForm = () => {
-  return null
-  // const [formState, setFormState] = useState(initialState);
-  // const dispatch = useDispatch();
-  // const navigate = useNavigate();
-  //
-  // /**
-  //  *
-  //  */
-  // useEffect(() => {
-  //   if (formState.wechatUserToken !== '') {
-  //     return;
-  //   }
-  //   if (formState.wechatTmpToken !== '') {
-  //     return;
-  //   }
-  //   setFormState((s) => ({
-  //     ...s,
-  //     gettingUrl: true,
-  //   }));
-  //   let isCancelled = false;
-  //   AuthService.getWeChatLoginUrl()
-  //     .then((res) => {
-  //       if (isCancelled === true) return;
-  //       setFormState((s) => ({
-  //         ...s,
-  //         wechatQrCode: res.data,
-  //         gettingUrl: false,
-  //       }));
-  //     })
-  //     .catch((err) => {
-  //       if (isCancelled === true) return;
-  //       setFormState((s) => ({
-  //         ...s,
-  //         gettingUrlErr: err.data,
-  //         gettingUrl: false,
-  //       }));
-  //     });
-  //   return () => { // eslint-disable-line
-  //     isCancelled = true;
-  //   };
-  // }, [formState.wechatTmpToken, formState.wechatUserToken]);
-  // /**
-  //  * getting the user token from tmp token
-  //  */
-  // useEffect(() => {
-  //   if (formState.wechatUserToken !== '') {
-  //     return;
-  //   }
-  //   if (formState.wechatTmpToken === '') {
-  //     return;
-  //   }
-  //   let isCancelled = false;
-  //   setFormState((s) => ({ ...s, validatingTempToken: true }));
-  //   AuthService.validateTmpLoginCode(formState.wechatTmpToken)
-  //     .then((res) => {
-  //       if (isCancelled === true) {
-  //         return;
-  //       }
-  //       if (res.data.return_code !== '') {
-  //         setFormState((s) => ({
-  //           ...s,
-  //           wechatUserToken: res.data.return_code,
-  //         }));
-  //       }
-  //     })
-  //     .catch((err) => {
-  //       if (isCancelled === true) {
-  //         return;
-  //       }
-  //       setFormState((s) => ({
-  //         ...s,
-  //         validatingTempTokenErr: err.data,
-  //       }));
-  //     })
-  //     .finally(() => {
-  //       if (isCancelled === true) {
-  //         return;
-  //       }
-  //       setFormState((s) => ({
-  //         ...s,
-  //         validatingTempToken: false,
-  //       }));
-  //     });
-  //   return () => { // eslint-disable-line
-  //     isCancelled = true;
-  //     setFormState(initialState);
-  //   };
-  // }, [dispatch, formState.wechatTmpToken, formState.wechatUserToken]);
-  // /**
-  //  * getting the tmp token
-  //  */
-  // useEffect(() => {
-  //   if (formState.wechatUserToken !== '') {
-  //     return;
-  //   }
-  //   if (formState.wechatQrCode.subscribeLoginLogId === '') {
-  //     return;
-  //   }
-  //   const interval = setInterval(async () => {
-  //     await AuthService.checkWeChatLoginUser(formState.wechatQrCode.subscribeLoginLogId)
-  //       .then((res) => {
-  //         if (res.data.log && res.data.log.tmp_token !== '') {
-  //           clearInterval(interval);
-  //           setFormState((s) => ({
-  //             ...s,
-  //             wechatTmpToken: res.data.log.tmp_token,
-  //           }));
-  //         }
-  //       });
-  //   }, 500);
-  //   return () => { // eslint-disable-line
-  //     clearInterval(interval);
-  //   };
-  // }, [formState.wechatQrCode.subscribeLoginLogId, formState.wechatUserToken]);
-  // /**
-  //  *
-  //  * @param img
-  //  */
-  // const getImg = (img: React.ReactNode) => (
-  //   formState.validatingTempToken === true
-  //     ? <Spin tip={'Scanned Success, login ...'}>img</Spin> : img
-  // );
-  // /**
-  //  *
-  //  */
-  // const getInfoDiv = (img?: React.ReactNode) => (
-  //   <Alert
-  //     message={
-  //       <Icons.WechatFilled style={{ fontSize: '48px', color: STYLE_WECHAT_COLOR }}/>
-  //     }
-  //     description={
-  //       <div>
-  //         <div>
-  //           You can use your WeChat App on your mobile to scan the QRCode below.
-  //         </div>
-  //         <WeChatQRCodeImg>
-  //           {
-  //             !img ? <SkeletonImage style={responseImgStyle}/>
-  //               : getImg(img)
-  //           }
-  //         </WeChatQRCodeImg>
-  //       </div>
-  //     }
-  //     type="info"
-  //   />
-  // );
-  //
-  // if (formState.wechatUserToken !== '') {
-  //   AuthService.setLocalAuthToken(formState.wechatUserToken);
-  //   navigate(BACK_END_URL);
-  //   return null;
-  // }
-  // /**
-  //  * render
-  //  */
-  // return (
-  //   <WeChatQRCodeDiv>
-  //     { formState.gettingUrl === true
-  //       ? <Spin tip="Requesting QrCode ...">{getInfoDiv()}</Spin>
-  //       : getInfoDiv(<img alt='' src={formState.wechatQrCode.qrcode} style={responseImgStyle}/>)
-  //     }
-  //   </WeChatQRCodeDiv>
-  // );
+  const [loginUrl, setLoginUrl] = useState<string | null>(null);
+  const [loginToken, setLoginToken] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [userToken, setUserToken] = useState('');
+  const [count, setCount] = useState(0);
+  const [showReloadBtn, setShowReloadBtn] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    let isCanceled = false;
+
+    setIsLoading(true);
+    WeChatService.getLoginQrCodeUrl()
+      .then(resp => {
+        if (isCanceled) return;
+        setLoginUrl(`${resp.url || ''}`.trim());
+        setLoginToken(`${resp.token || ''}`.trim());
+        setUserToken('');
+        setShowReloadBtn(false);
+      })
+      .catch(err => {
+        if (isCanceled) return;
+        message.error(err.response.data.message);
+      })
+      .finally(() => {
+        if (isCanceled) return;
+        setIsLoading(false);
+      });
+
+    return () => {
+      isCanceled = true;
+    }
+  }, [count])
+
+  useEffect(() => {
+    const token = `${loginToken || ''}`.trim();
+    if(token === '') { return }
+
+    let isCanceled = false;
+    const start = (i = 0) => {
+      return setTimeout(() => {
+        WeChatService.getUserFromQrcode(token)
+          .then(resp => {
+            if (isCanceled) return;
+            const authToken = `${resp.token || ''}`.trim();
+            if (i < MathHelper.mul(3, 60) && resp.userId === null && resp.error === null && authToken === '') {
+              start(MathHelper.add(i, 1));
+              return;
+            }
+            if (authToken !== '') {
+              setUserToken(authToken)
+              return;
+            }
+            if (resp.error !== null) {
+              message.error(`${resp.error.message || 'Error Occurred'}`);
+            }
+            setShowReloadBtn(true);
+          })
+          .catch(err => {
+            if (isCanceled) return;
+            message.error(err.response.data.message);
+          })
+          .finally(() => {
+            if (isCanceled) return;
+          });
+      }, 1000)
+    }
+
+    start();
+    return () => {
+      isCanceled = true;
+    }
+  }, [loginToken])
+
+  const getQrcode = () => {
+    const refreshBtn = <small><p>Timed out, please click below button to refresh again.</p><Button onClick={() => setCount(MathHelper.add(count, 1))}>Refresh</Button></small>;
+    if (showReloadBtn === true) {
+      return refreshBtn
+    }
+
+    if (loginUrl === null) {
+      return <SkeletonImage style={responseImgStyle}/>;
+    }
+
+    if (`${loginUrl || ''}`.trim() !== '') {
+      return <QRCode value={`${loginUrl || ''}`.trim()} />
+    }
+
+    return refreshBtn
+  }
+
+  const getInfoDiv = () => (
+    <Alert
+      message={
+        <Icons.WechatFilled style={{ fontSize: '48px', color: STYLE_WECHAT_COLOR }}/>
+      }
+      description={
+        <div>
+          <div>
+            You can use your WeChat App on your mobile to scan the QRCode below.
+          </div>
+          <WeChatQRCodeImg>
+            {getQrcode()}
+          </WeChatQRCodeImg>
+        </div>
+      }
+      type="info"
+    />
+  );
+
+  if (`${userToken || ''}`.trim() !== '') {
+    AuthService.setLocalAuthToken(`${userToken || ''}`.trim());
+    navigate(BACK_END_URL);
+    return null;
+  }
+  /**
+   * render
+   */
+  return (
+    <WeChatQRCodeDiv>
+      <Spin tip="Requesting QrCode ..." spinning={isLoading}>
+        {getInfoDiv()}
+      </Spin>
+    </WeChatQRCodeDiv>
+  );
 }
 
 export default WeChatLoginForm

@@ -199,7 +199,6 @@ const RichTextEditor = ({ className, onChange, value, placeholder, isInLine, ass
     }
   }
 
-  console.log('assetType', assetType);
   return (
     <EditorWrapper className={className}>
       <input id='my-file' type='file' name='my-file' style={{ display: 'none' }} />

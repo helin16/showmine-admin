@@ -33,6 +33,10 @@ const updateMe = async (data: iConfigParams, config?: iConfigParams): Promise<iM
   return AppService.put(`${endPoint}/me`, data, config).then((res) => res.data)
 }
 
+const logout = async (data?: iConfigParams, config?: iConfigParams): Promise<iMeData> => {
+  return AppService.delete(`${endPoint}`, data, config).then((res) => res.data)
+}
+
 const AuthService = {
   login,
   getMe,
@@ -40,6 +44,7 @@ const AuthService = {
   setLocalAuthToken,
   getLocalAuthToken,
   removeLocalAuthToken,
+  logout,
 }
 
 export default AuthService
