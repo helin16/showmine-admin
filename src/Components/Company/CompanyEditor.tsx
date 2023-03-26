@@ -7,7 +7,6 @@ import CompanyAuthors from './CompanyAuthors'
 import InlineInput from '../Form/InlineInput'
 import IError from '../../Types/IError'
 import InlineRichTextEditor from '../Form/InlineRichTextEditor'
-import ICompanyAuthor from '../../Types/Company/ICompanyAuthor'
 import CompanyTags from './CompanyTags'
 import IAsset, {ASSET_TYPE_COMPANY_PROFILE} from '../../Types/Asset/IAsset'
 import translate from '../../i18n/translate'
@@ -56,14 +55,6 @@ const CompanyEditor = ({ company, onSaved }: { company: ICompany; onSaved?: (new
       .finally(() => {
         setIsSaving(false);
       })
-  };
-
-  const companyConfigObjUpdated = (fieldName: string, newValue: ICompanyAuthor[] | string) => {
-    const obj = {
-      ...company?.config,
-      [fieldName]: newValue,
-    };
-    companyUpdated('config', obj, onSaved);
   };
 
   /**
@@ -192,7 +183,7 @@ const CompanyEditor = ({ company, onSaved }: { company: ICompany; onSaved?: (new
             <InlineRichTextEditor value={company.itemDefaultFooter || ''}
               height={380}
               placeholder={translate('content-in-bottom')}
-              onChange={(newValue: string) => companyConfigObjUpdated('itemDefaultFooter', newValue)}
+              onChange={(newValue: string) => companyUpdated('itemDefaultFooter', newValue)}
             />
           </FormInputWrapper>
         </Card>
