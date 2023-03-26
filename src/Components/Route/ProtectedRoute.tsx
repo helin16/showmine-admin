@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { RootState } from '../../Redux/makeReduxStore'
 import AuthService from '../../Services/AuthService'
 import {
@@ -19,6 +19,7 @@ import Locale from '../Form/Locale';
  *
  * @param props
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ProtectedRoute = ({ children }: any) => {
   const { app: appState, auth: { user, isAuthenticating } } = useSelector((s: RootState) => s);
   const dispatch = useDispatch()

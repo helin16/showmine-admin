@@ -21,14 +21,13 @@ const SideMenuWrapper = styled.div`
   }
 `
 const BackendPageSideMenu = () => {
+  const { user, company, companyUsers } = useSelector((s: RootState) => s.auth);
   const { selectedMenuKey } = useSelector((s: RootState) => s.backendPage)
-  const { user, company, companyUsers } = useSelector((s: RootState) => s.auth)
 
   const getMenuItems = () => {
+    const isCurrentCompanyAdmin = (companyUsers || []).filter(companyUser => companyUser.companyId === company?.id && companyUser.role === ROLE_ADMIN).length > 0;
     return MenuItems.map((item) => {
-      if ((companyUsers || []).filter(companyUser => companyUser.companyId === company?.id && companyUser.role === ROLE_ADMIN).length === 0
-        && user?.isSuperAdmin !== true
-        && item.access === MENU_ACCESS_LEVEL_COMPANY_ADMIN) {
+      if (isCurrentCompanyAdmin !== true && user?.isSuperAdmin !== true && item.access === MENU_ACCESS_LEVEL_COMPANY_ADMIN) {
         return undefined;
       }
       if (user?.isSuperAdmin !== true && item.access === MENU_ACCESS_LEVEL_SUPER_ADMIN) {

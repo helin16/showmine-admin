@@ -16,13 +16,16 @@ const actions = {
     ...state,
     isAuthenticating: action.payload.isAuthenticating || false,
   }),
-  isAuthenticated: (state: ISession = initialState, action: PayloadAction<ISession>) => ({
-    ...state,
-    isAuthenticated: true,
-    user: action.payload.user,
-    company: action.payload.company,
-    // companyPackage: action.payload.companyPackage,
-  }),
+  isAuthenticated: (state: ISession = initialState, action: PayloadAction<ISession>) => {
+    return ({
+      ...state,
+      isAuthenticated: true,
+      user: action.payload.user,
+      company: action.payload.company,
+      companyUsers: action.payload.companyUsers,
+      // companyPackage: action.payload.companyPackage,
+    })
+  },
   changeCompany: (state: ISession = initialState, action: PayloadAction<ISession>) => ({
     ...state,
     company: action.payload.company,
@@ -30,7 +33,7 @@ const actions = {
   }),
   changeCompanyPackage: (state: ISession = initialState, action: PayloadAction<ISession>) => ({
     ...state,
-    // companyPackage: action.payload.companyPackage,
+    companyPackage: action.payload.companyPackage,
   }),
   removedAuthentication: (state: ISession = initialState) => ({
     ...state,

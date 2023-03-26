@@ -164,7 +164,7 @@ const WeChatLoginForm = () => {
     navigate(BACK_END_URL);
     return null;
   }
-  
+
   /**
    * render
    */

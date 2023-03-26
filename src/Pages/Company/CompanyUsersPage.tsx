@@ -15,7 +15,7 @@ type iState = {
 const initialState: iState = {}
 const CompanyUsersPage = () => {
   const [state] = useState(initialState)
-  const { company } = useSelector((s: RootState) => s.auth)
+  const { company } = useSelector((s: RootState) => s.auth);
 
   const getListDiv = () => {
     if (!company) return null
