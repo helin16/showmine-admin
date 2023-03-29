@@ -1,10 +1,8 @@
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
-import { Link } from 'react-router-dom'
 import { MailFilled, MobileFilled } from '@ant-design/icons'
 import { useIntl, FormattedMessage } from 'react-intl'
-import { WIZARD_URL } from '../../UrlMap'
 import { RootState } from '../../Redux/makeReduxStore'
 import { changeLocale } from '../../Redux/reduxers/app.slice'
 import IUser from '../../Types/User/IUser'
@@ -16,12 +14,11 @@ import message from '../Form/message'
 import Row from '../Form/Row'
 import Col from '../Form/Col'
 import Space from '../Form/Space'
-import Button from '../Form/Button'
 import { BoxTitleDiv, FormInputWrapper, listGutter } from '../../Styles/AppWrapper'
 import Divider from '../Form/Divider'
 import { RadioButton, RadioGroup } from '../Form/Radio'
 import Spin from '../Form/Spin'
-import IAsset from '../../Types/Asset/IAsset'
+import IAsset, {ASSET_TYPE_USER_AVATAR} from '../../Types/Asset/IAsset'
 import Locale from '../Form/Locale'
 import {isAuthenticated as isAuthed} from '../../Redux/reduxers/auth.slice';
 
@@ -69,6 +66,7 @@ const UserProfileEditor = ({ user }: { user: IUser }) => {
           <Col xs={24} sm={24} md={6} style={{ height: '160px' }}>
             <Space direction="vertical">
               <SingleImageUploader
+                assetType={ASSET_TYPE_USER_AVATAR}
                 onSetIsSaving={(saving) => setState({...state, isSaving: saving})}
                 initImgUrl={user.AvatarAsset?.url || ''}
                 onChange={(newAsset: IAsset | null) => modifyUser({ avatarAssetId: `${newAsset?.id || ''}`.trim() === '' ? null : `${newAsset?.id || ''}`}) }/>

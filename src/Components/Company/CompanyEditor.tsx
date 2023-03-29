@@ -8,7 +8,7 @@ import InlineInput from '../Form/InlineInput'
 import IError from '../../Types/IError'
 import InlineRichTextEditor from '../Form/InlineRichTextEditor'
 import CompanyTags from './CompanyTags'
-import IAsset, {ASSET_TYPE_COMPANY_PROFILE} from '../../Types/Asset/IAsset'
+import IAsset, {ASSET_TYPE_COMPANY_LOGO, ASSET_TYPE_COMPANY_PROFILE} from '../../Types/Asset/IAsset'
 import translate from '../../i18n/translate'
 import message from '../Form/message'
 import Card from '../Form/Card'
@@ -78,7 +78,7 @@ const CompanyEditor = ({ company, onSaved }: { company: ICompany; onSaved?: (new
               <Space direction="vertical" style={{ width: '100%' }}>
                 <FormInputWrapper style={{ height: '180px' }}>
                   <SingleImageUploader
-                     assetType={ASSET_TYPE_COMPANY_PROFILE}
+                     assetType={ASSET_TYPE_COMPANY_LOGO}
                      onChange={(newAsset: IAsset | null) => companyUpdated('logoAssetId', newAsset?.id || null, onSaved)}
                      title={translate('upload-logo')}
                      onSetIsSaving={(saving) => setIsSaving(saving)}
@@ -181,6 +181,7 @@ const CompanyEditor = ({ company, onSaved }: { company: ICompany; onSaved?: (new
               </BoxTitleSuffix>
             </BoxTitleDiv>
             <InlineRichTextEditor value={company.itemDefaultFooter || ''}
+              assetType={ASSET_TYPE_COMPANY_PROFILE}
               height={380}
               placeholder={translate('content-in-bottom')}
               onChange={(newValue: string) => companyUpdated('itemDefaultFooter', newValue)}
