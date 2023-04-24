@@ -11,7 +11,7 @@ const getLoginQrCodeUrl = async () => {
 }
 
 const getUserFromQrcode = async (token: string) => {
-  return AppService.get(`${endPoint}/qrcode/getUser`, {token}).then((resp) => resp.data)
+  return AppService.get(`${endPoint}/auth/getUser`, {token}).then((resp) => resp.data)
 }
 
 const isInWeChat = () => /(micromessenger|webbrowser)/.test(navigator.userAgent.toLocaleLowerCase())
