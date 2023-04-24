@@ -34,6 +34,7 @@ const CompanyEditor = ({ company, onSaved }: { company: ICompany; onSaved?: (new
    * @param fieldName
    * @param newValue
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const companyUpdated = (fieldName: string, newValue: any, savedFn?: (newCom: ICompany) => void) => {
     if (!company.id) return;
     const comp = {

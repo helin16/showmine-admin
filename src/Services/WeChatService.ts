@@ -1,5 +1,5 @@
 import { getCurrentUrl } from '../UrlMap'
-import AppService, {iConfigParams} from './AppService'
+import AppService from './AppService'
 
 const endPoint = '/wechat'
 const getJsConf = async (url: string = getCurrentUrl()) => {
