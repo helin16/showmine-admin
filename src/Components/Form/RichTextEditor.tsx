@@ -139,7 +139,7 @@ const defaultEditorConfig = {
   image_dimensions: false,
   image_class_list: [{ title: 'responsive', value: 'img-responsive' }],
   toolbar: [
-    'undo redo | formatselect | bold italic forecolor backcolor | ' +
+    'undo redo | formatselect | fontsize bold italic forecolor backcolor | ' +
     'alignleft aligncenter alignright alignjustify | ' +
     'bullist numlist outdent indent | link removeformat fullscreen | ',
     'table image customInsertButton code',
