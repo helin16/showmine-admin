@@ -23,7 +23,8 @@ const InlineRichTextEditorDiv = styled(InlineInputDiv)`
       height: 100%;
     }
   }
-`
+`;
+
 const initState = {
   value: null,
   height: undefined,
@@ -31,9 +32,10 @@ const initState = {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any,react/prop-types
-const InlineRichTextEditor = ({ value, height, maxHeight, onChange, ...props }: React.ComponentProps<any>) => {
+const InlineRichTextEditor = ({ value, height, maxHeight, onChange, isInLine = false, ...props }: React.ComponentProps<any>) => {
   // eslint-disable-line
   const [state, setState] = useState(initState)
+
 
   useEffect(() => {
     setState((s) => ({
@@ -59,7 +61,7 @@ const InlineRichTextEditor = ({ value, height, maxHeight, onChange, ...props }: 
 
   return (
     <InlineRichTextEditorDiv style={getDivStyle()} className={state.height ? 'has-height ' : ''}>
-      <RichTextEditor {...props} isInLine className={'inline-input'} value={state.value} onChange={valueChanged} />
+      <RichTextEditor {...props} isInLine={isInLine} className={'inline-input'} value={state.value} onChange={valueChanged} />
     </InlineRichTextEditorDiv>
   )
 }

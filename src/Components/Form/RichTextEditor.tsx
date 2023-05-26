@@ -163,8 +163,7 @@ type iRichTextEditor = {
  * @param onChange
  * @param value
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const RichTextEditor = ({ className, onChange, value, placeholder, isInLine, assetType, ...props }: iRichTextEditor) => {
+const RichTextEditor = ({ className, onChange, value, placeholder, isInLine = false, assetType, ...props }: iRichTextEditor) => {
   const [state, setState] = useState(initialState)
   /**
    *
@@ -208,8 +207,7 @@ const RichTextEditor = ({ className, onChange, value, placeholder, isInLine, ass
         // @ts-ignore
         init={{
           ...state.editor,
-          // inline: isInLine !== undefined,
-          inline: false,
+          inline: isInLine,
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           images_upload_handler: imagesUploadHandler(assetType),

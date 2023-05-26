@@ -94,6 +94,7 @@ const ArticleEditorSideOptions = ({
         <InlineRichTextEditor
           assetType={ASSET_TYPE_ITEM_DESCRIPTION}
           value={article.excerpt || ''}
+          isInLine={true}
           onChange={(newValue: string) => onUpdate('excerpt', newValue)}
         />
       </FormInputWrapper>
