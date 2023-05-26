@@ -95,6 +95,7 @@ const ArticleEditorSideOptions = ({
           assetType={ASSET_TYPE_ITEM_DESCRIPTION}
           value={article.excerpt || ''}
           isInLine={true}
+          showToolBar={false}
           onChange={(newValue: string) => onUpdate('excerpt', newValue)}
         />
       </FormInputWrapper>

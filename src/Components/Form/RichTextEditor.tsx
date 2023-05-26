@@ -156,6 +156,7 @@ type iRichTextEditor = {
   value: string
   placeholder?: string
   isInLine?: boolean,
+  showToolBar?: boolean,
   assetType?: string;
 }
 /**
@@ -163,7 +164,7 @@ type iRichTextEditor = {
  * @param onChange
  * @param value
  */
-const RichTextEditor = ({ className, onChange, value, placeholder, isInLine = false, assetType, ...props }: iRichTextEditor) => {
+const RichTextEditor = ({ className, onChange, value, placeholder, isInLine = false, showToolBar = true, assetType, ...props }: iRichTextEditor) => {
   const [state, setState] = useState(initialState)
   /**
    *
@@ -172,6 +173,7 @@ const RichTextEditor = ({ className, onChange, value, placeholder, isInLine = fa
     setState((s) => ({
       ...s,
       value,
+      menubar: showToolBar,
       editor: {
         ...s.editor,
         plugins: s.editor.plugins.concat(['autoresize']),
