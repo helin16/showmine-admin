@@ -116,7 +116,7 @@ const customAction = (assetType?: string) => (editor: any) => {
 }
 
 const defaultEditorConfig = {
-  menubar: false,
+  menubar: true,
   branding: false,
   statusbar: false,
   placeholder: '',
@@ -129,7 +129,7 @@ const defaultEditorConfig = {
   image_title: true,
   file_picker_types: 'media image',
   plugins: [
-    'advlist', 'autolink',
+    'advlist', 'autolink', 'lineheight',
     'lists', 'link', 'image', 'charmap', 'print', 'preview', 'anchor',
     'searchreplace', 'visualblocks', 'code', 'fullscreen',
     'insertdatetime', 'media', 'table', 'paste', 'code', 'help', 'wordcount', 'image', 'table'
@@ -139,10 +139,9 @@ const defaultEditorConfig = {
   image_dimensions: false,
   image_class_list: [{ title: 'responsive', value: 'img-responsive' }],
   toolbar: [
-    'undo redo | formatselect | fontsize bold italic forecolor backcolor | ' +
+    'undo redo | formatselect | fontsize bold italic forecolor backcolor lineheight | ' +
     'alignleft aligncenter alignright alignjustify | ' +
-    'bullist numlist outdent indent | link removeformat fullscreen | ',
-    'table image customInsertButton code',
+    'table image customInsertButton code | bullist numlist outdent indent | link removeformat fullscreen',
   ]
 }
 const initialState = {
@@ -164,6 +163,7 @@ type iRichTextEditor = {
  * @param onChange
  * @param value
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const RichTextEditor = ({ className, onChange, value, placeholder, isInLine, assetType, ...props }: iRichTextEditor) => {
   const [state, setState] = useState(initialState)
   /**
@@ -208,7 +208,8 @@ const RichTextEditor = ({ className, onChange, value, placeholder, isInLine, ass
         // @ts-ignore
         init={{
           ...state.editor,
-          inline: isInLine !== undefined,
+          // inline: isInLine !== undefined,
+          inline: false,
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           images_upload_handler: imagesUploadHandler(assetType),
