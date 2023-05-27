@@ -118,6 +118,10 @@ export const AppCssWrapper = createGlobalStyle`
     background: transparent url('/img/auth-bg.png') right bottom no-repeat;
     background-size: contain;
   }
+
+  .text-danger {
+    color: ${dangerColor};
+  }
 `
 
 const AppWrapper = styled.div`
@@ -142,6 +146,10 @@ const AppWrapper = styled.div`
     .ant-statistic-title {
       text-align: left;
     }
+  }
+
+  .text-danger {
+    color: ${dangerColor};
   }
 `
 

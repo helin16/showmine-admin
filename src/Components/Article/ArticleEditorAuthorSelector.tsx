@@ -8,17 +8,25 @@ import Spin from '../Form/Spin'
 import { FlexContainer } from '../../Styles/AppWrapper'
 import IAuthor from '../../Types/Article/IAuthor';
 import AuthorService from '../../Services/AuthorService';
+import {FormattedMessage} from 'react-intl';
+import CompanyAuthorPopup from '../Company/CompanyAuthorPopup';
+import MathHelper from '../../Helpers/MathHelper';
 
 const ArticleAuthorSelectorDiv = styled.div``
 
 type iArticleEditorAuthorSelector = {
-  article: IArticle
-  onUpdate: (newFieldName: string, newValue: string) => void
+  article: IArticle;
+  showCreate?: boolean;
+  onUpdate: (newFieldName: string, newValue: string) => void;
 }
 
-const ArticleEditorAuthorSelector = ({ article, onUpdate }: iArticleEditorAuthorSelector) => {
+const createId = 'app-create';
+
+const ArticleEditorAuthorSelector = ({ article, showCreate = false, onUpdate }: iArticleEditorAuthorSelector) => {
   const [isLoading, setIsLoading] = useState(false);
   const [authorsMap, setAuthorsMap] = useState<{ [key: string]: IAuthor }>({});
+  const [isCreatingAuthor, setIsCreatingAuthor] = useState(false);
+  const [count, setCount] = useState(0);
 
   useEffect(() => {
     let isCanceled = false;
@@ -27,6 +35,7 @@ const ArticleEditorAuthorSelector = ({ article, onUpdate }: iArticleEditorAuthor
       where: JSON.stringify({ isActive: true })
     }).then(res => {
       if (isCanceled) return;
+      setIsCreatingAuthor(false);
       setAuthorsMap(res.data.reduce((map, author) => {
         return {
           ...map,
@@ -43,11 +52,15 @@ const ArticleEditorAuthorSelector = ({ article, onUpdate }: iArticleEditorAuthor
     return () => {
       isCanceled = true;
     }
-  }, [article.id])
+  }, [article.id, count])
 
   const authorSelected = (newAuthorId: string) => {
     const authorId = `${newAuthorId || ''}`.trim();
     if (authorId === '') {
+      return;
+    }
+    if(authorId === createId) {
+      setIsCreatingAuthor(true);
       return;
     }
     onUpdate('authorId', newAuthorId);
@@ -66,6 +79,23 @@ const ArticleEditorAuthorSelector = ({ article, onUpdate }: iArticleEditorAuthor
           <Typography.Text type="secondary">{url}</Typography.Text>
         </a>
       </FlexContainer>
+    )
+  }
+
+  const getCreatingAuthorPopup = () => {
+    if (isCreatingAuthor !== true) {
+      return null;
+    }
+    return (
+      <CompanyAuthorPopup
+        isShowing={true}
+        companyAuthor={null}
+        onSaved={(newCompanyAuthor) => {
+          setCount(MathHelper.add(count, 1));
+          authorSelected(newCompanyAuthor.id || '');
+        }}
+        onCancel={() => setIsCreatingAuthor(false)}
+      />
     )
   }
 
@@ -90,20 +120,29 @@ const ArticleEditorAuthorSelector = ({ article, onUpdate }: iArticleEditorAuthor
             return name.indexOf(input.toLowerCase()) >= 0;
           }}
           options={
-            Object.values(authorsMap).map((author) => ({
-              label: (
-                <div>
-                  <div><b>{author.name}</b></div>
-                  <div>{author.url}</div>
-                </div>
-              ),
-              value: author.id,
-              key: author.id,
-              data: author,
-            }))
+            [
+              ...(Object.values(authorsMap).map((author) => ({
+                label: (
+                  <div>
+                    <div><b>{author.name}</b></div>
+                    <div>{author.url}</div>
+                  </div>
+                ),
+                value: author.id,
+                key: author.id,
+                data: author,
+              }))),
+              ...(showCreate === true ? [{
+                label: <div><div><b><FormattedMessage id="createAuthor" /></b></div><small className={'text-muted'}><FormattedMessage id="createAuthorMsg" /></small></div>,
+                value: createId,
+                key: createId,
+                data: null,
+              }] : [])
+            ]
           }
         />
         {getSelectedAuthorLink()}
+        {getCreatingAuthorPopup()}
       </Spin>
     </ArticleAuthorSelectorDiv>
   );

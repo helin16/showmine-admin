@@ -1,22 +1,20 @@
-import React, { ChangeEvent, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import translate from '../../i18n/translate'
 import {
-  BoxTitleDiv,
-  FormInputWrapper,
   InlineInputDiv,
   inlineInputPaddingHalf,
   primaryBtnBgColor,
 } from '../../Styles/AppWrapper'
-import InputBox from '../Form/InputBox'
 import Icons from '../Icons'
 import Tag from '../Form/Tag'
 import AuthorService from '../../Services/AuthorService'
 import message from '../Form/message'
 import IAuthor from '../../Types/Article/IAuthor';
 import MathHelper from '../../Helpers/MathHelper';
-import Modal from '../Form/Modal';
 import Spin from '../Form/Spin';
+import CompanyAuthorPopup from './CompanyAuthorPopup';
+import {useIntl} from 'react-intl';
 
 const AuthorsWrapper = styled(InlineInputDiv)`
   .author-tag-div {
@@ -37,7 +35,8 @@ const CompanyAuthors = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [authorsMap, setAuthorsMap] = useState<{ [key: string]: IAuthor }>({});
-  const [editingAuthor, setEditingAuthor] = useState<IAuthor | null | {name: string; url?: string}>(null);
+  const [editingAuthor, setEditingAuthor] = useState<IAuthor | null | undefined>(undefined);
+  const intl = useIntl();
 
   useEffect(() => {
     setIsLoading(true);
@@ -47,7 +46,7 @@ const CompanyAuthors = () => {
         setAuthorsMap(
           (resp.data || []).reduce((map, author) => ({...map, [author.id || '']: author}), {}),
         );
-        setEditingAuthor(null);
+        setEditingAuthor(undefined);
       }).catch(err => {
           message.error(`${err.message}`);
       }).finally(() => {
@@ -62,8 +61,8 @@ const CompanyAuthors = () => {
     }
     setIsSaving(true);
     AuthorService.deactivate(authorId)
-      .then(resp => {
-        message.success(`Author(${author.name}) deleted.`)
+      .then(() => {
+        message.success(intl.formatMessage({id: 'companyAuthorDeleted'}))
       }).catch(err => {
         message.error(err.response.data.message);
       }).finally(() => {
@@ -72,91 +71,21 @@ const CompanyAuthors = () => {
       })
   };
 
-  const changeAuthor = (author: IAuthor, data: {[key: string]: string}) => {
-    const authorId = `${author.id || ''}`.trim();
-    if (authorId === '') {
-      return;
-    }
-    setIsSaving(true);
-    AuthorService.update(authorId, data)
-      .then(resp => {
-        message.success(`Author(${author.name}) updated.`)
-      }).catch(err => {
-      message.error(err.response.data.message);
-    }).finally(() => {
-      setIsSaving(false);
-      setCount(MathHelper.add(count, 1));
-    })
-  };
-
-  const saveAuthor = () => {
-    if (editingAuthor === null) { return }
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const authorId = `${editingAuthor?.id || ''}`.trim();
-    if (editingAuthor !== null && authorId !== '') {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      return changeAuthor(editingAuthor, editingAuthor);
-    }
-    setIsSaving(true);
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    AuthorService.create(editingAuthor)
-      .then(resp => {
-        message.success(`Author(${resp.name}) created.`)
-      }).catch(err => {
-      message.error(err.response.data.message);
-    }).finally(() => {
-      setIsSaving(false);
-      setCount(MathHelper.add(count, 1));
-    })
-  };
-
-
   const getAuthorPopoverDiv = () => {
-    if (editingAuthor === null) {
-      return null;
-    }
     return (
-      <Modal
-        open={true}
-        title={'Save Author'}
-        onOk={() => saveAuthor()}
-        okText={'save'}
-        okButtonProps={{ icon: <Icons.DeleteOutlined />, loading: isSaving === true }}
-        onCancel={() => {
-          setEditingAuthor(null)
+      <CompanyAuthorPopup
+        isShowing={true}
+        companyAuthor={editingAuthor}
+        onSaved={() => {
+          setCount(MathHelper.add(count, 1));
         }}
-        cancelButtonProps={{ type: 'text' }}
-      >
-        <FormInputWrapper>
-          <BoxTitleDiv>{translate('name')}</BoxTitleDiv>
-          <InputBox
-            allowClear
-            placeholder={translate('author-name')}
-            prefix={<Icons.UserOutlined />}
-            value={editingAuthor?.name || ''}
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            onChange={ (e: ChangeEvent<HTMLInputElement>) => setEditingAuthor({...(editingAuthor || {}), name: e.target.value})}
-          />
-        </FormInputWrapper>
-        <FormInputWrapper>
-          <BoxTitleDiv>{translate('link')}</BoxTitleDiv>
-          <InputBox
-            allowClear
-            placeholder={translate('url')}
-            value={editingAuthor?.url || ''}
-            prefix={<Icons.LinkOutlined />}
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            onChange={ (e: ChangeEvent<HTMLInputElement>) => setEditingAuthor({...(editingAuthor || {}), url: e.target.value})}
-          />
-        </FormInputWrapper>
-      </Modal>
+        onCancel={() => {
+          setEditingAuthor(undefined)
+        }}
+      />
     )
   };
+
   /**
    * Render
    */
@@ -168,15 +97,15 @@ const CompanyAuthors = () => {
           return (
             <Tag
               key={author.id}
-              className={'author-tag-div'}
               closable={true}
+              className={'author-tag-div'}
               onClick={() => setEditingAuthor(author)}
               onClose={() => deleteAuthor(author)}>
               {author.name}
             </Tag>
           );
         })}
-        <Tag className={'author-tag-div new-author'} color={primaryBtnBgColor} onClick={() => setEditingAuthor({name: '', url: ''})}>
+        <Tag className={'author-tag-div new-author'} color={primaryBtnBgColor} onClick={() => setEditingAuthor(null)}>
           <Icons.PlusOutlined /> {translate('new-author')}
         </Tag>
       </Spin>

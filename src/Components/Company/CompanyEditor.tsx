@@ -141,7 +141,11 @@ const CompanyEditor = ({ company, onSaved }: { company: ICompany; onSaved?: (new
                 </Col>
                 <Col md={{ span: 24 }}>
                   <BoxTitleDiv>{translate('company-des')}</BoxTitleDiv>
-                  <InlineRichTextEditor value={company.description} height={180} maxHeight={180}
+                  <InlineRichTextEditor
+                    isInLine
+                    value={company.description}
+                    height={180}
+                    maxHeight={180}
                     placeholder={translate('company-description')}
                     onChange={(newValue: string) => companyUpdated('description', newValue, onSaved)}
                   />
@@ -181,7 +185,9 @@ const CompanyEditor = ({ company, onSaved }: { company: ICompany; onSaved?: (new
                 {translate('content-in-bottom-2')}
               </BoxTitleSuffix>
             </BoxTitleDiv>
-            <InlineRichTextEditor value={company.itemDefaultFooter || ''}
+            <InlineRichTextEditor
+              isInLine
+              value={company.itemDefaultFooter || ''}
               assetType={ASSET_TYPE_COMPANY_PROFILE}
               height={380}
               placeholder={translate('content-in-bottom')}

@@ -10,6 +10,7 @@ import { BoxTitleDiv, BoxTitleSuffix, FormInputWrapper } from '../../Styles/AppW
 import message from '../Form/message'
 import SingleImageUploader from '../Form/SingleImageUploader'
 import Spin from '../Form/Spin';
+import Switch from '../Form/Switch';
 
 type iArticleEditorSideOptions = {
   article: IArticle
@@ -74,7 +75,7 @@ const ArticleEditorSideOptions = ({
           <FormattedMessage id="author" />
           <BoxTitleSuffix><FormattedMessage id="author-manage" /></BoxTitleSuffix>
         </BoxTitleDiv>
-        <ArticleEditorAuthorSelector article={article} onUpdate={onUpdate} />
+        <ArticleEditorAuthorSelector article={article} onUpdate={onUpdate} showCreate={true} />
       </FormInputWrapper>
 
       <FormInputWrapper>
@@ -82,6 +83,14 @@ const ArticleEditorSideOptions = ({
           <FormattedMessage id="tags" />
         </BoxTitleDiv>
         <ArticleEditorTags article={article} />
+      </FormInputWrapper>
+
+      <FormInputWrapper>
+        <BoxTitleDiv>
+          <FormattedMessage id="gTranslateFlag" />
+          <BoxTitleSuffix><FormattedMessage id="gTranslateFlagMsg" /></BoxTitleSuffix>
+        </BoxTitleDiv>
+        <Switch checked={article.enableGTranslateFlag} onClick={(checked) => onUpdate('enableGTranslateFlag', checked)}/>{' '}<FormattedMessage id="gTranslateFlag" />
       </FormInputWrapper>
 
       <FormInputWrapper>

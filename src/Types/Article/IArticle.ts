@@ -22,6 +22,7 @@ type IArticle = IBaseModel & {
   CreatedBy?: IUser
   UpdatedBy?: IUser
   Author?: IAuthor;
+  enableGTranslateFlag: boolean;
 }
 
 export default IArticle

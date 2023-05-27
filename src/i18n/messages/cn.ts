@@ -225,6 +225,18 @@ const LanguageCN = {
     unPublish: '取消发布',
     upgrade: '升级',
     confirmingLogout: '您确定要登出吗？',
+    gTranslateFlag: '开启谷歌翻译？',
+    gTranslateFlagMsg: '开启谷歌翻译以后，文章会被自动翻译',
+    createAuthor: '新建作者',
+    createAuthorMsg: '如果找不到对应的作者，可以新建',
+    companyAuthorSaved: '作者 "{authorName}" 创建成功.',
+    companyAuthorDeleted: '作者成功删除',
+    createCompanyAuthor: '新建作者',
+    updateCompanyAuthor: '更改作者',
+    save: '保存',
+    fieldIsRequired: '{fieldName}是必填项',
+    invalidUrl: '{fieldName}不是正常的URL',
+    ErrorOccurred: '有错误',
   },
 }
 

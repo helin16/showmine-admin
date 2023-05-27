@@ -116,7 +116,7 @@ const customAction = (assetType?: string) => (editor: any) => {
 }
 
 const defaultEditorConfig = {
-  menubar: true,
+  menubar: false,
   branding: false,
   statusbar: false,
   placeholder: '',
@@ -165,7 +165,7 @@ type iRichTextEditor = {
  * @param value
  */
 const RichTextEditor = ({ className, onChange, value, placeholder, isInLine = false, showToolBar = true, assetType, ...props }: iRichTextEditor) => {
-  const [state, setState] = useState(initialState)
+  const [state, setState] = useState(initialState);
   /**
    *
    */
@@ -173,9 +173,9 @@ const RichTextEditor = ({ className, onChange, value, placeholder, isInLine = fa
     setState((s) => ({
       ...s,
       value,
-      menubar: showToolBar,
       editor: {
         ...s.editor,
+        menubar: showToolBar,
         plugins: s.editor.plugins.concat(['autoresize']),
         placeholder: placeholder || '',
       },
