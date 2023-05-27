@@ -75,7 +75,7 @@ const ArticleEditorSideOptions = ({
           <FormattedMessage id="author" />
           <BoxTitleSuffix><FormattedMessage id="author-manage" /></BoxTitleSuffix>
         </BoxTitleDiv>
-        <ArticleEditorAuthorSelector article={article} onUpdate={onUpdate} showCreate={true} />
+        <ArticleEditorAuthorSelector article={article} onUpdate={onUpdate} showCreate={false} />
       </FormInputWrapper>
 
       <FormInputWrapper>
