@@ -91,7 +91,7 @@ const ArticleListPage = () => {
         <BackendPageContentTitle
           title={intl.formatMessage({ id: 'news_article' })}
           controls={
-            <Button type='primary' icon={<Icons.PlusOutlined />} onClick={() => navigate(getUrl(ARTICLE_DETAILS_URL))}>
+            <Button type='primary' icon={<Icons.PlusOutlined />} onClick={() => navigate(getUrl(ARTICLE_DETAILS_URL, ':id', 'new'))}>
               {intl.formatMessage({ id: 'new-article' })}
             </Button>
           }
