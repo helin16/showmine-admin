@@ -90,7 +90,7 @@ const WizardPage = () => {
             <ArticleList company={state.company} />
           ) : (
             <SectionDiv>
-              <Link to={getUrl(ARTICLE_DETAILS_URL)}>
+              <Link to={getUrl(getUrl(ARTICLE_DETAILS_URL, ':id', 'new'))}>
                 <Button type='primary' icon={<Icons.PlusOutlined />}>
                   {translate('new-article')}
                 </Button>

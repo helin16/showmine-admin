@@ -8,7 +8,7 @@ import CompanyArticleStats from '../../Components/Article/CompanyArticleStats'
 import CompanyChannelStats from '../../Components/Channel/CompanyChannelStats'
 import CompanyUserStats from '../../Components/User/CompanyUserStats'
 import VisitStats from '../../Components/Stats/VisitStats'
-import { ARTICLE_DETAILS_URL } from '../../UrlMap'
+import {ARTICLE_DETAILS_URL, getUrl} from '../../UrlMap'
 import { MENU_KEY_DASHBOARD } from '../../Components/Menu/MenuItems'
 import Row from '../../Components/Form/Row'
 import Col from '../../Components/Form/Col'
@@ -34,7 +34,7 @@ const DashBoardPage = () => {
         <BackendPageContentTitle
           title={translate('dashboard')}
           controls={
-            <Button type='primary' icon={<Icons.PlusOutlined />} href={ARTICLE_DETAILS_URL}>
+            <Button type='primary' icon={<Icons.PlusOutlined />} href={getUrl(ARTICLE_DETAILS_URL, ':id', 'new')}>
               {intl.formatMessage({id: 'new-article'})}
             </Button>
           }
