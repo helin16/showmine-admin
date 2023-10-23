@@ -12,6 +12,7 @@ import Image from '../Form/Image'
 import IResList from '../../Types/IResList'
 import IAsset from '../../Types/Asset/IAsset'
 import MathHelper from '../../Helpers/MathHelper';
+import {APP_WIDTHS} from '../../Constants';
 
 export const MediaListWrapper = styled.div`
   .media-list-item {
@@ -30,6 +31,12 @@ export const MediaListWrapper = styled.div`
         overflow: hidden;
         text-overflow: ellipsis;
         width: 100%;
+      }
+    }
+
+    @media only screen and (max-width: ${APP_WIDTHS.xs}) {
+      .extra-meta {
+        display: none;
       }
     }
   }
@@ -142,14 +149,13 @@ const MediaList = ({ keyword }: iMediaList) => {
                   />
                 }
                 description={
-                  <>
+                  <div className={'description'}>
                     <div>type: {asset.type}</div>
                     <div>size: {fileSize}</div>
-                  </>
+                  </div>
                 }
               />
-              <div>
-
+              <div className={'extra-meta'}>
                 {moment(asset.createdAt).format('lll')}
                 <div>{asset.comments || ''}</div>
               </div>
