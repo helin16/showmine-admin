@@ -10,7 +10,20 @@ import Dropdown from '../Form/Dropdown'
 import Button, { iButton } from '../Form/Button'
 import ArticleUnPublishBtn from './Buttons/ArticleUnPublishBtn';
 import {useIntl} from 'react-intl';
+import ArticleMoreOptionsBtn from './Buttons/ArticleMoreOptionsBtn';
+import styled from 'styled-components';
+import { APP_WIDTHS } from '../../Constants'
 
+const Wrapper = styled.div`
+  .more-opts-btn {
+    display: none;
+  }
+  // @media only screen and (max-width: ${APP_WIDTHS.xs}) {
+  //   .more-opts-btn {
+  //     display: block;
+  //   }
+  // }
+`;
 
 type iArticleActionsDropdown = { article?: IArticle; onChanged?: (article: IArticle) => void } & iButton
 const ArticleActionsDropdown = ({
@@ -33,6 +46,14 @@ const ArticleActionsDropdown = ({
       // eslint-disable-next-line react/jsx-key
       <ArticleStatsBtn article={article} type={'text'} icon={<Icons.AreaChartOutlined />} />,
       // eslint-disable-next-line react/jsx-key
+      <ArticleMoreOptionsBtn
+        article={article}
+        type={'text'}
+        icon={<Icons.LinkOutlined />}
+        className={'more-opts-btn'}
+        onUpdated={handleChanged}
+      />,
+      // eslint-disable-next-line react/jsx-key
       <ArticleSyncBtn article={article} type={'text'} icon={<Icons.OrderedListOutlined />} />,
       // eslint-disable-next-line react/jsx-key
       <ArticleHistoryBtn article={article} type={'text'} icon={<Icons.EyeOutlined />} />,
@@ -53,18 +74,20 @@ const ArticleActionsDropdown = ({
   }
 
   return (
-    <Dropdown menu={{
-      items: getMenuItems().map((item, index) => ({label: item, key: index}))
-    }} trigger={['click']} placement='bottomRight'>
-      <Button {...props} className='ant-dropdown-link'>
-        {props.children || (
-          <div>
-            {intl.formatMessage({ id: 'options' })}
-            <Icons.DownOutlined />
-          </div>
-        )}
-      </Button>
-    </Dropdown>
+    <Wrapper>
+      <Dropdown menu={{
+        items: getMenuItems().map((item, index) => ({label: item, key: index}))
+      }} trigger={['click']} placement='bottomRight'>
+        <Button {...props} className='ant-dropdown-link'>
+          {props.children || (
+            <div>
+              {intl.formatMessage({ id: 'options' })}
+              <Icons.DownOutlined />
+            </div>
+          )}
+        </Button>
+      </Dropdown>
+    </Wrapper>
   )
 }
 

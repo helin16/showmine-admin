@@ -116,8 +116,8 @@ const WizardPage = () => {
           // eslint-disable-next-line camelcase
           has_been_setup: true,
         },
-      }).then((k) => {
-        setCurrent(current + 1)
+      }).then(() => {
+        setCurrent(current + 1);
       })
     } else {
       setCurrent(current + 1)

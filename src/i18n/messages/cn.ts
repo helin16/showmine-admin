@@ -237,6 +237,7 @@ const LanguageCN = {
     fieldIsRequired: '{fieldName}是必填项',
     invalidUrl: '{fieldName}不是正常的URL',
     ErrorOccurred: '有错误',
+    'more-options': '更多选项',
   },
 }
 

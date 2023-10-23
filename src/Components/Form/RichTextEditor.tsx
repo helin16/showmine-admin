@@ -209,6 +209,7 @@ const RichTextEditor = ({ className, onChange, value, placeholder, isInLine = fa
         // @ts-ignore
         init={{
           ...state.editor,
+          content_style: 'img { max-width: 100%; }',
           inline: isInLine,
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore

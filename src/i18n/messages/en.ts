@@ -237,6 +237,7 @@ const LanguageEN = {
     fieldIsRequired: '{fieldName} is required',
     invalidUrl: '{fieldName} is invalid URL',
     ErrorOccurred: 'Error Occurred',
+    'more-options': 'More Options',
   },
 }
 

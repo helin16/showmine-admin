@@ -19,7 +19,9 @@ import {OP_NOT} from '../../Helpers/ServiceHelper';
 
 const SectionDiv = styled.div`
   margin: ${contentInternalMargin} 0px;
-`
+`;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const articleStatuses: any = {
   All: {},
   Published: { publishedAt: {[OP_NOT] : null} },

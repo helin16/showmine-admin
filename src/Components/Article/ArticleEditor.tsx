@@ -13,9 +13,7 @@ import { useMessage } from '../Form/message'
 import Row from '../Form/Row'
 import Col from '../Form/Col'
 import Card from '../Form/Card'
-import Drawer from '../Form/Drawer'
 import { listGutter } from '../../Styles/AppWrapper'
-import Affix from '../Form/Affix'
 import Spin from '../Form/Spin'
 import {NoticeType} from 'antd/es/message/interface';
 import {ASSET_TYPE_ITEM_DESCRIPTION} from '../../Types/Asset/IAsset';
@@ -112,31 +110,12 @@ const ArticleEditor = ({ article, onUpdated }: iArticleEditor) => {
           <Col xs={{ span: 24 }}>
             <Card>
               <Row>
-                <Col flex={'auto'}>
+                <Col>
                   <InlineInput
                     placeholder={intl.formatMessage({ id: 'title-article' })}
                     value={article.title}
                     onChange={(newValue: string) => handleValueChanged('title', newValue)}
                   />
-                </Col>
-                <Col flex={'80px'} className={'floating-options'}>
-                  <Affix offsetTop={10} style={{ right: '10px', textAlign: 'right' }}>
-                    <span onClick={() => setState({ ...state, showingOptions: true })} style={{ cursor: 'pointer' }}>
-                      <img src={state.previousImgUrl} alt='' style={{ width: '100%', height: '100%' }} />
-                    </span>
-                    <Drawer
-                      width={370}
-                      title={intl.formatMessage({ id: 'content-option' })}
-                      open={state.showingOptions}
-                      closable={true}
-                      onClose={() => setState({ ...state, showingOptions: false })}
-                    >
-                      <ArticleEditorSideOptions
-                        article={article}
-                        onUpdate={handleValueChanged}
-                      />
-                    </Drawer>
-                  </Affix>
                 </Col>
               </Row>
             </Card>
