@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import LocalStorageService from '../../Services/LocalStorageService'
 
 const fakeToken = 'fake-token'
@@ -26,21 +27,21 @@ describe.each([
   })
 
   test('get token from localStorage.', () => {
-    getFakeStorage().getItem = jest.fn().mockReturnValueOnce(fakeToken)
+    getFakeStorage().getItem = vi.fn().mockReturnValueOnce(fakeToken)
     expect(LocalStorageService.getToken()).toBe(fakeToken)
     expect(getFakeStorage().getItem).toHaveBeenCalledTimes(1)
     expect(getFakeStorage().getItem).toHaveBeenLastCalledWith(expectedCompanyIdName)
   })
 
   test('set token to localStorage.', () => {
-    getFakeStorage().setItem = jest.fn()
+    getFakeStorage().setItem = vi.fn()
     expect(LocalStorageService.setToken(fakeToken)).toBe(undefined)
     expect(getFakeStorage().setItem).toHaveBeenCalledTimes(1)
     expect(getFakeStorage().setItem).toHaveBeenLastCalledWith(expectedCompanyIdName, fakeToken)
   })
 
   test('remove token from localStorage.', () => {
-    getFakeStorage().removeItem = jest.fn()
+    getFakeStorage().removeItem = vi.fn()
     expect(LocalStorageService.removeToken()).toBe(undefined)
     expect(getFakeStorage().removeItem).toHaveBeenCalledTimes(1)
     expect(getFakeStorage().removeItem).toHaveBeenLastCalledWith(expectedCompanyIdName)
@@ -56,21 +57,21 @@ describe.each([
   })
 
   test('get companyId from localStorage.', () => {
-    getFakeStorage().getItem = jest.fn().mockReturnValueOnce(fakeCompanyId)
+    getFakeStorage().getItem = vi.fn().mockReturnValueOnce(fakeCompanyId)
     expect(LocalStorageService.getCompanyId()).toBe(fakeCompanyId)
     expect(getFakeStorage().getItem).toHaveBeenCalledTimes(1)
     expect(getFakeStorage().getItem).toHaveBeenLastCalledWith(expectedCompanyIdName)
   })
 
   test('set token to localStorage.', () => {
-    getFakeStorage().setItem = jest.fn()
+    getFakeStorage().setItem = vi.fn()
     expect(LocalStorageService.setCompanyId(fakeCompanyId)).toBe(undefined)
     expect(getFakeStorage().setItem).toHaveBeenCalledTimes(1)
     expect(getFakeStorage().setItem).toHaveBeenLastCalledWith(expectedCompanyIdName, fakeCompanyId)
   })
 
   test('remove token from localStorage.', () => {
-    getFakeStorage().removeItem = jest.fn()
+    getFakeStorage().removeItem = vi.fn()
     expect(LocalStorageService.removeCompanyId()).toBe(undefined)
     expect(getFakeStorage().removeItem).toHaveBeenCalledTimes(1)
     expect(getFakeStorage().removeItem).toHaveBeenLastCalledWith(expectedCompanyIdName)

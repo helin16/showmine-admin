@@ -1,8 +1,9 @@
+import { vi } from 'vitest'
 import axios from 'axios'
 import AppService from '../../Services/AppService'
 import LocalStorageService from '../../Services/LocalStorageService'
 
-jest.mock('axios')
+vi.mock('axios')
 
 const fakeParams = { some: 'param', another: 'one' }
 const fakeResponse = { one: 'result', another: 'result' }
@@ -18,20 +19,13 @@ const setCompanyId = (companyId?: string) => {
   if (!companyId) return
   LocalStorageService.setCompanyId(companyId)
 }
-const getExpectedHeader = (token?: string, companyId?: string) => {
-  if (!token) {
-    return undefined
-  }
-  if (!companyId) {
-    return undefined
-  }
-  return {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      comid: companyId,
-    },
-  }
-}
+const getExpectedHeader = (token?: string, companyId?: string) => ({
+  headers: {
+    'X-SHM-TOKEN': '',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(companyId ? { comid: companyId } : {}),
+  },
+})
 
 describe('AppService', () => {
   const OLD_ENV = process.env
@@ -40,7 +34,7 @@ describe('AppService', () => {
     LocalStorageService.removeToken()
     LocalStorageService.removeCompanyId()
     process.env = { ...OLD_ENV } // make a copy
-    process.env.REACT_APP_API_END_POINT = fakeAPIEndPoint
+    process.env.REACT_APP_REST_END_POINT = fakeAPIEndPoint
   })
 
   afterAll(() => {
@@ -59,7 +53,7 @@ describe('AppService', () => {
     })
 
     test('can get data from provided url', async () => {
-      axios.get = jest.fn().mockReturnValueOnce(fakeResponse)
+      axios.get = vi.fn().mockReturnValueOnce(fakeResponse)
       const result = await AppService.get(fakeUrl, fakeParams)
       expect(result).toStrictEqual(fakeResponse)
       expect(axios.get).toHaveBeenLastCalledWith(
@@ -70,7 +64,7 @@ describe('AppService', () => {
     })
 
     test('can post data from provided url', async () => {
-      axios.post = jest.fn().mockReturnValueOnce(fakeResponse)
+      axios.post = vi.fn().mockReturnValueOnce(fakeResponse)
       const result = await AppService.post(fakeUrl, fakeParams)
       expect(result).toStrictEqual(fakeResponse)
       // expect(AppService.post(fakeUrl, fakeParams)).toBe(fakeResponse);
@@ -83,7 +77,7 @@ describe('AppService', () => {
     })
 
     test('can put data from provided url', async () => {
-      axios.put = jest.fn().mockReturnValueOnce(fakeResponse)
+      axios.put = vi.fn().mockReturnValueOnce(fakeResponse)
       const result = await AppService.put(fakeUrl, fakeParams)
       expect(result).toStrictEqual(fakeResponse)
       // expect(AppService.put(fakeUrl, fakeParams)).toBe(fakeResponse);
@@ -96,7 +90,7 @@ describe('AppService', () => {
     })
 
     test('can delete data from provided url', async () => {
-      axios.delete = jest.fn().mockReturnValueOnce(fakeResponse)
+      axios.delete = vi.fn().mockReturnValueOnce(fakeResponse)
       const result = await AppService.delete(fakeUrl, fakeParams)
       expect(result).toStrictEqual(fakeResponse)
       // expect(AppService.delete(fakeUrl, fakeParams)).toBe(fakeResponse);

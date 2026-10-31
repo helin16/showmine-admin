@@ -1,26 +1,25 @@
-// jest-dom adds custom jest matchers for asserting on DOM nodes.
-// allows you to do things like:
-// expect(element).toHaveTextContent(/react/i)
-// learn more: https://github.com/testing-library/jest-dom
-import '@testing-library/jest-dom'
+import '@testing-library/jest-dom/vitest'
+import { cleanup } from '@testing-library/react'
+import { afterAll, afterEach, beforeEach, vi } from 'vitest'
+
+// Vite loads the real .env into process.env, and tests must never depend on it.
+Object.keys(process.env)
+  .filter((key) => key.startsWith('REACT_APP_'))
+  .forEach((key) => delete process.env[key])
 
 const oldEnv = { ...process.env }
-// beforeAll(async () => {})
 
-beforeEach(async () => {
+beforeEach(() => {
   process.env = { ...oldEnv }
 })
 
 afterEach(() => {
-  try {
-    jest.resetAllMocks()
-    jest.clearAllTimers()
-    jest.clearAllMocks()
-  } catch (err) {
-    console.error(err)
-  }
+  cleanup()
+  vi.resetAllMocks()
+  vi.clearAllTimers()
+  localStorage.clear()
 })
 
-afterAll(async () => {
+afterAll(() => {
   process.env = oldEnv
 })

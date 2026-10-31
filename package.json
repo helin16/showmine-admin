@@ -37,7 +37,7 @@
   "scripts": {
     "start": "vite",
     "build": "tsc --noEmit && vite build",
-    "test": "TZ=UTC vitest run",
+    "test": "TZ=UTC vitest run --coverage",
     "test:watch": "TZ=UTC vitest",
     "lint": "eslint src/**/*.{js,jsx,ts,tsx,json}",
     "lint:fix": "eslint --fix 'src/**/*.{js,jsx,ts,tsx,json}'",
@@ -57,6 +57,10 @@
     ]
   },
   "devDependencies": {
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.8",
     "@types/big.js": "^6.1.6",
     "@types/lodash": "^4.14.191",
     "@types/node": "^16.7.13",
@@ -66,6 +70,7 @@
     "@typescript-eslint/eslint-plugin": "^5.55.0",
     "@typescript-eslint/parser": "^5.55.0",
     "@vitejs/plugin-react": "^6.1.2",
+    "@vitest/coverage-v8": "^5.0.5",
     "eslint": "^8.36.0",
     "eslint-config-prettier": "^8.7.0",
     "eslint-import-resolver-typescript": "^3.5.3",
@@ -74,9 +79,11 @@
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "husky": "^8.0.0",
+    "jsdom": "^30.1.3",
     "lint-staged": "^13.1.2",
     "prettier": "^2.8.4",
-    "vite": "^8.3.5"
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": "eslint --cache --fix"
@@ -84,42 +91,6 @@
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
-    }
-  },
-  "jest": {
-    "collectCoverageFrom": [
-      "src/**/*.{js,ts,jsx,tsx}",
-      "!src/**/*.d.ts",
-      "!src/index.tsx"
-    ],
-    "coveragePathIgnorePatterns": [
-      "./src/Types/",
-      "./src/index.tsx",
-      "./src/App.tsx",
-      "./src/Redux/makeReduxStore.ts",
-      "./src/reportWebVitals.ts"
-    ],
-    "coverageReporters": [
-      "json",
-      "lcov",
-      "text-summary",
-      "text",
-      "clover",
-      "html"
-    ],
-    "transform": {
-      "^.+\\.(js|jsx|ts|tsx)$": "<rootDir>/node_modules/.bin/ts-jest"
-    },
-    "transformIgnorePatterns": [
-      "[/\\\\]node_modules[/\\\\].+\\.(js|jsx|ts|tsx)$",
-      "^.+\\.module\\.(css|sass|scss)$"
-    ],
-    "moduleNameMapper": {
-      "^react-native$": "react-native-web",
-      "^react-select/src/types$": "react-select/src/types",
-      "^.+\\.module\\.(css|sass|scss)$": "identity-obj-proxy",
-      "src/(.*)$": "<rootDir>/src/$1",
-      "snapshotSerializers": "enzyme-to-json/serializer"
     }
   },
   "resolutions": {

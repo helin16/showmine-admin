@@ -1,9 +1,9 @@
 const getTokenName = () => {
-  return process.env.NEXT_PUBLIC_LOCAL_USER_TOKEN_NAME || 'token'
+  return process.env.REACT_APP_LOCAL_USER_TOKEN_NAME || 'token'
 }
 
 const getCompanyIdName = () => {
-  return process.env.NEXT_PUBLIC_LOCAL_COMPANY_ID_NAME || 'comid'
+  return process.env.REACT_APP_LOCAL_COMPANY_ID_NAME || 'comid'
 }
 
 const getToken = () => {
