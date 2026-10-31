@@ -1,0 +1,36 @@
+name: E2E
+
+# Runs against production, so it stays off pull requests and ordinary pushes.
+# Signed-in journeys are skipped until the E2E_EMAIL and E2E_PASSWORD secrets exist.
+on:
+  deployment_status:
+  schedule:
+    - cron: '0 20 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-production
+  cancel-in-progress: false
+
+jobs:
+  production:
+    if: >-
+      github.event_name != 'deployment_status' ||
+      (github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Production')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
+      E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+      E2E_COMPANY_NAME: test company
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: npx -y yarn@1.22.22 install --frozen-lockfile
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test --config e2e/playwright.config.ts

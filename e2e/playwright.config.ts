@@ -24,7 +24,8 @@ export default defineConfig({
   reporter: [['list']],
   use: {
     baseURL: process.env.E2E_ADMIN_URL || 'https://admin.showmine.com',
-    trace: 'retain-on-failure',
-    screenshot: 'only-on-failure',
+    // Traces record typed values, so CI on this public repository keeps none.
+    trace: process.env.CI ? 'off' : 'retain-on-failure',
+    screenshot: process.env.CI ? 'off' : 'only-on-failure',
   },
 })
