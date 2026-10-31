@@ -24,6 +24,7 @@ export default defineConfig(({ mode }) => {
         reporter: ['text-summary', 'json-summary'],
         include: ['src/**/*.{ts,tsx}'],
         exclude: ['src/__tests__/**', 'src/Types/**', 'src/index.tsx', 'src/reportWebVitals.ts', '**/*.d.ts'],
+        thresholds: { functions: 90 },
       },
     },
   }
