@@ -73,3 +73,6 @@ yarn-debug.log*
 yarn-error.log*
 
 .eslintcache
+
+# Local environment; values live in Vercel. See .env.sample.
+.env
