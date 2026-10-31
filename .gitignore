@@ -76,3 +76,8 @@ yarn-error.log*
 
 # Local environment; values live in Vercel. See .env.sample.
 .env
+
+# Playwright
+e2e/.env.local
+test-results/
+playwright-report/
