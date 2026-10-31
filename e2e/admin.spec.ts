@@ -91,7 +91,7 @@ test('the article list opens', async () => {
 
 test('an article can be created in the editor', async () => {
   await page.goto('/b/articles/new')
-  await page.locator('input').first().click()
+  await page.locator('input.inline-input').click()
   await page.keyboard.type(runId)
   await page.getByRole('button', { name: /continue|继续/i }).click()
   await page.waitForURL(/\/b\/articles\/[0-9a-f-]{36}/)
