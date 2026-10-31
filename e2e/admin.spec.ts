@@ -74,6 +74,7 @@ test.afterAll(async () => {
   await deleteRows('/item', 'title')
   await deleteRows('/asset', 'fileName')
   expect(await deleteRows('/item', 'title'), 'no test articles should remain').toBe(0)
+  expect(await deleteRows('/asset', 'fileName'), 'no test files should remain').toBe(0)
   await api.dispose()
   await unauthenticatedApi.dispose()
   await context.close()
@@ -125,6 +126,8 @@ test('an uploaded file appears in the media library', async () => {
     multipart: { file: { name: fileName, mimeType: 'image/png', buffer: ONE_PIXEL_PNG } },
   })
   expect(uploaded.ok()).toBeTruthy()
+  const { url } = await uploaded.json()
   await page.goto('/b/media')
-  await expect(page.getByText(fileName).first()).toBeVisible()
+  // The list shows no file names, so the row is identified by its image.
+  await expect(page.locator(`.media-list-item img[src="${url}"]`)).toBeVisible()
 })
