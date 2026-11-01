@@ -38,8 +38,18 @@ const logout = async (data?: iConfigParams, config?: iConfigParams): Promise<iMe
   return AppService.delete(`${endPoint}`, data, config).then((res) => res.data)
 }
 
+const retrievePassword = async (email: string) => {
+  return AppService.post(`${endPoint}/forgot-password`, { email }).then((res) => res.data)
+}
+
+const resetPassword = async (token: string, password: string) => {
+  return AppService.post(`${endPoint}/reset-password`, { token, password }).then((res) => res.data)
+}
+
 const AuthService = {
   login,
+  retrievePassword,
+  resetPassword,
   getMe,
   updateMe,
   setLocalAuthToken,

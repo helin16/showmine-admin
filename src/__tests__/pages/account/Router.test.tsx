@@ -24,6 +24,7 @@ import {
   LOGIN_URL,
   MEDIA_LIST_URL,
   MY_PROFILE_URL,
+  RESET_PASSWORD_URL,
   WIZARD_URL,
 } from '../../../UrlMap'
 
@@ -45,6 +46,7 @@ vi.mock('../../../Pages/Auth/LoginPage', () => page('login'))
 vi.mock('../../../Pages/Auth/ForgotPasswordPage', () => ({
   default: () => `page: forgot, ${useIntl().formatMessage({ id: 'homePage' })}`,
 }))
+vi.mock('../../../Pages/Auth/ResetPasswordPage', () => page('reset'))
 vi.mock('../../../Pages/Dashboard/DashBoardPage', () => page('dashboard'))
 vi.mock('../../../Pages/Media/MediaListPage', () => page('media'))
 vi.mock('../../../Pages/Comments/CommentsListPage', () => page('comments'))
@@ -82,6 +84,7 @@ describe('Router', () => {
     ['/', 'login'],
     [LOGIN_URL, 'login'],
     [FORGOT_PASSWORD_URL, 'forgot, Home Page'],
+    [RESET_PASSWORD_URL, 'reset'],
   ])('%s is public', async (path, name) => {
     renderAt(path)
     expect(await screen.findByText(`page: ${name}`)).toBeInTheDocument()

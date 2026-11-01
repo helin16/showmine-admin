@@ -45,6 +45,24 @@ describe('login', () => {
   })
 })
 
+describe('password recovery', () => {
+  beforeEach(() => vi.mocked(axios.post).mockResolvedValue({ data: { success: true } }))
+
+  test('retrievePassword posts the email', async () => {
+    await expect(AuthService.retrievePassword('a@b.c')).resolves.toEqual({ success: true })
+    expect(axios.post).toHaveBeenCalledExactlyOnceWith(`${API}/auth/forgot-password`, { email: 'a@b.c' }, anonymous)
+  })
+
+  test('resetPassword posts the token and the password', async () => {
+    await expect(AuthService.resetPassword('tok', 'long-enough')).resolves.toEqual({ success: true })
+    expect(axios.post).toHaveBeenCalledExactlyOnceWith(
+      `${API}/auth/reset-password`,
+      { token: 'tok', password: 'long-enough' },
+      anonymous,
+    )
+  })
+})
+
 describe('with a session', () => {
   beforeEach(() => {
     LocalStorageService.setToken('tok')

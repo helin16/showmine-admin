@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router-dom'
 import IError from '../../Types/IError'
 import Alert from '../Form/Alert'
 import Utils from '../../Services/Utils'
+import translate from '../../i18n/translate'
 
 type iLoginForm = {
   className?: string
@@ -109,7 +110,7 @@ const LoginForm = ({ className }: iLoginForm) => {
         <Row gutter={8} align={'bottom'}>
           <Col xs={{ span: 24, order: 2 }} sm={{ span: 16, order: 1 }}>
             <Button href={FORGOT_PASSWORD_URL} type={'link'}>
-              Forgot Password?
+              {translate('forgot-password')}
             </Button>
           </Col>
           <Col xs={{ span: 24, order: 1 }} sm={{ span: 8, order: 2 }} style={{ textAlign: 'right' }}>
