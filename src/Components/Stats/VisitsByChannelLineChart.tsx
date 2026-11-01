@@ -39,24 +39,10 @@ const VisitsByChannelLineChart = ({title, itemVisits, itemsOverDays}: iVisitsByC
     ]
   }, []);
   const getConfig = () => ({
-    forceFit: true,
-    title: {
-      visible: true,
-      text: title,
-    },
-    description: {
-      visible: false,
-      text: '',
-    },
-    legend: {
-      visible: true,
-      flipPage: true,
-    },
     data: getData(),
     xField: 'date',
     yField: 'total',
-    seriesField: 'type',
-    responsive: true,
+    colorField: 'type',
   });
 
   if (getData().length === 0) {

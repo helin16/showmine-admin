@@ -28,27 +28,10 @@ const VisitsByChannelChart = ({title, itemVisits}: iVisitsByChannelChart) => {
 
   const getData = () => Object.keys(visitsMap).map((type) => ({ type: Utils.translateChannelType(type), value: visitsMap[type] }));
   const getConfig = () => ({
-    forceFit: true,
-    title: {
-      visible: true,
-      text: title,
-    },
-    description: {
-      visible: false,
-      text: '',
-    },
-    legend: {
-      visible: true,
-      flipPage: true,
-    },
     radius: 0.8,
     data: getData(),
     angleField: 'value',
     colorField: 'type',
-    label: {
-      visible: true,
-      type: 'inner',
-    },
   });
 
   if (getData().length === 0) {

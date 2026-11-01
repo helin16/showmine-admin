@@ -52,6 +52,23 @@ describe('chart wrappers', () => {
     expect(chartProps('pie').innerRadius).toBe(0.5)
   })
 
+  test('Donut uses the options of charts 2, which throws on the older label type', () => {
+    renderWithProviders(<Donut {...config} radius={0.8} />)
+    expect(chartProps('pie').label).toEqual({ text: 'value', position: 'inside', fill: 'white' })
+  })
+
+  test('Donut shows the total in its middle', () => {
+    const data = [
+      { type: 'a', value: 2 },
+      { type: 'b', value: 3 },
+    ]
+    renderWithProviders(<Donut {...config} data={data} radius={0.8} />)
+    expect(chartProps('pie').annotations.map((row: { style: { text: string } }) => row.style.text)).toEqual([
+      'Total',
+      '5',
+    ])
+  })
+
   test('Line adds its class name', () => {
     renderWithProviders(<Line data={[]} xField="x" yField="y" className="mine" />)
     expect(chartProps('line').className).toBe('app-chart-Line mine')

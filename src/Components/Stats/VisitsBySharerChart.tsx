@@ -38,27 +38,10 @@ const VisitsBySharerChart = ({title, itemVisits}: iVisitsBySharerChart) => {
     .map((key) => ({ type: key, value: visitsMap[key] }));
 
   const config = {
-    forceFit: true,
-    title: {
-      visible: true,
-      text: title,
-    },
-    description: {
-      visible: false,
-      text: '',
-    },
-    legend: {
-      visible: true,
-      flipPage: true,
-    },
     radius: 0.8,
     data,
     angleField: 'value',
     colorField: 'type',
-    label: {
-      visible: true,
-      type: 'inner',
-    },
   };
   if (data.length === 0) {
     return <EmptyStats title={title || ''} />;
