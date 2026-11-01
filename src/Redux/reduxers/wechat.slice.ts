@@ -1,10 +1,16 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import wx from 'wechat-jssdk-ts'
 import IError from '../../Types/IError'
+
+// What the page needs from WeChat's official script, which puts this on window.wx.
+export type WeChatJs = {
+  config: (config: object) => void
+  ready: (callback: () => void) => void
+  error: (callback: (err: unknown) => void) => void
+}
 
 export type WeChatSliceState = {
   isInWeChat: boolean
-  wx?: typeof wx
+  wx?: WeChatJs
   loadJsError?: IError
 }
 

@@ -29,8 +29,7 @@
     "react-router-dom": "^7.18.5",
     "styled-components": "^6.6.0",
     "typescript": "~6.0.3",
-    "web-vitals": "^6.2.3",
-    "wechat-jssdk-ts": "^1.6.0-dev.1"
+    "web-vitals": "^6.2.3"
   },
   "scripts": {
     "start": "vite",

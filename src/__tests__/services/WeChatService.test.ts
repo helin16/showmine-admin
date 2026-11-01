@@ -87,3 +87,34 @@ describe('PingService', () => {
     await expect(PingService.pong()).rejects.toBe(denied)
   })
 })
+
+describe('loadWXScript', () => {
+  const script = () => document.head.querySelector('script[src*="jweixin"]') as HTMLScriptElement
+  const wx = { config: () => undefined }
+
+  afterEach(() => {
+    script()?.remove()
+    delete (window as { wx?: unknown }).wx
+  })
+
+  test('adds WeChat\'s official script and gives back window.wx once it loads', async () => {
+    const loading = WeChatService.loadWXScript()
+    expect(script().src).toBe('https://res.wx.qq.com/open/js/jweixin-1.4.0.js')
+    Object.assign(window, { wx })
+    script().onload?.(new Event('load'))
+    await expect(loading).resolves.toBe(wx)
+  })
+
+  test('does not add it twice', async () => {
+    Object.assign(window, { wx })
+    await expect(WeChatService.loadWXScript()).resolves.toBe(wx)
+    expect(script()).toBeNull()
+  })
+
+  test('rejects when the script fails to load', async () => {
+    const loading = WeChatService.loadWXScript()
+    const failure = new Event('error')
+    script().onerror?.(failure)
+    await expect(loading).rejects.toBe(failure)
+  })
+})

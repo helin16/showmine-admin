@@ -4956,11 +4956,6 @@ webidl-conversions@^8.0.1:
   resolved "https://registry.yarnpkg.com/webidl-conversions/-/webidl-conversions-8.0.1.tgz#0657e571fe6f06fcb15ca50ed1fdbcb495cd1686"
   integrity sha512-BMhLD/Sw+GbJC21C/UgyaZX41nPt8bUTg+jWyDeg7e7YN4xOM05YPSIXceACnXVtqyEw/LMClUQMtMZ+PGGpqQ==
 
-wechat-jssdk-ts@^1.6.0-dev.1:
-  version "1.6.0-dev.1"
-  resolved "https://registry.yarnpkg.com/wechat-jssdk-ts/-/wechat-jssdk-ts-1.6.0-dev.1.tgz#0a032ac4b5b5e8712016e8311e67d86e1bddcb06"
-  integrity sha512-QqT9dCvi1xJ5euOlbCt7FqvpojzMA3UdA3abeM2/jfQ8EtUoZVZ0XL+2gfOcX4k8thaf85luBNWpkDe2KGhWGQ==
-
 whatwg-mimetype@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/whatwg-mimetype/-/whatwg-mimetype-5.0.0.tgz#d8232895dbd527ceaee74efd4162008fb8a8cf48"
