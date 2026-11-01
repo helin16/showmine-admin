@@ -19,6 +19,7 @@ Sign-in first-load JS is the sum of Vite's own gzip figure for every script and 
 | One copy of moment, not two | 335.9 kB |
 | WeChat QR form on demand, sign-in imports its icons by name | 313.6 kB |
 | In-WeChat login button on demand | 306.1 kB |
+| In-WeChat automatic sign-in, on demand | 307.4 kB |
 
 Measured and not changed:
 
