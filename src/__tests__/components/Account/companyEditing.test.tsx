@@ -156,7 +156,7 @@ describe('CompanyAuthors', () => {
     fireEvent.click(screen.getByRole('button', { name: /Save/ }))
     expect(await screen.findByText('Anna')).toBeInTheDocument()
     expect(AuthorService.getAll).toHaveBeenCalledTimes(2)
-    expect(screen.queryByText('Update Author')).not.toBeInTheDocument()
+    await waitFor(() => expect(screen.queryByText('Update Author')).not.toBeInTheDocument())
   })
 
   test('deleting an author deactivates it without opening the editor', async () => {
