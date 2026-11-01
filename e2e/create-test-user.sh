@@ -13,7 +13,7 @@ set -euo pipefail
 read -r EMAIL
 read -r PASSWORD
 cd /var/www/showmine-api/current
-HASH=$(printf %s "$PASSWORD" | sudo -u showmine /opt/node-v16.15.1/bin/node -e "const b=require('bcrypt');console.log(b.hashSync(require('fs').readFileSync(0,'utf8'),b.genSaltSync(10)))")
+HASH=$(printf %s "$PASSWORD" | sudo -u showmine /opt/node-v26.13.0/bin/node -e "const b=require('bcrypt');console.log(b.hashSync(require('fs').readFileSync(0,'utf8'),b.genSaltSync(10)))")
 cd /tmp
 sudo -u postgres psql -d showmine -q -At -v ON_ERROR_STOP=1 -v email="$EMAIL" -v hash="$HASH" <<'SQL'
 BEGIN;

@@ -2,6 +2,7 @@ name: E2E
 
 # Runs against production, so it stays off pull requests and ordinary pushes.
 # Signed-in journeys are skipped until the E2E_EMAIL and E2E_PASSWORD secrets exist.
+# Normal member journeys are skipped until the E2E_MEMBER_EMAIL and E2E_MEMBER_PASSWORD secrets exist.
 on:
   deployment_status:
   schedule:
@@ -27,6 +28,8 @@ jobs:
     env:
       E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
       E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+      E2E_MEMBER_EMAIL: ${{ secrets.E2E_MEMBER_EMAIL }}
+      E2E_MEMBER_PASSWORD: ${{ secrets.E2E_MEMBER_PASSWORD }}
       E2E_COMPANY_NAME: test company
     steps:
       - uses: actions/checkout@v4
