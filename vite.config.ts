@@ -12,7 +12,12 @@ export default defineConfig(({ mode }) => {
     // moment/locale/* require the CommonJS copy, so without this Vite bundles a second, ESM moment that has no zh-cn.
     resolve: { alias: [{ find: /^moment$/, replacement: 'moment/moment.js' }] },
     server: { port: 3000 },
-    build: { outDir: 'build', target: 'es2020' },
+    build: {
+      outDir: 'build',
+      target: 'es2020',
+      // One chunk for what every visit needs. Otherwise each new page cuts it into more, worse-compressing chunks.
+      rolldownOptions: { output: { codeSplitting: { groups: [{ name: 'first-load', tags: ['$initial'] }] } } },
+    },
     // Source reads process.env.*, including names that are never set, so this must stay a whole object.
     // Tests set process.env themselves, so the build-time values only apply outside test mode.
     define: mode === 'test' ? {} : { 'process.env': { ...env, NODE_ENV: mode, PUBLIC_URL: '' } },
