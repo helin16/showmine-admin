@@ -8,7 +8,6 @@ import Button, { iButton } from '../../Form/Button'
 import Modal from '../../Form/Modal'
 
 type iState = {
-  article?: IArticle
   showingDiv: boolean
 }
 const initialState: iState = {
@@ -51,7 +50,7 @@ const ArticleStatsBtn = ({ article, children, ...props }: iButton & { article?: 
             showOrHideConfirmDiv(false)
           }}
         >
-          <VisitStats article={state.article} />
+          <VisitStats article={article} />
         </Modal>
       )}
     </>

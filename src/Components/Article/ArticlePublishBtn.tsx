@@ -63,7 +63,7 @@ const ArticlePublishBtn = ({ article, children, onPublished, ...props }: iArticl
     let isCancelled = false
     setState((s) => ({
       ...s,
-      channelLoading: false,
+      channelLoading: true,
       channels: [],
       channelLoadingErr: undefined,
     }))
@@ -103,7 +103,10 @@ const ArticlePublishBtn = ({ article, children, onPublished, ...props }: iArticl
   const confirmPublish = () => {
     const currentUserId = `${currentUser?.id || ''}`.trim()
     const currentArticleId = `${article?.id || ''}`.trim()
-    if (currentUserId === '' || currentArticleId === '') return
+    if (currentUserId === '' || currentArticleId === '') {
+      message.error(intl.formatMessage({ id: currentUserId === '' ? 'not-authorize' : 'invalid-content' }))
+      return
+    }
     setState({
       ...state,
       saving: true,
@@ -195,7 +198,12 @@ const ArticlePublishBtn = ({ article, children, onPublished, ...props }: iArticl
           title={intl.formatMessage({ id: 'confirm-text' }, { text: state.publishText })}
           onOk={confirmPublish}
           okText={intl.formatMessage({ id: 'yes-text' }, { text: state.publishText })}
-          okButtonProps={{ type: 'primary', icon: <Icons.CloudUploadOutlined />, loading: state.saving === true }}
+          okButtonProps={{
+            type: 'primary',
+            icon: <Icons.CloudUploadOutlined />,
+            loading: state.saving === true,
+            disabled: state.channelLoading === true,
+          }}
           onCancel={() => {
             showOrHideConfirmDiv(false)
           }}

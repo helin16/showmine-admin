@@ -158,23 +158,20 @@ describe('ArticleDetailsPage', () => {
     expect(await screen.findByText('article list')).toBeInTheDocument()
   })
 
-  // Bug: a failed load (such as a 404) falls through to the "new article" guide instead of an error page.
-  test.fails('does not offer to create an article when loading one fails', async () => {
+  test('does not offer to create an article when loading one fails', async () => {
     service.getItemById.mockRejectedValue(httpError('not found'))
     render()
     await waitFor(() => expect(message.error).toHaveBeenCalled())
     expect(screen.queryByText('new article guide')).not.toBeInTheDocument()
   })
 
-  // Bug: the guide shows while an existing article is still loading, so it flashes on every open.
-  test.fails('does not show the guide while an existing article loads', () => {
+  test('does not show the guide while an existing article loads', () => {
     service.getItemById.mockReturnValue(deferred<IArticle>().promise)
     render()
     expect(screen.queryByText('new article guide')).not.toBeInTheDocument()
   })
 
-  // Bug: comments for the id in the url are requested before the company check, so a denied article still queries them.
-  test.fails('holds back the comments until the article passes the company check', () => {
+  test('holds back the comments until the article passes the company check', () => {
     service.getItemById.mockReturnValue(deferred<IArticle>().promise)
     render()
     expect(screen.queryByText(/comments for/)).not.toBeInTheDocument()

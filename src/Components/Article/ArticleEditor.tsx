@@ -1,9 +1,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { useSelector } from 'react-redux'
 import { useIntl } from 'react-intl'
 import IArticle from '../../Types/Article/IArticle'
-import { RootState } from '../../Redux/makeReduxStore'
 import ArticleEditorSideOptions from './ArticleEditorSideOptions'
 import InlineRichTextEditor from '../Form/InlineRichTextEditor'
 import InlineInput from '../Form/InlineInput'
@@ -54,7 +52,6 @@ type iArticleEditor = {
   onUpdated?: (newArticle: IArticle) => void
 }
 const ArticleEditor = ({ article, onUpdated }: iArticleEditor) => {
-  const { company } = useSelector((s: RootState) => s.auth)
   const [state, setState] = useState(initialState)
   const [messageApi, contextHolder] = useMessage()
   const messageKey = 'savingMessage'
@@ -79,7 +76,7 @@ const ArticleEditor = ({ article, onUpdated }: iArticleEditor) => {
     })
     ArticleService.update(article.id, {
       [fieldName]: newValue,
-    }, {headers: ArticleService.getItemById(`${company?.id || ''}`)})
+    })
       .then((res) => {
         setState({
           ...state,

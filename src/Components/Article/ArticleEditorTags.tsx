@@ -60,7 +60,8 @@ const ArticleEditorTags = ({ article }: iArticleEditorTags) => {
 
   const tagsChanged = (tagIds: string[]) => {
     const existingTagIds = _.uniq(itemTags.map(itemTag => itemTag.tagId));
-    const tagIdsToBeCreated = _.difference(tagIds, existingTagIds);
+    // mode="tags" also hands over free text, which is not a tag id, so only existing tags can be linked.
+    const tagIdsToBeCreated = _.difference(tagIds.filter(tagId => tagId in tagsMap), existingTagIds);
     const tagIdsToBeDeleted = _.difference(existingTagIds, tagIds);
 
     setIsSaving(true);

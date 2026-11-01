@@ -237,8 +237,7 @@ describe('ArticleEditorTags', () => {
     expect(message.error).not.toHaveBeenCalled()
   })
 
-  // Bug: the select allows free text, which is sent as tagId without any Tag being created.
-  test.fails('does not send free text as a tag id', async () => {
+  test('does not send free text as a tag id', async () => {
     itemTags.create.mockResolvedValue({} as IItemTag)
     render()
     await screen.findByText('News')

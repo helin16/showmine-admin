@@ -108,15 +108,13 @@ describe('ArticleListPage', () => {
     expect(screen.getByRole('button', { name: 'All' })).not.toHaveClass('ant-btn-primary')
   })
 
-  // Bug: clicking the active status navigates to the editor for a new article instead of doing nothing.
-  test.fails('stays on the list when the active status is clicked again', () => {
+  test('stays on the list when the active status is clicked again', () => {
     render()
     fireEvent.click(screen.getByRole('button', { name: 'All' }))
     expect(screen.getByTestId('location')).toHaveTextContent(/^\/$/)
   })
 
-  // Bug: changing status clears the keyword from the query while the search box still shows it.
-  test.fails('keeps the keyword when the status changes', () => {
+  test('keeps the keyword when the status changes', () => {
     render()
     search(/search/i, 'hello')
     fireEvent.click(screen.getByRole('button', { name: 'Draft' }))

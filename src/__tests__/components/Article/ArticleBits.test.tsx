@@ -64,8 +64,7 @@ describe('ArticleCoverImg', () => {
     expect(container.querySelector('.default-img-div')).toBeInTheDocument()
   })
 
-  // Bug: a missing cover stringifies to 'undefined', so the card requests url(undefined) instead of the placeholder.
-  test.fails('shows a placeholder when the article has no cover', () => {
+  test('shows a placeholder when the article has no cover', () => {
     const { container } = renderWithProviders(<ArticleCoverImg article={makeArticle()} />)
     expect(container.querySelector('.default-img-div')).toBeInTheDocument()
   })

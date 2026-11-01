@@ -38,10 +38,7 @@ const ArticleCoverImg = ({ article, onClick, imgWrapperProps}: iArticleCoverImg)
   const [imageSrc, setImageSrc] = useState('');
 
   useEffect(() => {
-    const imageUrl = `${article.CoverAsset?.url}`.trim();
-    if (imageUrl !== '') {
-      setImageSrc(imageUrl);
-    }
+    setImageSrc(`${article.CoverAsset?.url || ''}`.trim());
   }, [article]);
 
   const clicked = () => {

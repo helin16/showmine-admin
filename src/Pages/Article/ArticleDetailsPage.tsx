@@ -30,6 +30,7 @@ type iState = {
   fetching: boolean
   article?: IArticle
   count: number
+  loadFailed?: boolean
 }
 
 const initialState: iState = {
@@ -43,12 +44,13 @@ const ArticleDetailsPage = () => {
   const { id } = useParams();
   const intl = useIntl()
   const articleId = `${id || ''}`.trim()
+  const isNewArticle = articleId === '' || articleId.toLowerCase() === 'new'
   const navigate = useNavigate();
   /**
    *
    */
   useEffect(() => {
-    if (!(articleId !== '' && articleId.toLowerCase() !== 'new')) {
+    if (isNewArticle) {
       setState((s) => ({
         ...s,
         fetching: false,
@@ -56,6 +58,11 @@ const ArticleDetailsPage = () => {
       return
     }
 
+    setState((s) => ({
+      ...s,
+      fetching: !s.article,
+      loadFailed: false,
+    }))
     let isCancelled = false
     ArticleService.getItemById(articleId, { include: 'CoverAsset,Author' })
       .then((res) => {
@@ -72,6 +79,7 @@ const ArticleDetailsPage = () => {
         setState((s) => ({
           ...s,
           fetching: false,
+          loadFailed: true,
         }))
       })
     return () => {
@@ -96,15 +104,21 @@ const ArticleDetailsPage = () => {
     if (state.article !== undefined && 'id' in state.article && state.article.id !== '') {
       return <ArticleEditor article={state.article} onUpdated={articleUpdated} />
     }
-    return (
-      <Card>
-        <NewArticleGuide />
-      </Card>
-    )
+    if (isNewArticle) {
+      return (
+        <Card>
+          <NewArticleGuide />
+        </Card>
+      )
+    }
+    if (state.loadFailed === true) {
+      return <InvalidArticleDetails status='404' title={intl.formatMessage({ id: 'invalid-content' })} />
+    }
+    return null
   }
 
   const getCommentsDiv = () => {
-    if (!company || `${articleId || ''}`.toLowerCase().trim() === 'new') {
+    if (!company || !state.article || isNewArticle) {
       return null
     }
     return (

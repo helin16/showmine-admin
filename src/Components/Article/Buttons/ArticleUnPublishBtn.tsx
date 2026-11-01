@@ -61,10 +61,10 @@ const ArticleUnPublishBtn = ({
         message.error(`Error when unPublishing: ${err.message}`)
       })
       .finally(() => {
-        setState({
-          ...state,
+        setState((s) => ({
+          ...s,
           isSaving: false,
-        })
+        }))
       })
   }
 

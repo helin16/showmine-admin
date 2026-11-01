@@ -56,6 +56,10 @@ const ArticleDeleteBtn = ({
         }
       })
       .catch((err) => {
+        setState({
+          ...state,
+          deleting: false,
+        })
         message.error(`Error when deleting ${err.message}`)
       })
   }

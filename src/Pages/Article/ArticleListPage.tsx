@@ -77,7 +77,7 @@ const ArticleListPage = () => {
       ...state,
       selectedStatus: newStatus,
       searchParams: {
-        ...initialState.searchParams,
+        ...state.searchParams,
         extraStatus: newSearchParams,
       },
     })
@@ -110,7 +110,6 @@ const ArticleListPage = () => {
                   type={'primary'}
                   key={`btn-${index}`}
                   shape='round'
-                  onClick={() => navigate(getUrl(ARTICLE_DETAILS_URL))}
                 >
                   {intl.formatMessage({ id: status })}
                 </Button>

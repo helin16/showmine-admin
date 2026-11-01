@@ -1,8 +1,6 @@
 import React, { useState } from 'react'
-import { useSelector } from 'react-redux'
 import { useIntl } from 'react-intl'
 import IArticle from '../../../Types/Article/IArticle'
-import { RootState } from '../../../Redux/makeReduxStore'
 import Button, { iButton } from '../../Form/Button'
 import Drawer from '../../Form/Drawer';
 import ArticleEditorSideOptions from '../ArticleEditorSideOptions';
@@ -23,7 +21,6 @@ const initialState: iState = {
 
 const ArticleMoreOptionsBtn = ({ article, children, onUpdated, ...props }: iButton & { article?: IArticle, onUpdated?: (newArticle: IArticle) => void }) => {
   const [state, setState] = useState(initialState);
-  const { company } = useSelector((s: RootState) => s.auth);
   const messageKey = 'more-options-savingMessage'
   const intl = useIntl();
 
@@ -48,7 +45,7 @@ const ArticleMoreOptionsBtn = ({ article, children, onUpdated, ...props }: iButt
     })
     ArticleService.update(article.id, {
       [fieldName]: newValue,
-    }, {headers: ArticleService.getItemById(`${company?.id || ''}`)})
+    })
       .then((res) => {
         setState({
           ...state,

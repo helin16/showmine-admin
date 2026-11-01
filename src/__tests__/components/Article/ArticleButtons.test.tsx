@@ -86,8 +86,7 @@ describe('ArticleDeleteBtn', () => {
     expect(onDeleted).not.toHaveBeenCalled()
   })
 
-  // Bug: the failure path never clears `deleting`, so the confirm button spins until the dialog is cancelled.
-  test.fails('lets the user retry after a failed delete', async () => {
+  test('lets the user retry after a failed delete', async () => {
     service.deactivate.mockRejectedValue(new Error('nope'))
     renderWithProviders(<ArticleDeleteBtn article={article} />)
     fireEvent.click(await screen.findByRole('button', { name: /delete/i }))
@@ -133,8 +132,7 @@ describe('ArticleUnPublishBtn', () => {
     expect(message.success).toHaveBeenCalledWith('Content unPublished.')
   })
 
-  // Bug: .finally spreads the stale state, which re-opens the dialog. Only a parent refetch hides it.
-  test.fails('closes the dialog after success', async () => {
+  test('closes the dialog after success', async () => {
     service.update.mockResolvedValue(article)
     renderWithProviders(<ArticleUnPublishBtn article={article} />)
     openBtn(/unpublish/i)
@@ -218,8 +216,7 @@ describe('ArticleStatsBtn', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
-  // Bug: state.article is never set, so the dialog shows company-wide visits instead of this article's.
-  test.fails('shows the stats of this article', () => {
+  test('shows the stats of this article', () => {
     renderWithProviders(<ArticleStatsBtn article={article}>Stats</ArticleStatsBtn>)
     openBtn(/stats/i)
     expect(within(dialog()).getByText('visit stats for art-1')).toBeInTheDocument()
@@ -266,7 +263,7 @@ describe('ArticleMoreOptionsBtn', () => {
     openAndChange()
 
     await waitFor(() => expect(onUpdated).toHaveBeenCalledWith(saved))
-    expect(service.update).toHaveBeenCalledWith('art-1', { title: 'New title' }, expect.anything())
+    expect(service.update).toHaveBeenCalledWith('art-1', { title: 'New title' })
     expect(await screen.findByText(/updated/i)).toBeInTheDocument()
   })
 
@@ -287,8 +284,7 @@ describe('ArticleMoreOptionsBtn', () => {
     expect(service.update).not.toHaveBeenCalled()
   })
 
-  // Bug: a Promise from getItemById is passed as `headers`, firing a stray GET /item/<companyId> on every save.
-  test.fails('makes only the update request when saving', async () => {
+  test('makes only the update request when saving', async () => {
     service.update.mockResolvedValue(article)
     renderWithProviders(<ArticleMoreOptionsBtn article={article} />, { state: signedIn })
     openAndChange()

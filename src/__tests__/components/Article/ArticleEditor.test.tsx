@@ -49,7 +49,7 @@ describe('ArticleEditor', () => {
     fireEvent.blur(input)
 
     await waitFor(() => expect(onUpdated).toHaveBeenCalledWith(saved))
-    expect(service.update).toHaveBeenCalledWith('art-1', { title: 'Changed' }, expect.anything())
+    expect(service.update).toHaveBeenCalledWith('art-1', { title: 'Changed' })
     expect(await screen.findByText('Content updated.')).toBeInTheDocument()
   })
 
@@ -64,7 +64,7 @@ describe('ArticleEditor', () => {
     render()
     fireEvent.click(screen.getByRole('button', { name: /rich text/ }))
     expect(await screen.findByText('Content updated.')).toBeInTheDocument()
-    expect(service.update).toHaveBeenCalledWith('art-1', { content: '<p>new</p>' }, expect.anything())
+    expect(service.update).toHaveBeenCalledWith('art-1', { content: '<p>new</p>' })
   })
 
   test('saves side option changes', async () => {
@@ -72,7 +72,7 @@ describe('ArticleEditor', () => {
     render()
     fireEvent.click(screen.getByRole('button', { name: 'toggle flag' }))
     await waitFor(() =>
-      expect(service.update).toHaveBeenCalledWith('art-1', { enableGTranslateFlag: true }, expect.anything()),
+      expect(service.update).toHaveBeenCalledWith('art-1', { enableGTranslateFlag: true }),
     )
   })
 
@@ -110,8 +110,7 @@ describe('ArticleEditor', () => {
     expect(service.update).not.toHaveBeenCalled()
   })
 
-  // Bug: a Promise from getItemById is passed as `headers`, firing a stray GET /item/<companyId> on every save.
-  test.fails('makes only the update request when saving', async () => {
+  test('makes only the update request when saving', async () => {
     service.update.mockResolvedValue(article)
     render()
     fireEvent.click(screen.getByRole('button', { name: /rich text/ }))

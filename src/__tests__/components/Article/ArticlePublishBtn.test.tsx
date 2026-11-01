@@ -213,16 +213,14 @@ describe('ArticlePublishBtn', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
-  // Bug: the channel request sets channelLoading to false when it starts, so no spinner ever shows.
-  test.fails('shows a spinner while channels load', async () => {
+  test('shows a spinner while channels load', async () => {
     channels.getAll.mockReturnValue(deferred<never>().promise)
     renderWithProviders(<ArticlePublishBtn article={article} />, { state: signedIn })
     open()
     await waitFor(() => expect(dialog().querySelector('.ant-spin-spinning')).toBeInTheDocument(), { timeout: 100 })
   })
 
-  // Bug: confirm stays enabled while channels load, so a quick click publishes to no channels at all.
-  test.fails('does not publish before the channels have loaded', async () => {
+  test('does not publish before the channels have loaded', async () => {
     channels.getAll.mockReturnValue(deferred<never>().promise)
     articles.update.mockResolvedValue(article)
     renderWithProviders(<ArticlePublishBtn article={article} />, { state: signedIn })
@@ -238,8 +236,7 @@ describe('ArticlePublishBtn', () => {
     expect(within(dialog()).getByText(/Are you sure you want Publish the content/)).toBeInTheDocument()
   })
 
-  // Bug: with no signed-in user the confirm button silently does nothing.
-  test.fails('tells the user why publishing did not happen', async () => {
+  test('tells the user why publishing did not happen', async () => {
     renderWithProviders(<ArticlePublishBtn article={article} />, { state: { auth: { company: signedIn.auth.company } } })
     open()
     await within(dialog()).findByText('Web')
