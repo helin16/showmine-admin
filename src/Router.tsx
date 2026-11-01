@@ -14,6 +14,7 @@ import {
   COMPANY_LIST_URL,
   COMPANY_USERS_URL,
   FORGOT_PASSWORD_URL,
+  INVITE_URL,
   LOGIN_URL,
   MEDIA_LIST_URL,
   MY_PROFILE_URL,
@@ -30,6 +31,7 @@ import translate from './i18n/translate'
 
 const ForgotPasswordPage = lazy(() => import('./Pages/Auth/ForgotPasswordPage'))
 const ResetPasswordPage = lazy(() => import('./Pages/Auth/ResetPasswordPage'))
+const InvitePage = lazy(() => import('./Pages/Auth/InvitePage'))
 const DashBoardPage = lazy(() => import('./Pages/Dashboard/DashBoardPage'))
 const MediaListPage = lazy(() => import('./Pages/Media/MediaListPage'))
 const CommentsListPage = lazy(() => import('./Pages/Comments/CommentsListPage'))
@@ -62,6 +64,7 @@ const Router = () => {
                 <Route path={LOGIN_URL} element={<LoginPage />} />
                 <Route path={FORGOT_PASSWORD_URL} element={<ForgotPasswordPage />} />
                 <Route path={RESET_PASSWORD_URL} element={<ResetPasswordPage />} />
+                <Route path={INVITE_URL} element={<InvitePage />} />
 
                 <Route
                   path={MY_PROFILE_URL}

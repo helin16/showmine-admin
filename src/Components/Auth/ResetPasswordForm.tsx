@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { LockOutlined } from '@ant-design/icons'
 import { FormattedMessage, useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
-import { MIN_PASSWORD_LENGTH } from '../../Constants'
 import Utils from '../../Services/Utils'
 import AuthService from '../../Services/AuthService'
 import { FORGOT_PASSWORD_URL, PASSWORD_LOGIN_URL } from '../../UrlMap'
@@ -10,9 +8,9 @@ import Alert from '../Form/Alert'
 import Button from '../Form/Button'
 import Form from '../Form/Form'
 import FormItem from '../Form/FormItem'
-import InputPassword from '../Form/InputPassword'
 import message from '../Form/message'
 import Result from '../Form/Result'
+import NewPasswordFields from './NewPasswordFields'
 
 const ResetPasswordForm = () => {
   // Read straight from the address and only once, as the effect below removes it.
@@ -64,38 +62,12 @@ const ResetPasswordForm = () => {
     )
   }
 
-  const newPassword = intl.formatMessage({ id: 'new-password' })
-  const confirmPassword = intl.formatMessage({ id: 'confirm-password' })
-  const required = { required: true, message: intl.formatMessage({ id: 'password-too-short' }) }
   return (
     <Form layout='vertical' name='reset password form' onFinish={onFinish}>
       <h1>
         <FormattedMessage id='reset-password' />
       </h1>
-      <FormItem
-        label={newPassword}
-        name='password'
-        // Trimmed, because the API trims before it checks the length.
-        rules={[{ ...required, min: MIN_PASSWORD_LENGTH, transform: (value) => `${value || ''}`.trim() }]}
-      >
-        <InputPassword placeholder={newPassword} prefix={<LockOutlined />} autoComplete='new-password' />
-      </FormItem>
-      <FormItem
-        label={confirmPassword}
-        name='confirmPassword'
-        dependencies={['password']}
-        rules={[
-          required,
-          ({ getFieldValue }) => ({
-            validator: (_rule, value) =>
-              !value || value === getFieldValue('password')
-                ? Promise.resolve()
-                : Promise.reject(new Error(intl.formatMessage({ id: 'confirm-password-diff' }))),
-          }),
-        ]}
-      >
-        <InputPassword placeholder={confirmPassword} prefix={<LockOutlined />} autoComplete='new-password' />
-      </FormItem>
+      <NewPasswordFields />
       {error === '' ? null : (
         <FormItem>
           <Alert message={intl.formatMessage({ id: 'request-not-sent' })} description={error} type='error' />
