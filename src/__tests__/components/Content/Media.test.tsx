@@ -12,7 +12,7 @@ import { FIXED_DATE, deferred, httpError, listOf } from '../Article/fixtures'
 vi.mock('../../../Services/AssetService', async (importOriginal) => {
   const actual = await importOriginal<{ default: { formatFileSize: unknown } }>()
   return {
-    default: { getAll: vi.fn(), deactivate: vi.fn(), formatFileSize: actual.default.formatFileSize },
+    default: { getAll: vi.fn(), getTotalSize: vi.fn(), deactivate: vi.fn(), formatFileSize: actual.default.formatFileSize },
   }
 })
 vi.mock('../../../Components/Form/message', async (importOriginal) => ({
@@ -171,42 +171,36 @@ describe('MediaList', () => {
 
 describe('CompanyMediaUsage', () => {
   test('shows the storage figure, the unlimited plan and a link to media', async () => {
-    service.getAll.mockResolvedValue(listOf([], { total: 0 }))
+    service.getTotalSize.mockResolvedValue({ totalSize: 0 })
     renderWithProviders(<CompanyMediaUsage />)
 
     expect(await screen.findByText('Storage')).toBeInTheDocument()
     expect(screen.getByText(/unlimited/i)).toBeInTheDocument()
     expect(screen.getByRole('link')).toHaveAttribute('href', '/b/media')
-    expect(service.getAll).toHaveBeenCalledWith({
-      where: JSON.stringify({ isActive: true }),
-      perPage: 1,
-      currentPage: 1,
-    })
+    expect(service.getTotalSize).toHaveBeenCalledTimes(1)
   })
 
   test('spins while loading', async () => {
-    const request = deferred<ReturnType<typeof listOf>>()
-    service.getAll.mockReturnValue(request.promise as never)
+    const request = deferred<{ totalSize: number }>()
+    service.getTotalSize.mockReturnValue(request.promise)
     const { container } = renderWithProviders(<CompanyMediaUsage />)
     await waitFor(() => expect(container.querySelector('.ant-spin-spinning')).toBeInTheDocument())
-    request.resolve(listOf([]))
+    request.resolve({ totalSize: 0 })
     await waitFor(() => expect(container.querySelector('.ant-spin-spinning')).not.toBeInTheDocument())
   })
 
   test('reports a failed load', async () => {
-    service.getAll.mockRejectedValue(httpError('denied'))
+    service.getTotalSize.mockRejectedValue(httpError('denied'))
     renderWithProviders(<CompanyMediaUsage />)
     await waitFor(() => expect(message.error).toHaveBeenCalledWith('denied'))
   })
 
-  // Bug: `total` is the number of assets, but it is shown as a size, so 2,000 files reads as "2.00 KB".
-  // Needs the API to return the company's total size: the list endpoint only pages through assets.
-  test.fails('does not report the file count as a storage size', async () => {
+  test('does not report the file count as a storage size', async () => {
     service.getAll.mockResolvedValue(listOf([], { total: 2000 }))
+    service.getTotalSize.mockResolvedValue({ totalSize: 2500000 })
     const { container } = renderWithProviders(<CompanyMediaUsage />)
-    await screen.findByText('Storage')
-    await waitFor(() => expect(service.getAll).toHaveBeenCalled())
-    await new Promise((resolve) => setTimeout(resolve))
+    await waitFor(() => expect(container.textContent).toContain('2.50 MB'))
     expect(container.textContent).not.toContain('2.00 KB')
+    expect(service.getAll).not.toHaveBeenCalled()
   })
 })

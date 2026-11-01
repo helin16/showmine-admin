@@ -23,6 +23,10 @@ const deactivate = async (id: string, params?: iConfigParams, config?: iConfigPa
   return AppService.delete(`${endPoint}/${id}`, params, config).then((resp) => resp.data)
 }
 
+const getTotalSize = async (params?: iConfigParams, config?: iConfigParams): Promise<{ totalSize: number }> => {
+  return AppService.get(`${endPoint}/totalSize`, params, config).then((resp) => resp.data)
+}
+
 const getUploadAssetUrl = () => {
   return `${process.env.REACT_APP_REST_END_POINT || ''}${endPoint}/upload`;
 }
@@ -46,6 +50,7 @@ const AssetService = {
   create,
   update,
   deactivate,
+  getTotalSize,
   getUploadAssetUrl,
   formatFileSize,
 }

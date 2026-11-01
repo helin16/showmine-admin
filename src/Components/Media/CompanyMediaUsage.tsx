@@ -22,15 +22,11 @@ const CompanyMediaUsage = () => {
   useEffect(() => {
     let isCanceled = false;
     setIsLoading(true);
-    AssetService.getAll({
-      where: JSON.stringify({isActive: true}),
-      perPage: 1,
-      currentPage: 1,
-    })
+    AssetService.getTotalSize()
       .then(resp => {
         setState({
           ...state,
-          realValue: resp.total,
+          realValue: resp.totalSize,
         });
       })
       .catch(err => {
