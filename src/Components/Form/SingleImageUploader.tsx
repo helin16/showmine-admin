@@ -102,7 +102,7 @@ const ImageWrapper = styled.div`
       }
     }
   }
-  :hover {
+  &:hover {
     .btns-overlay {
       display: block;
     }

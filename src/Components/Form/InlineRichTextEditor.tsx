@@ -10,7 +10,7 @@ const InlineRichTextEditorDiv = styled(InlineInputDiv)`
   .mce-content-body {
     padding: ${inlineInputPadding};
     min-height: 80px;
-    ::before {
+    &::before {
       padding-left: ${paddingX};
     }
     &.mce-edit-focus {

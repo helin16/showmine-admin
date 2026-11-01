@@ -34,7 +34,7 @@ export const inlineInputBgColor = '#fafafa;'
 export const InlineInputDiv = styled.div`
   border: none;
   padding: ${inlineInputPadding};
-  :hover {
+  &:hover {
     background: ${inlineInputBgColor};
   }
 `

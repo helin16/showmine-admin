@@ -11,7 +11,7 @@ const InlineInputDiv = styled(DefaultInlineInputDiv)`
   }
   .ant-input-affix-wrapper {
     box-shadow: none;
-    :not(.ant-input-affix-wrapper-focused) {
+    &:not(.ant-input-affix-wrapper-focused) {
       .ant-input-clear-icon {
         color: transparent;
       }

@@ -21,7 +21,7 @@ import Utils from '../../Services/Utils'
 const NewChannelWrapper = styled.div`
   .channel-list-item {
     cursor: pointer;
-    :hover {
+    &:hover {
       background: ${inlineInputBgColor};
     }
   }
