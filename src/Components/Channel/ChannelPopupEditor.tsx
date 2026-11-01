@@ -37,7 +37,7 @@ const ChannelPopupEditor = ({ children, channel, onSaved }: iChannelPopupEditor)
             onCancel={() => setShowing(false)}
             onSaved={(newChannel: IChannel) => {
               setShowing(false)
-              onSaved && onSaved(newChannel)
+              onSaved?.(newChannel)
             }}
           />
         )}

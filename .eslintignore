@@ -1,6 +1,0 @@
-.eslintrc.js
-prettier.config.js
-
-node_modules
-build
-coverage
