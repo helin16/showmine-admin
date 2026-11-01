@@ -26,6 +26,7 @@ vi.mock('../../../Services/WeChatService', async (importOriginal) => {
 
 const inWeChat = { weChat: { isInWeChat: true } }
 const FAILED_MESSAGE = messages[Locale.enUS.locale]['wechat-login-failed']
+const EXPIRED_MESSAGE = messages[Locale.enUS.locale]['session-expired']
 const goTo = () => vi.mocked(WeChatService.goToWeChatLogin)
 const getUser = () => vi.mocked(WeChatService.getUserFromQrcode)
 
@@ -266,4 +267,51 @@ describe('returning with wechatError', () => {
 test('the message exists in both languages', () => {
   expect(messages[Locale.zhCN.locale]['wechat-login-failed']).toMatch(/微信/)
   expect(FAILED_MESSAGE).toMatch(/WeChat/)
+})
+
+describe('coming back from an expired session', () => {
+  const wanted = `${LOGIN_URL}?password=1&from=${encodeURIComponent(`${ARTICLE_LIST_URL}?page=2`)}`
+  const signIn = async () => {
+    fireEvent.change(await loginForm(), { target: { value: 'a@b.co' } })
+    fireEvent.change(screen.getByPlaceholderText('password'), { target: { value: 'pw' } })
+    fireEvent.click(screen.getByRole('button', { name: 'login Login' }))
+  }
+
+  afterEach(() => localStorage.clear())
+
+  test('stays on the form inside WeChat, with no trip to WeChat, and says why once', async () => {
+    LocalStorageService.setLoginNotice(EXPIRED_MESSAGE)
+    renderLogin(wanted)
+    expect(await loginForm()).toBeInTheDocument()
+    expect(screen.getByText(EXPIRED_MESSAGE)).toBeInTheDocument()
+    expect(goTo()).not.toHaveBeenCalled()
+    expect(LocalStorageService.takeLoginNotice()).toBeNull()
+  })
+
+  test('the WeChat button still returns to the wanted page', async () => {
+    renderLogin(wanted)
+    fireEvent.click(await screen.findByRole('button', { name: /WeChat/ }))
+    await waitFor(() => expect(goTo()).toHaveBeenCalledWith(`${ARTICLE_LIST_URL}?page=2`))
+  })
+
+  test('signing in with a password returns to the wanted page', async () => {
+    vi.spyOn(AuthService, 'login').mockResolvedValue({ token: 'tok' })
+    renderLogin(wanted)
+    await signIn()
+    expect(await screen.findByText('articles')).toBeInTheDocument()
+    expect(screen.getByText(`address ${ARTICLE_LIST_URL}?page=2`)).toBeInTheDocument()
+  })
+
+  test('someone already signed in goes to the wanted page too', async () => {
+    AuthService.setLocalAuthToken('tok')
+    renderLogin(wanted)
+    expect(await screen.findByText('articles')).toBeInTheDocument()
+  })
+
+  test('a return address on another site goes to the dashboard', async () => {
+    vi.spyOn(AuthService, 'login').mockResolvedValue({ token: 'tok' })
+    renderLogin(`${LOGIN_URL}?password=1&from=${encodeURIComponent('https://evil.test/x')}`)
+    await signIn()
+    expect(await screen.findByText('backend')).toBeInTheDocument()
+  })
 })

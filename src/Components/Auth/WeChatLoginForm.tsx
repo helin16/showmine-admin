@@ -49,7 +49,7 @@ const initialState = {
  * WeChatLoginForm
  * @constructor
  */
-const WeChatLoginForm = () => {
+const WeChatLoginForm = ({ returnPath = BACK_END_URL }: { returnPath?: string }) => {
   const [loginUrl, setLoginUrl] = useState<string | null>(null);
   const [loginToken, setLoginToken] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
@@ -165,7 +165,7 @@ const WeChatLoginForm = () => {
 
   if (`${userToken || ''}`.trim() !== '') {
     AuthService.setLocalAuthToken(`${userToken || ''}`.trim());
-    navigate(BACK_END_URL);
+    navigate(returnPath);
     return null;
   }
 

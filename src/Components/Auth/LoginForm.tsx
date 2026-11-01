@@ -17,6 +17,7 @@ import translate from '../../i18n/translate'
 
 type iLoginForm = {
   className?: string
+  returnPath?: string
 }
 type ILoginFormState = {
   signing: boolean
@@ -32,7 +33,7 @@ export const initState: ILoginFormState = {
 /**
  * login form
  */
-const LoginForm = ({ className }: iLoginForm) => {
+const LoginForm = ({ className, returnPath = BACK_END_URL }: iLoginForm) => {
   const [state, setState] = useState({ ...initState, userToken: '' })
   const navigate = useNavigate()
   /**
@@ -65,7 +66,7 @@ const LoginForm = ({ className }: iLoginForm) => {
 
   if (state.userToken !== '') {
     AuthService.setLocalAuthToken(state.userToken)
-    navigate(BACK_END_URL);
+    navigate(returnPath);
     return null
   }
   return (

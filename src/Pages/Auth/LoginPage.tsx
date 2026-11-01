@@ -10,9 +10,10 @@ import { LockFilled, WechatFilled } from '@ant-design/icons'
 import { useSelector } from 'react-redux'
 import { RootState } from '../../Redux/makeReduxStore'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { BACK_END_URL } from '../../UrlMap'
 import { weChatBtnStyle } from '../../Constants'
 import AuthService from '../../Services/AuthService'
+import LocalStorageService from '../../Services/LocalStorageService'
+import WeChatService from '../../Services/WeChatService'
 import Alert from '../../Components/Form/Alert'
 import translate from '../../i18n/translate'
 
@@ -27,26 +28,29 @@ const LoginPage = () => {
   const { isInWeChat } = useSelector((state: RootState) => state.weChat)
   const [loginMethod, setLoginMethod] = useState(LOGIN_METHOD_NORMAL)
   const [autoLoginFailed, setAutoLoginFailed] = useState<boolean>()
+  const [notice] = useState(LocalStorageService.takeLoginNotice)
   const navigate = useNavigate()
   const { search, state } = useLocation()
   const token = AuthService.getLocalAuthToken()
   const searchParams = new URLSearchParams(search)
   const from: string | null = state?.from || searchParams.get('from')
+  // It comes from the address, so anyone can write it.
+  const returnPath = WeChatService.getSafeReturnPath(from)
 
   useEffect(() => {
     if (`${token || ''}`.trim() !== '') {
-      navigate(BACK_END_URL)
+      navigate(returnPath)
     }
-  }, [token, navigate])
+  }, [token, navigate, returnPath])
 
   const getLogForm = () => {
     if (loginMethod === LOGIN_METHOD_WECHAT) {
-      return <WeChatLoginForm />
+      return <WeChatLoginForm returnPath={returnPath} />
     }
     if (loginMethod === LOGIN_METHOD_FACEBOOK) {
       return null
     }
-    return <LoginForm />
+    return <LoginForm returnPath={returnPath} />
   }
 
   const getNormalLoginBtn = () => {
@@ -124,6 +128,11 @@ const LoginPage = () => {
       <PageBox>
         <>
           <AppLogo />
+          {notice ? (
+            <FormInputWrapper>
+              <Alert message={notice} type='warning' />
+            </FormInputWrapper>
+          ) : null}
           {autoLoginFailed === true ? (
             <FormInputWrapper>
               <Alert message={translate('wechat-login-failed')} type='warning' />

@@ -19,11 +19,12 @@ vi.mock('qrcode.react', () => ({ QRCodeCanvas: ({ value }: { value: string }) =>
 const qr = { url: 'https://wx.test/qr', token: 'login-token' }
 const waiting = { userId: null, error: null, token: '' }
 
-const renderForm = () =>
+const renderForm = (returnPath?: string) =>
   renderWithProviders(
     <Routes>
       <Route path={BACK_END_URL} element={<div>backend</div>} />
-      <Route path='*' element={<WeChatLoginForm />} />
+      <Route path='/b/articles' element={<div>articles</div>} />
+      <Route path='*' element={<WeChatLoginForm returnPath={returnPath} />} />
     </Routes>,
     { route: '/login' },
   )
@@ -178,4 +179,12 @@ test('sends no poll request after leaving the page', async () => {
   unmount()
   await flush(1000)
   expect(WeChatService.getUserFromQrcode).not.toHaveBeenCalled()
+})
+
+test('a scan returns to the wanted page', async () => {
+  vi.mocked(WeChatService.getUserFromQrcode).mockResolvedValue({ token: 'tok' })
+  renderForm('/b/articles')
+  await flush()
+  await flush(1000)
+  expect(screen.getByText('articles')).toBeInTheDocument()
 })

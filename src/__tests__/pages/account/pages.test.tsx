@@ -46,9 +46,10 @@ vi.mock('../../../Services/CompanyService', () => ({
   default: { getAll: vi.fn(), getItemById: vi.fn(), update: vi.fn(), deactivate: vi.fn() },
 }))
 vi.mock('../../../Services/CompanyUserService', () => ({ default: { getAll: vi.fn() } }))
-vi.mock('../../../Services/WeChatService', () => ({
-  default: { getLoginQrCodeUrl: vi.fn(), getUserFromQrcode: vi.fn() },
-}))
+vi.mock('../../../Services/WeChatService', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../Services/WeChatService')>()
+  return { default: { ...actual.default, getLoginQrCodeUrl: vi.fn(), getUserFromQrcode: vi.fn() } }
+})
 vi.mock('../../../Components/Form/message', () => ({ default: { error: vi.fn(), success: vi.fn() } }))
 vi.mock('qrcode.react', () => ({ QRCodeCanvas: () => <div>qr code</div> }))
 vi.mock('../../../Components/Article/ArticleList', () => ({ default: () => <div>article list</div> }))
