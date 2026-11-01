@@ -287,10 +287,10 @@ describe('UserProfileEditor', () => {
   test('changes the password through the confirm form', () => {
     vi.mocked(AuthService.updateMe).mockReturnValue(new Promise(() => undefined))
     renderEditor()
-    typeInline(screen.getByPlaceholderText('Password'), 'secret')
-    typeInline(screen.getByPlaceholderText('Confirm Password'), 'secret')
+    typeInline(screen.getByPlaceholderText('Password'), 'long-enough')
+    typeInline(screen.getByPlaceholderText('Confirm Password'), 'long-enough')
     fireEvent.click(screen.getByRole('button', { name: 'Confirm' }))
-    expect(AuthService.updateMe).toHaveBeenCalledExactlyOnceWith({ password: 'secret' })
+    expect(AuthService.updateMe).toHaveBeenCalledExactlyOnceWith({ password: 'long-enough' })
   })
 
   test('reports a failed save and leaves the session alone', async () => {

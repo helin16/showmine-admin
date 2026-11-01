@@ -9,6 +9,7 @@ import Typography from '../Form/Typography'
 import Button from '../Form/Button'
 import Icons from '../Icons'
 import message from '../Form/message'
+import { MIN_PASSWORD_LENGTH } from '../../Constants'
 
 const ConfirmPasswordDiv = styled.div``
 
@@ -65,6 +66,11 @@ const PasswordConfirm = ({
   const confirmPassword = () => {
     if (isDiff()) {
       message.error(intl.formatMessage({ id: 'confirm-password-diff' }))
+      return
+    }
+    // Trimmed, because the API trims before it checks the length.
+    if (state.password.trim().length < MIN_PASSWORD_LENGTH) {
+      message.error(intl.formatMessage({ id: 'password-too-short' }))
       return
     }
     setState({

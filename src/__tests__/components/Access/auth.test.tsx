@@ -176,12 +176,23 @@ describe('PasswordConfirm', () => {
   test('confirms a match and clears both fields', () => {
     const onConfirm = vi.fn()
     renderWithProviders(<PasswordConfirm onConfirm={onConfirm} />)
-    typeInline(password(), 'secret')
-    typeInline(confirmation(), 'secret')
+    typeInline(password(), 'long-enough')
+    typeInline(confirmation(), 'long-enough')
     fireEvent.click(screen.getByRole('button', { name: 'Confirm' }))
-    expect(onConfirm).toHaveBeenCalledExactlyOnceWith('secret', 'secret')
+    expect(onConfirm).toHaveBeenCalledExactlyOnceWith('long-enough', 'long-enough')
     expect(password()).toHaveValue('')
     expect(screen.queryByPlaceholderText('Confirm Password')).not.toBeInTheDocument()
+  })
+
+  test.each([['1234567'], ['  1234567  ']])('refuses the short password "%s", as the API trims too', (short) => {
+    const onConfirm = vi.fn()
+    renderWithProviders(<PasswordConfirm onConfirm={onConfirm} />)
+    typeInline(password(), short)
+    typeInline(confirmation(), short)
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm' }))
+    expect(onConfirm).not.toHaveBeenCalled()
+    expect(message.error).toHaveBeenCalledWith('Password must be at least 8 characters.')
+    expect(password()).toHaveValue(short)
   })
 
   test('clearing the password also clears the confirmation', () => {

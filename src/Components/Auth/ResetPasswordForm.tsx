@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { LockOutlined } from '@ant-design/icons'
 import { FormattedMessage, useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
+import { MIN_PASSWORD_LENGTH } from '../../Constants'
 import Utils from '../../Services/Utils'
 import AuthService from '../../Services/AuthService'
 import { FORGOT_PASSWORD_URL, PASSWORD_LOGIN_URL } from '../../UrlMap'
@@ -12,8 +13,6 @@ import FormItem from '../Form/FormItem'
 import InputPassword from '../Form/InputPassword'
 import message from '../Form/message'
 import Result from '../Form/Result'
-
-const MIN_PASSWORD_LENGTH = 8
 
 const ResetPasswordForm = () => {
   // Read straight from the address and only once, as the effect below removes it.

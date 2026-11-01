@@ -1,4 +1,5 @@
 export const APP_ICON_PATH = '/img/logo-1.png'
+export const MIN_PASSWORD_LENGTH = 8
 export const LOCAL_STROAGE_KEY_FOR_TOKEN = 'token'
 export const REQUEST_HEADER_TOKEN_PREFIX = 'bearer'
 export const REQUEST_HEADER_COMPANY_ID = 'comid'
