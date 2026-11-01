@@ -298,6 +298,6 @@ test('signing out clears the saved login', async () => {
     .getByRole('button', { name: /yes|是/i })
     .click()
   await expect(page.getByPlaceholder('password')).toBeVisible()
-  const saved = await page.evaluate(() => [localStorage.getItem('comid'), localStorage.getItem('token')])
+  const saved = await page.evaluate(() => [sessionStorage.getItem('comid'), localStorage.getItem('token')])
   expect(saved).toEqual([null, null])
 })

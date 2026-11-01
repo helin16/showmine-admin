@@ -23,7 +23,7 @@ export const signIn = async (browser: Browser, email: string, password: string) 
   await page.waitForURL(/\/b\//)
 
   const companyId = await expect
-    .poll(() => page.evaluate(() => localStorage.getItem('comid')), { timeout: 15_000 })
+    .poll(() => page.evaluate(() => sessionStorage.getItem('comid')), { timeout: 15_000 })
     .toBe(COMPANY_ID)
     .then(() => COMPANY_ID)
   const token = await page.evaluate(() => localStorage.getItem('token'))
