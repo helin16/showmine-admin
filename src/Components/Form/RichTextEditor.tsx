@@ -7,6 +7,7 @@ import message from './message'
 import MathHelper from '../../Helpers/MathHelper';
 import AssetService from '../../Services/AssetService';
 import AppService from '../../Services/AppService';
+import Utils from '../../Services/Utils';
 
 const EditorWrapper = styled.div`
   height: 100%;
@@ -34,7 +35,9 @@ const imagesUploadHandler = (assetType?: string) => (
     xhr.setRequestHeader(key, `${headerMap[key] || ''}`);
   })
   xhr.upload.onprogress = (e) =>  {
-    progress(MathHelper.mul(MathHelper.div(e.loaded, e.total), 100));
+    if (e.total > 0) {
+      progress(MathHelper.mul(MathHelper.div(e.loaded, e.total), 100));
+    }
   }
   xhr.onload = () => {
     if (xhr.status === 403) {
@@ -45,7 +48,7 @@ const imagesUploadHandler = (assetType?: string) => (
       reject({message: `HTTP Error: ${xhr.status}`});
       return
     }
-    const json = JSON.parse(xhr.responseText)
+    const json = Utils.isJSON(xhr.responseText) ? JSON.parse(xhr.responseText) : null
     if (!json || typeof json.url != 'string') {
       reject({message: `Invalid JSON: ${xhr.responseText}`});
       return
@@ -88,12 +91,12 @@ const customAction = (assetType?: string) => (editor: any) => {
       xhr.onload = function () {
         editor.setProgressState(false)
         if (xhr.status === 200) {
-          const json = JSON.parse(xhr.responseText)
+          const json = Utils.isJSON(xhr.responseText) ? JSON.parse(xhr.responseText) : null
           if (!json || typeof json.url != 'string') {
             message.error(`Invalid JSON: ${xhr.responseText}`)
             return
           }
-          const videoDom = `<video width='100%' height='240px' poster='${json.url.replace(`.${json.externalObj?.format || ''}`, '.jpg')}' controls="controls">
+          const videoDom = `<video width='100%' height='240px' poster='${json.url.replace(/\.[^./]+$/, '.jpg')}' controls="controls">
             <source src='${json.url}' type='${json.fileType}'/>
           </video>`
           editor.insertContent(videoDom)
@@ -132,7 +135,7 @@ const defaultEditorConfig = {
     'advlist', 'autolink', 'lineheight',
     'lists', 'link', 'image', 'charmap', 'print', 'preview', 'anchor',
     'searchreplace', 'visualblocks', 'code', 'fullscreen',
-    'insertdatetime', 'media', 'table', 'paste', 'code', 'help', 'wordcount', 'image', 'table'
+    'insertdatetime', 'media', 'table', 'paste', 'code', 'help', 'wordcount', 'image', 'table', 'autoresize'
   ],
   fullscreen_native: true,
   // toolbar_mode: 'sliding',
@@ -176,7 +179,6 @@ const RichTextEditor = ({ className, onChange, value, placeholder, isInLine = fa
       editor: {
         ...s.editor,
         menubar: showToolBar,
-        plugins: s.editor.plugins.concat(['autoresize']),
         placeholder: placeholder || '',
       },
     }))

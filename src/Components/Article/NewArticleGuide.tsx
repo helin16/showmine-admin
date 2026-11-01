@@ -27,6 +27,7 @@ const NewArticleGuide = () => {
   }
 
   const creatArticle = () => {
+    if (isSaving) return
     const currentUserId = `${user?.id || ''}`.trim()
     const currentCompanyId = `${company?.id || ''}`.trim()
     if (currentUserId === '' || currentCompanyId === '') {

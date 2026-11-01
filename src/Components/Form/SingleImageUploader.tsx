@@ -140,13 +140,11 @@ const SingleImageUploader = ({ initImgUrl, title, assetType, onChange, icon, hin
    *
    */
   useEffect(() => {
-    if (!initImgUrl || initImgUrl === '') return;
-
     setState({
       ...initialState,
       imgAsset: {
         ...initAsset,
-        url: initImgUrl,
+        url: initImgUrl || '',
       },
     });
   }, [initImgUrl]);
@@ -172,6 +170,16 @@ const SingleImageUploader = ({ initImgUrl, title, assetType, onChange, icon, hin
         if (typeof (onChange) === 'function') {
           onChange(file.response);
         }
+      } else if (file.status.toLowerCase() === 'error') {
+        if (onSetIsSaving) {
+          onSetIsSaving(false);
+        }
+        setState({
+          ...state,
+          loading: initialState.loading,
+          loadingPercentage: initialState.loadingPercentage,
+        });
+        message.error(intl.formatMessage({ id: 'upload-error' }));
       }
     }
   };

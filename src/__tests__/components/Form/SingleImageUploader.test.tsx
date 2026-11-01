@@ -99,8 +99,7 @@ describe('existing image', () => {
     expect(screen.getByText(PROMPT)).toBeInTheDocument()
   })
 
-  // Bug: the effect returns early on a blank url, so a cleared initImgUrl keeps showing the old image.
-  test.fails('clears the image when initImgUrl is cleared', async () => {
+  test('clears the image when initImgUrl is cleared', async () => {
     const Host = () => {
       const [url, setUrl] = useState(asset.url)
       return (
@@ -169,16 +168,14 @@ describe('uploading', () => {
     expect(screen.getByText(PROMPT)).toBeInTheDocument()
   })
 
-  // Bug: upload() ignores status 'error', so a failed upload leaves the progress spinner up with no message.
-  test.fails('clears the spinner after a failed upload', async () => {
+  test('clears the spinner after a failed upload', async () => {
     renderWithProviders(<SingleImageUploader />)
     const xhr = await pickFile()
     act(() => xhr.respond(500, 'Server error'))
     await waitFor(() => expect(spinner()).not.toBeInTheDocument(), { timeout: 200 })
   })
 
-  // Bug: onSetIsSaving(false) is never sent, so UserProfileEditor and CompanyEditor stay behind their Spin after a failure.
-  test.fails('tells the parent saving stopped after a failed upload', async () => {
+  test('tells the parent saving stopped after a failed upload', async () => {
     const onSetIsSaving = vi.fn()
     renderWithProviders(<SingleImageUploader onSetIsSaving={onSetIsSaving} />)
     const xhr = await pickFile()

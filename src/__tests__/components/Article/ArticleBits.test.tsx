@@ -244,8 +244,7 @@ describe('NewArticleGuide', () => {
     expect(service.create).not.toHaveBeenCalled()
   })
 
-  // Bug: InlineInput evaluates onPressEnter but never calls it, so Enter does not create the article.
-  test.fails('creates the article when Enter is pressed', () => {
+  test('creates the article when Enter is pressed', () => {
     service.create.mockResolvedValue(makeArticle())
     renderGuide()
     typeTitle('My post')

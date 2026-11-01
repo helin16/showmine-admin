@@ -145,8 +145,7 @@ describe.each(cases)('%s', (_name, baseClass, text, ui) => {
 })
 
 describe('props reach the antd control', () => {
-  // Bug: antd reads the children's props, so TimelineItem never runs inside Timeline and its base class is lost.
-  test.fails('TimelineItem keeps its base class inside Timeline', () => {
+  test('TimelineItem keeps its base class inside Timeline', () => {
     render(<Timeline><TimelineItem>Created</TimelineItem></Timeline>)
     expect(document.querySelector('.app-TimelineItem')).toBeInTheDocument()
   })

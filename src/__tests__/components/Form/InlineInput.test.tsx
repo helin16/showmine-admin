@@ -53,8 +53,7 @@ describe('InlineInput', () => {
     expect(onChange).toHaveBeenCalledWith('x')
   })
 
-  // Bug: line 69 only reads the onPressEnter prop and never calls it, so Enter does nothing in NewArticleGuide.
-  test.fails('Enter calls onPressEnter', async () => {
+  test('Enter calls onPressEnter', async () => {
     const onPressEnter = vi.fn()
     render(<InlineInput value='' onPressEnter={onPressEnter} />)
     await userEvent.type(box(), 'x{Enter}')

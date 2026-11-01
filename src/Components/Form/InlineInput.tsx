@@ -66,7 +66,7 @@ const InlineInput = ({ value, onChange, className, onPressEnter, ...props }: Rea
         value={state.value}
         onChange={valueChanged}
         onBlur={onBlur}
-        onPressEnter={(e: IKeyboardEvent<HTMLInputElement>) => onPressEnter || e.target.blur()}
+        onPressEnter={(e: IKeyboardEvent<HTMLInputElement>) => (onPressEnter ? onPressEnter(e) : e.target.blur())}
       />
     </InlineInputDiv>
   )

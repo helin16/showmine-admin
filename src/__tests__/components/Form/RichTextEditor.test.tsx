@@ -78,8 +78,7 @@ describe('editing', () => {
     expect(screen.getByTestId('editor')).toHaveTextContent('new text')
   })
 
-  // Bug: the effect appends to the stored plugin list, so it grows every time value or placeholder changes.
-  test.fails('adds the autoresize plugin only once', () => {
+  test('adds the autoresize plugin only once', () => {
     const { rerender } = render(<RichTextEditor value='one' />)
     rerender(<RichTextEditor value='two' />)
     rerender(<RichTextEditor value='three' />)
@@ -163,15 +162,13 @@ describe('image upload', () => {
     await expect(result).rejects.toEqual({ message: 'Image upload failed due to a XHR Transport error. Code: 0' })
   })
 
-  // Bug: JSON.parse throws inside onload, so a non-JSON reply (a proxy error page) leaves the upload pending forever.
-  test.fails('rejects a reply that is not JSON', async () => {
+  test('rejects a reply that is not JSON', async () => {
     const { result, xhr } = upload()
     expect(() => xhr.respond(200, '<html>Bad gateway</html>')).not.toThrow()
     await expect(pendingOr(result)).rejects.toBeDefined()
   })
 
-  // Bug: MathHelper.div throws on zero, which a progress event without a known length reports as its total.
-  test.fails('survives a progress event with an unknown total', () => {
+  test('survives a progress event with an unknown total', () => {
     const { xhr } = upload()
     expect(() => xhr.upload.onprogress?.({ loaded: 0, total: 0 })).not.toThrow()
   })
@@ -262,14 +259,12 @@ describe('video upload button', () => {
     expect(message.error).toHaveBeenCalledWith('Image upload failed due to a XHR Transport error. Code: 0')
   })
 
-  // Bug: without externalObj.format the replace target is '.', so the first dot of the host becomes '.jpg'.
-  test.fails('keeps the host intact when the reply has no format', () => {
+  test('keeps the host intact when the reply has no format', () => {
     pick().xhr.respond(200, { url: 'https://cdn.test/clip.mp4', fileType: 'video/mp4' })
     expect(tiny.insertContent.mock.calls[0][0]).not.toContain('cdn.jpgtest')
   })
 
-  // Bug: JSON.parse throws inside onload, so a non-JSON reply gives the user no error message.
-  test.fails('shows an error for a reply that is not JSON', () => {
+  test('shows an error for a reply that is not JSON', () => {
     const { xhr } = pick()
     try {
       xhr.respond(200, '<html>Bad gateway</html>')

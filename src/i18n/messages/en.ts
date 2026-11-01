@@ -26,6 +26,7 @@ const LanguageEN = {
     confirm: 'Confirm',
     'not-authorize': 'You are not authorize yet, please login and try again',
     'upload-area': 'Click or drag file to this area to upload',
+    'upload-error': 'Upload failed, please try again.',
     dashboard: 'Dashboard',
     'new-article': 'New Article',
     articles: 'Articles',
