@@ -121,8 +121,7 @@ describe('VisitsByChannelChart', () => {
     expect(chartData('pie')).toEqual([{ type: '', value: 2 }])
   })
 
-  // Bug: sources are upper-cased before translateChannelType, which only knows lower-case names, so labels stay raw.
-  test.fails('translates WeChat channel names', () => {
+  test('translates WeChat channel names', () => {
     renderWithProviders(<VisitsByChannelChart itemVisits={[visit({ source: 'timeline' })]} />)
     expect(chartData('pie')).toEqual([{ type: 'WeChat Moments', value: 1 }])
   })

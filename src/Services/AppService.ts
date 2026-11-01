@@ -33,8 +33,8 @@ const getHeaders = (extra = {}) => {
 }
 
 const getUrlParams = (params: iConfigParams = {}) => {
-  const paramString =
-    typeof params === 'object' && Object.keys(params).length > 0 ? new URLSearchParams(params).toString() : ''
+  const definedParams = typeof params === 'object' ? Object.entries(params).filter(([, value]) => value !== undefined) : []
+  const paramString = new URLSearchParams(definedParams).toString()
   return paramString === '' ? '' : `?${paramString}`
 }
 
@@ -75,15 +75,7 @@ const remove = (url: string, params: iConfigParams = {}, config: AxiosRequestCon
     },
   )
 }
-const getUploadHeaders = () => {
-  const headers = getHeaders()
-  return {
-    headers: {
-      ...headers,
-      'Content-Type': 'multipart/form-data',
-    },
-  }
-}
+const getUploadHeaders = () => getHeaders({ 'Content-Type': 'multipart/form-data' })
 const uploadImage = (url: string, params: FormData, config: AxiosRequestConfig = {}) => {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore

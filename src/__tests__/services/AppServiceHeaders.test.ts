@@ -82,8 +82,7 @@ describe('query strings', () => {
     expect(vi.mocked(axios.delete).mock.calls.map(([url]) => url)).toEqual([`${API}/x`, `${API}/x?id=1`])
   })
 
-  // KNOWN BUG: an undefined value is sent as the literal text "undefined". Remove .fails once fixed.
-  test.fails('leaves undefined values out of the query string', async () => {
+  test('leaves undefined values out of the query string', async () => {
     expect(await urlFor({ q: undefined })).toBe(`${API}/x`)
   })
 })
@@ -131,9 +130,7 @@ describe('uploadImage', () => {
     expect(uploadConfig()).toMatchObject({ timeout: 9, headers: { 'Content-Type': 'multipart/form-data' } })
   })
 
-  // KNOWN BUG: getUploadHeaders nests getHeaders()'s { headers } wrapper, so uploads go out unauthenticated
-  // and without company context. Remove .fails once fixed.
-  test.fails('sends the token and company context', () => {
+  test('sends the token and company context', () => {
     LocalStorageService.setToken('tok')
     LocalStorageService.setCompanyId('co-1')
     expect(uploadConfig()?.headers).toMatchObject({ Authorization: 'Bearer tok', comid: 'co-1' })

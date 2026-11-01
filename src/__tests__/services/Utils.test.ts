@@ -108,8 +108,7 @@ describe('formatCurrency', () => {
     expect(Utils.formatCurrency(value, decimals)).toBe(expected)
   })
 
-  // KNOWN BUG: the separator regex needs a decimal point, so whole numbers get no commas. Remove .fails once fixed.
-  test.fails('adds separators when there are no decimals', () => {
+  test('adds separators when there are no decimals', () => {
     expect(Utils.formatCurrency(1234567, 0)).toBe('1,234,567')
   })
 })
@@ -146,15 +145,13 @@ describe('compareArrays', () => {
     expect(Utils.compareArrays(list, list)).toBe(true)
   })
 
-  // KNOWN BUG: it sorts its inputs in place. Remove .fails once fixed.
-  test.fails('leaves its inputs in their original order', () => {
+  test('leaves its inputs in their original order', () => {
     const list = ['b', 'a']
     Utils.compareArrays(list, ['a', 'b'])
     expect(list).toEqual(['b', 'a'])
   })
 
-  // KNOWN BUG: it compares joined strings, so a comma inside a value collides. Remove .fails once fixed.
-  test.fails('tells a value containing a comma from two values', () => {
+  test('tells a value containing a comma from two values', () => {
     expect(Utils.compareArrays(['a,b'], ['a', 'b'])).toBe(false)
   })
 })
@@ -187,8 +184,7 @@ describe('isJSON', () => {
     expect(Utils.isJSON(input)).toBe(false)
   })
 
-  // KNOWN BUG: it tests the parsed value's truthiness, so valid falsy JSON is rejected. Remove .fails once fixed.
-  test.fails.each(['0', 'false', 'null', '""'])('%s is JSON', (input) => {
+  test.each(['0', 'false', 'null', '""'])('%s is JSON', (input) => {
     expect(Utils.isJSON(input)).toBe(true)
   })
 })

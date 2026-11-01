@@ -35,13 +35,14 @@ const convertArrayToObject = <T>(array: T[], key: string): any =>
   }, {})
 
 const translateChannelType = (type: string) => {
-  if (type === 'groupmessage') {
+  const channelType = type.toLowerCase()
+  if (channelType === 'groupmessage') {
     return 'WeChat Group'
   }
-  if (type === 'singlemessage') {
+  if (channelType === 'singlemessage') {
     return 'WeChat User'
   }
-  if (type === 'timeline') {
+  if (channelType === 'timeline') {
     return 'WeChat Moments'
   }
   return type
@@ -49,7 +50,8 @@ const translateChannelType = (type: string) => {
 
 const stripHTMLTags = (html: string) => html.replace(/(<([^>]+)>)/gi, '')
 
-const formatCurrency = (number: number, decimals = 2) => number.toFixed(decimals).replace(/\d(?=(\d{3})+\.)/g, '$&,')
+const formatCurrency = (number: number, decimals = 2) =>
+  number.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
 
 const concatIRestList = <T>(originalList: IResList<T>, newList: IResList<T>) => ({
   ...newList,
@@ -63,7 +65,7 @@ const compareArrays = (array1: string[] | undefined, array2: string[] | undefine
   if (!array1 || !array2) {
     return false
   }
-  return array1.sort().toString() === array2.sort().toString()
+  return JSON.stringify([...array1].sort()) === JSON.stringify([...array2].sort())
 }
 
 const getUrlParameter = (strValue: string) => {
@@ -75,7 +77,8 @@ const getUrlParameter = (strValue: string) => {
 
 const isJSON = (strValue: string) => {
   try {
-    return JSON.parse(strValue) && !!strValue
+    JSON.parse(strValue)
+    return true
   } catch (e) {
     return false
   }
