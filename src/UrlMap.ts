@@ -13,7 +13,6 @@ export const COMPANY_CHANNEL_NEW_URL = `${COMPANY_ADMIN_URL}channel/new`
 export const COMPANY_USERS_URL = `${COMPANY_ADMIN_URL}users`
 export const MY_PROFILE_URL = `${BACK_END_URL}profile`
 
-export const THIRD_PARTY_AUTH_URL_WE_CHAT = '/a/wx'
 export const AUTH_URL_USER_CONFIRM = '/a/user-confirm/:companyId'
 export const VALIDATE_EMAIL = '/validateEmail'
 export const WIZARD_URL = '/wizard'
@@ -24,7 +23,6 @@ export const WIZARD_URL = '/wizard'
 export const COMPANY_LIST_URL = `${BACK_END_URL}super/company/`
 
 const map = {
-  THIRD_PARTY_AUTH_URL_WE_CHAT,
   AUTH_URL_USER_CONFIRM,
 
   LOGIN_URL,
@@ -45,11 +43,6 @@ const map = {
 export const getUrl = (url: string, searching = ':id', replacement = 'new'): string => {
   const re = new RegExp(searching, 'g')
   return url.replace(re, replacement)
-}
-
-export const getFullUrl = (url: string, params: { [key: string]: string } = {}) => {
-  const queryString = new URLSearchParams(params).toString()
-  return `${process.env.REACT_APP_PUBLIC_URL}${url}${queryString === '' ? '' : `?${queryString}`}`
 }
 
 export const getCurrentUrl = () => window.location.href

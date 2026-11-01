@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux'
 import { removedAuthentication } from '../../Redux/reduxers/auth.slice'
 import { LOGIN_URL } from '../../UrlMap'
 import AuthService from '../../Services/AuthService'
+import LocalStorageService, { AUTO_LOGIN_DONE } from '../../Services/LocalStorageService'
 import Button from '../Form/Button'
 import Icons from '../Icons'
 import Modal from '../Form/Modal';
@@ -24,6 +25,7 @@ const LogoutBtn = () => {
     AuthService.logout();
     AuthService.removeLocalAuthToken()
     dispatch(removedAuthentication())
+    LocalStorageService.setAutoLoginMark(AUTO_LOGIN_DONE)
     navigate(LOGIN_URL)
   }
 

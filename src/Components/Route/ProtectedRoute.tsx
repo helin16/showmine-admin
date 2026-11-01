@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffect } from 'react'
 import { RootState } from '../../Redux/makeReduxStore'
@@ -24,6 +24,7 @@ const ProtectedRoute = ({ children }: any) => {
   const { app: appState, auth: { user, isAuthenticating } } = useSelector((s: RootState) => s);
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const { pathname, search } = useLocation()
 
   /**
    * getting the details for the current user
@@ -65,7 +66,7 @@ const ProtectedRoute = ({ children }: any) => {
         if (isCancelled === true) return
         AuthService.removeLocalAuthToken()
         dispatch(removedAuthentication())
-        navigate(LOGIN_URL)
+        navigate(LOGIN_URL, { state: { from: `${pathname}${search}` } })
       })
       .finally(() => {
         dispatch(
@@ -78,7 +79,7 @@ const ProtectedRoute = ({ children }: any) => {
       // eslint-disable-line
       isCancelled = true
     }
-  }, [dispatch, navigate, user])
+  }, [dispatch, navigate, user, pathname, search])
 
   if (isAuthenticating === true || !user) {
     return <AppInit />

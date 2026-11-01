@@ -226,6 +226,7 @@ const LanguageCN = {
     'total-items': '共有{total}项',
     'user-update-success': '用户信息更新成功',
     'back-to-login': 'Back to login',
+    'wechat-login-failed': '微信登录未完成。请使用密码登录，或点击微信按钮重试。',
     unPublishConfirm: '您即将取消发布此内容。您确定要继续吗？',
     unPublish: '取消发布',
     upgrade: '升级',

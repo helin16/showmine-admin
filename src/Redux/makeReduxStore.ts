@@ -1,9 +1,10 @@
 import { configureStore, combineReducers, Action, ThunkAction } from '@reduxjs/toolkit'
 import { useDispatch } from 'react-redux'
-import AppReducer from './reduxers/app.slice'
+import AppReducer, { changeLocale } from './reduxers/app.slice'
 import AuthReducer from './reduxers/auth.slice'
 import BackEndPageReducer from './reduxers/backendpage.slice'
-import WeChatReducer from './reduxers/wechat.slice'
+import WeChatReducer, { openedInWeChat } from './reduxers/wechat.slice'
+import Locale from '../Components/Form/Locale'
 
 const reducers = {
   app: AppReducer,
@@ -17,6 +18,13 @@ const getCombinedReducer = () => combineReducers(reducers)
 const store = configureStore({
   reducer: getCombinedReducer(),
 })
+
+const isInWeChat = /micromessenger/i.test(navigator.userAgent)
+store.dispatch(openedInWeChat({ isInWeChat }))
+// A user's language is only known after sign-in, and a WeChat sign-in problem shows before that.
+if (isInWeChat && /^zh/i.test(navigator.language)) {
+  store.dispatch(changeLocale({ ...store.getState().app, locale: Locale.zhCN }))
+}
 
 export type RootState = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch

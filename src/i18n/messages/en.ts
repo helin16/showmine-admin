@@ -227,6 +227,7 @@ const LanguageEN = {
     'total-items': 'Total {total} items',
     'user-update-success': 'User info updated success',
     'back-to-login': 'Back to login',
+    'wechat-login-failed': 'WeChat sign-in was not completed. Sign in with your password, or tap WeChat to try again.',
     unPublish: 'Unpublish',
     unPublishConfirm: 'You are about to unPublish this content. Are you sure to continue?',
     upgrade: 'Upgrade',

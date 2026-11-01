@@ -47,7 +47,7 @@ vi.mock('../../../Services/CompanyService', () => ({
 }))
 vi.mock('../../../Services/CompanyUserService', () => ({ default: { getAll: vi.fn() } }))
 vi.mock('../../../Services/WeChatService', () => ({
-  default: { getLoginQrCodeUrl: vi.fn(), getUserFromQrcode: vi.fn(), getWeChatInAppLoginUrl: vi.fn() },
+  default: { getLoginQrCodeUrl: vi.fn(), getUserFromQrcode: vi.fn() },
 }))
 vi.mock('../../../Components/Form/message', () => ({ default: { error: vi.fn(), success: vi.fn() } }))
 vi.mock('qrcode.react', () => ({ QRCodeCanvas: () => <div>qr code</div> }))
@@ -104,13 +104,6 @@ describe('LoginPage', () => {
     expect(screen.queryByPlaceholderText('Email')).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: /Password Login/ }))
     expect(screen.getByPlaceholderText('Email')).toBeInTheDocument()
-  })
-
-  test('inside WeChat uses the in-app login', async () => {
-    vi.mocked(WeChatService.getWeChatInAppLoginUrl).mockResolvedValue({ data: { auth_url: 'https://wx.test' } })
-    renderPage({ weChat: { isInWeChat: true } })
-    await waitFor(() => expect(screen.getByText('WeChat').closest('a')).toHaveAttribute('href', 'https://wx.test'))
-    expect(WeChatService.getLoginQrCodeUrl).not.toHaveBeenCalled()
   })
 })
 

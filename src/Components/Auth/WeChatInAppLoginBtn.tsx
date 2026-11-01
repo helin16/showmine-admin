@@ -1,62 +1,32 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { weChatBtnStyle } from '../../Constants'
 import { RootState } from '../../Redux/makeReduxStore'
 import WeChatService from '../../Services/WeChatService'
-import { getFullUrl, THIRD_PARTY_AUTH_URL_WE_CHAT } from '../../UrlMap'
 import Button, { iButton } from '../Form/Button'
 import { WechatFilled } from '@ant-design/icons'
 import message from '../Form/message'
 import Utils from '../../Services/Utils'
 
-const initialState = {
-  loading: true,
-  inAppAuthUrl: '',
-}
-
 const WeChatInAppLoginBtn = ({
-  redirectUrl,
-  originUrl,
+  from,
   btnText,
   ...props
 }: iButton & {
-  redirectUrl?: string
-  originUrl?: string
+  from?: string | null
   btnText?: string
 }) => {
-  const [state, setState] = useState(initialState)
+  const [loading, setLoading] = useState(false)
   const { isInWeChat } = useSelector((s: RootState) => s.weChat)
 
-  useEffect(() => {
-    if (isInWeChat !== true) return
-    setState((s) => ({
-      ...s,
-      loading: true,
-    }))
-
-    let isCancelled = false
-    WeChatService.getWeChatInAppLoginUrl(redirectUrl || getFullUrl(THIRD_PARTY_AUTH_URL_WE_CHAT), originUrl)
-      .then((res) => {
-        if (isCancelled === true) return
-        setState((s) => ({
-          ...s,
-          loading: false,
-          inAppAuthUrl: res.data.auth_url,
-        }))
-      })
-      .catch((err) => {
-        if (isCancelled === true) return
-        setState((s) => ({
-          ...s,
-          loading: false,
-        }))
-        message.error(`Error when fetch login url ${Utils.getErrorMessage(err)}`)
-      })
-    return () => {
-      // eslint-disable-line
-      isCancelled = true
-    }
-  }, [isInWeChat, redirectUrl, originUrl])
+  // The address is only good for minutes, so it's fetched when tapped and not when the page opens.
+  const login = () => {
+    setLoading(true)
+    WeChatService.goToWeChatLogin(from).catch((err) => {
+      setLoading(false)
+      message.error(`Error when fetch login url ${Utils.getErrorMessage(err)}`)
+    })
+  }
 
   if (isInWeChat !== true) {
     return null
@@ -69,9 +39,8 @@ const WeChatInAppLoginBtn = ({
         style: weChatBtnStyle,
         ...props,
       }}
-      loading={state.loading}
-      href={state.inAppAuthUrl}
-      disabled={state.inAppAuthUrl === ''}
+      loading={loading}
+      onClick={login}
     >
       {btnText || 'WeChat'}
     </Button>

@@ -1,6 +1,7 @@
 import { vi } from 'vitest'
 import axios from 'axios'
 import PingService from '../../Services/PingService'
+import LocalStorageService, { AUTO_LOGIN_FAILED } from '../../Services/LocalStorageService'
 import WeChatService from '../../Services/WeChatService'
 
 vi.mock('axios')
@@ -12,6 +13,10 @@ const here = encodeURIComponent(window.location.href)
 
 beforeEach(() => {
   process.env.REACT_APP_REST_END_POINT = API
+  sessionStorage.clear()
+})
+afterEach(() => {
+  vi.restoreAllMocks()
 })
 
 describe('WeChatService', () => {
@@ -42,16 +47,21 @@ describe('WeChatService', () => {
     expect(axios.get).toHaveBeenCalledExactlyOnceWith(`${API}/wechat/auth/getUser?token=t1`, headers)
   })
 
-  test('getWeChatInAppLoginUrl sends both urls', async () => {
+  test('getWeChatInAppLoginUrl asks to come back to the sign-in page with the wanted page', async () => {
     vi.mocked(axios.get).mockResolvedValue({ data: { url: 'u' } })
-    await expect(WeChatService.getWeChatInAppLoginUrl('auth', 'orig')).resolves.toEqual({ url: 'u' })
-    expect(axios.get).toHaveBeenCalledExactlyOnceWith(`${API}/wechat/authUrl?origUrl=orig&authUrl=auth`, headers)
+    await expect(WeChatService.getWeChatInAppLoginUrl('/b/articles?page=2')).resolves.toEqual({ url: 'u' })
+    const uiUrl = `${window.location.origin}/login?from=${encodeURIComponent('/b/articles?page=2')}`
+    expect(axios.get).toHaveBeenCalledExactlyOnceWith(
+      `${API}/wechat/auth/authUrl?uiUrl=${encodeURIComponent(uiUrl)}`,
+      headers,
+    )
   })
 
-  test('getWeChatInAppLoginUrl defaults the original url to the current page', async () => {
+  test('getWeChatInAppLoginUrl never sends an unsafe return path', async () => {
     vi.mocked(axios.get).mockResolvedValue({ data: {} })
-    await WeChatService.getWeChatInAppLoginUrl('auth')
-    expect(axios.get).toHaveBeenCalledExactlyOnceWith(`${API}/wechat/authUrl?origUrl=${here}&authUrl=auth`, headers)
+    await WeChatService.getWeChatInAppLoginUrl('https://evil.test/')
+    const uiUrl = `${window.location.origin}/login?from=${encodeURIComponent('/b/')}`
+    expect(vi.mocked(axios.get).mock.calls[0][0]).toContain(`uiUrl=${encodeURIComponent(uiUrl)}`)
   })
 
   test('failures reject with the server error', async () => {
@@ -60,18 +70,70 @@ describe('WeChatService', () => {
     await expect(WeChatService.getJsConf('u')).rejects.toBe(denied)
     await expect(WeChatService.getLoginQrCodeUrl()).rejects.toBe(denied)
     await expect(WeChatService.getUserFromQrcode('t')).rejects.toBe(denied)
-    await expect(WeChatService.getWeChatInAppLoginUrl('a', 'o')).rejects.toBe(denied)
+    await expect(WeChatService.getWeChatInAppLoginUrl('/b/')).rejects.toBe(denied)
+  })
+})
+
+describe('goToWeChatLogin', () => {
+  const assign = vi.fn()
+  beforeEach(() => {
+    vi.stubGlobal('location', { origin: 'https://admin.test', assign })
+  })
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  test('sends the browser to the address from the API', async () => {
+    vi.mocked(axios.get).mockResolvedValue({ data: { url: 'https://wx.test/auth' } })
+    await WeChatService.goToWeChatLogin('/b/')
+    expect(assign).toHaveBeenCalledExactlyOnceWith('https://wx.test/auth')
+  })
+
+  test('rejects, going nowhere, when the API gives no address', async () => {
+    vi.mocked(axios.get).mockResolvedValue({ data: {} })
+    await expect(WeChatService.goToWeChatLogin()).rejects.toThrow()
+    expect(assign).not.toHaveBeenCalled()
+  })
+})
+
+describe('getSafeReturnPath', () => {
+  test.each([
+    ['/b/articles', '/b/articles'],
+    ['/b/articles?page=2#top', '/b/articles?page=2#top'],
+  ])('keeps %s', (path, expected) => {
+    expect(WeChatService.getSafeReturnPath(path)).toBe(expected)
   })
 
   test.each([
-    ['Mozilla/5.0 MicroMessenger/8.0', true],
-    ['Mozilla/5.0 micromessenger', true],
-    ['Mozilla/5.0 WebBrowser/1.0', true],
-    ['Mozilla/5.0 Chrome/120 Safari/537', false],
-    ['', false],
-  ])('isInWeChat for "%s" is %s', (userAgent, expected) => {
-    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(userAgent)
-    expect(WeChatService.isInWeChat()).toBe(expected)
+    ['https://evil.test/'],
+    ['//evil.test/'],
+    ['/\\evil.test/'],
+    ['/\t/evil.test/'],
+    ['/.//evil.test/'],
+    ['javascript:alert(1)'],
+    ['http://'],
+    [''],
+    [null],
+    [undefined],
+  ])('falls back to the dashboard for %s', (path) => {
+    expect(WeChatService.getSafeReturnPath(path)).toBe('/b/')
+  })
+})
+
+describe('auto login mark', () => {
+  test('is kept for the tab', () => {
+    expect(LocalStorageService.getAutoLoginMark()).toBeNull()
+    expect(LocalStorageService.setAutoLoginMark(AUTO_LOGIN_FAILED)).toBe(true)
+    expect(LocalStorageService.getAutoLoginMark()).toBe(AUTO_LOGIN_FAILED)
+    expect(window.sessionStorage.length).toBe(1)
+  })
+
+  test('reports blocked storage instead of throwing', () => {
+    vi.spyOn(window, 'sessionStorage', 'get').mockImplementation(() => {
+      throw new Error('blocked')
+    })
+    expect(LocalStorageService.getAutoLoginMark()).toBeNull()
+    expect(LocalStorageService.setAutoLoginMark(AUTO_LOGIN_FAILED)).toBe(false)
   })
 })
 

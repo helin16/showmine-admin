@@ -1,4 +1,4 @@
-import { getCurrentUrl } from '../UrlMap'
+import { BACK_END_URL, getCurrentUrl, LOGIN_URL } from '../UrlMap'
 import AppService from './AppService'
 import { WeChatJs } from '../Redux/reduxers/wechat.slice'
 
@@ -16,10 +16,32 @@ const getUserFromQrcode = async (token: string) => {
   return AppService.get(`${endPoint}/auth/getUser`, {token}).then((resp) => resp.data)
 }
 
-const isInWeChat = () => /(micromessenger|webbrowser)/.test(navigator.userAgent.toLocaleLowerCase())
+// Anything off this site goes to the dashboard instead. A path like /.//host resolves to //host, which is another site.
+const getSafeReturnPath = (path?: string | null) => {
+  try {
+    const { origin, pathname, search, hash } = new URL(path || BACK_END_URL, window.location.origin)
+    if (origin === window.location.origin && !pathname.startsWith('//')) {
+      return `${pathname}${search}${hash}`
+    }
+  } catch {
+    // not a url
+  }
+  return BACK_END_URL
+}
 
-const getWeChatInAppLoginUrl = async (authUrl: string, origUrl: string = getCurrentUrl()) => {
-  return AppService.get(`${endPoint}/authUrl`, { origUrl, authUrl }).then((resp) => resp.data)
+// The API keeps the query string and adds state, so WeChat brings the user back here with the wanted page.
+const getWeChatInAppLoginUrl = async (from?: string | null) => {
+  const query = new URLSearchParams({ from: getSafeReturnPath(from) })
+  const uiUrl = `${window.location.origin}${LOGIN_URL}?${query}`
+  return AppService.get(`${endPoint}/auth/authUrl`, { uiUrl }).then((resp) => resp.data)
+}
+
+const goToWeChatLogin = async (from?: string | null) => {
+  const { url } = await getWeChatInAppLoginUrl(from)
+  if (`${url || ''}`.trim() === '') {
+    throw new Error('Empty WeChat sign-in url')
+  }
+  window.location.assign(url)
 }
 
 // Loading the file again does nothing, so only a failed load is tried again.
@@ -40,10 +62,11 @@ const loadWXScript = () =>
 
 const WeChatService = {
   getJsConf,
-  isInWeChat,
   loadWXScript,
   getLoginQrCodeUrl,
   getWeChatInAppLoginUrl,
+  goToWeChatLogin,
+  getSafeReturnPath,
   getUserFromQrcode,
 }
 

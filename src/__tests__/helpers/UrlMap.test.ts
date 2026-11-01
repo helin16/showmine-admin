@@ -4,7 +4,6 @@ import UrlMap, {
   AUTH_URL_USER_CONFIRM,
   COMPANY_LIST_URL,
   getCurrentUrl,
-  getFullUrl,
   getUrl,
   LOGIN_URL,
 } from '../../UrlMap'
@@ -36,24 +35,6 @@ describe('getUrl', () => {
 
   test('leaves a url without the placeholder alone', () => {
     expect(getUrl(LOGIN_URL)).toBe(LOGIN_URL)
-  })
-})
-
-describe('getFullUrl', () => {
-  beforeEach(() => {
-    process.env.REACT_APP_PUBLIC_URL = 'https://admin.test'
-  })
-
-  test('prefixes the public url', () => {
-    expect(getFullUrl(LOGIN_URL)).toBe('https://admin.test/login')
-  })
-
-  test('empty params add no query string', () => {
-    expect(getFullUrl(LOGIN_URL, {})).toBe('https://admin.test/login')
-  })
-
-  test('encodes params', () => {
-    expect(getFullUrl(LOGIN_URL, { next: '/b/a b', x: '1' })).toBe('https://admin.test/login?next=%2Fb%2Fa+b&x=1')
   })
 })
 

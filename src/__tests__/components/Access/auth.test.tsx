@@ -3,23 +3,23 @@ import React from 'react'
 import { act, fireEvent, screen, waitFor } from '@testing-library/react'
 import { Route, Routes } from 'react-router-dom'
 import { vi } from 'vitest'
-import { apiError, deferred, stubMatchMedia, type, typeInline } from './domHelpers'
+import { apiError, stubMatchMedia, type, typeInline } from './domHelpers'
 import { renderWithProviders } from '../../testUtils'
 import LoginForm from '../../../Components/Auth/LoginForm'
 import LogoutBtn from '../../../Components/Auth/LogoutBtn'
 import PasswordConfirm from '../../../Components/Auth/PasswordConfirm'
 import WeChatInAppLoginBtn from '../../../Components/Auth/WeChatInAppLoginBtn'
 import AuthService from '../../../Services/AuthService'
-import LocalStorageService from '../../../Services/LocalStorageService'
+import LocalStorageService, { AUTO_LOGIN_DONE } from '../../../Services/LocalStorageService'
 import WeChatService from '../../../Services/WeChatService'
 import message from '../../../Components/Form/message'
-import { BACK_END_URL, LOGIN_URL, THIRD_PARTY_AUTH_URL_WE_CHAT } from '../../../UrlMap'
+import { BACK_END_URL, LOGIN_URL } from '../../../UrlMap'
 
 vi.mock('../../../Services/AuthService', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../Services/AuthService')>()
   return { default: { ...actual.default, login: vi.fn(), logout: vi.fn() } }
 })
-vi.mock('../../../Services/WeChatService', () => ({ default: { getWeChatInAppLoginUrl: vi.fn() } }))
+vi.mock('../../../Services/WeChatService', () => ({ default: { goToWeChatLogin: vi.fn() } }))
 vi.mock('../../../Components/Form/message', () => ({ default: { error: vi.fn(), success: vi.fn() } }))
 
 beforeAll(() => stubMatchMedia())
@@ -121,6 +121,13 @@ describe('LogoutBtn', () => {
     expect(AuthService.getLocalAuthToken()).toBe('tok')
   })
 
+  test('stops WeChat signing straight back in', async () => {
+    renderBtn()
+    confirmLogout()
+    expect(await screen.findByText('login page')).toBeInTheDocument()
+    expect(LocalStorageService.getAutoLoginMark()).toBe(AUTO_LOGIN_DONE)
+  })
+
   test('confirming ends the session and goes to login', () => {
     AuthService.setLocalAuthToken('tok')
     const { store } = renderBtn({ auth: { user: { id: 'u-1' }, company: { id: 'co-1' } } })
@@ -199,56 +206,37 @@ describe('PasswordConfirm', () => {
 
 describe('WeChatInAppLoginBtn', () => {
   const inWeChat = { weChat: { isInWeChat: true } }
-  const link = () => screen.getByText('WeChat').closest('a')
+  const btn = () => screen.getByRole('button', { name: /WeChat/ })
 
-  test('renders nothing outside WeChat and does not fetch', () => {
+  test('renders nothing outside WeChat', () => {
     const { container } = renderWithProviders(<WeChatInAppLoginBtn />)
     expect(container).toBeEmptyDOMElement()
-    expect(WeChatService.getWeChatInAppLoginUrl).not.toHaveBeenCalled()
   })
 
-  test('links to the login url from the API', async () => {
-    process.env.REACT_APP_PUBLIC_URL = 'https://admin.test'
-    vi.mocked(WeChatService.getWeChatInAppLoginUrl).mockResolvedValue({ data: { auth_url: 'https://wx.test/auth' } })
+  test('asks for nothing until it is tapped, as the address from the API expires', () => {
     renderWithProviders(<WeChatInAppLoginBtn />, { state: inWeChat })
-    await waitFor(() => expect(link()).toHaveAttribute('href', 'https://wx.test/auth'))
-    expect(WeChatService.getWeChatInAppLoginUrl).toHaveBeenCalledWith(
-      `https://admin.test${THIRD_PARTY_AUTH_URL_WE_CHAT}`,
-      undefined,
-    )
+    expect(WeChatService.goToWeChatLogin).not.toHaveBeenCalled()
   })
 
-  test('passes custom urls and label', async () => {
-    vi.mocked(WeChatService.getWeChatInAppLoginUrl).mockResolvedValue({ data: { auth_url: 'https://wx.test/2' } })
-    renderWithProviders(<WeChatInAppLoginBtn redirectUrl='/r' originUrl='/o' btnText='Scan' />, { state: inWeChat })
-    await waitFor(() => expect(screen.getByText('Scan').closest('a')).toHaveAttribute('href', 'https://wx.test/2'))
-    expect(WeChatService.getWeChatInAppLoginUrl).toHaveBeenCalledWith('/r', '/o')
+  test('goes to WeChat with the wanted page when tapped', async () => {
+    vi.mocked(WeChatService.goToWeChatLogin).mockReturnValue(new Promise(() => undefined))
+    renderWithProviders(<WeChatInAppLoginBtn from='/b/articles' />, { state: inWeChat })
+    fireEvent.click(btn())
+    expect(WeChatService.goToWeChatLogin).toHaveBeenCalledExactlyOnceWith('/b/articles')
+    await waitFor(() => expect(btn()).toHaveClass('ant-btn-loading'))
   })
 
-  test('reports a failure', async () => {
-    vi.mocked(WeChatService.getWeChatInAppLoginUrl).mockRejectedValue(apiError('down'))
+  test('uses a custom label', () => {
+    renderWithProviders(<WeChatInAppLoginBtn btnText='Scan' />, { state: inWeChat })
+    expect(screen.getByRole('button', { name: /Scan/ })).toBeInTheDocument()
+  })
+
+  test('reports a failure and can be tapped again', async () => {
+    vi.mocked(WeChatService.goToWeChatLogin).mockRejectedValue(apiError('down'))
     renderWithProviders(<WeChatInAppLoginBtn />, { state: inWeChat })
+    fireEvent.click(btn())
     await waitFor(() => expect(message.error).toHaveBeenCalledWith('Error when fetch login url down'))
-  })
-
-  test('stops loading after a failure', async () => {
-    vi.mocked(WeChatService.getWeChatInAppLoginUrl).mockRejectedValue(apiError('down'))
-    renderWithProviders(<WeChatInAppLoginBtn />, { state: inWeChat })
-    await waitFor(() => expect(message.error).toHaveBeenCalled())
     await act(async () => undefined)
-    expect(link()).not.toHaveClass('ant-btn-loading')
-  })
-
-  test('ignores a response or failure after unmounting', async () => {
-    const ok = deferred<never>()
-    const bad = deferred<never>()
-    vi.mocked(WeChatService.getWeChatInAppLoginUrl).mockReturnValueOnce(ok.promise).mockReturnValueOnce(bad.promise)
-    renderWithProviders(<WeChatInAppLoginBtn />, { state: inWeChat }).unmount()
-    renderWithProviders(<WeChatInAppLoginBtn />, { state: inWeChat }).unmount()
-    await act(async () => {
-      ok.resolve({ data: { auth_url: 'late' } } as never)
-      bad.reject(apiError('late'))
-    })
-    expect(message.error).not.toHaveBeenCalled()
+    expect(btn()).not.toHaveClass('ant-btn-loading')
   })
 })

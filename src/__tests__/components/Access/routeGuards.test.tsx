@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { act, fireEvent, screen, waitFor } from '@testing-library/react'
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, useLocation } from 'react-router-dom'
 import { vi } from 'vitest'
 import { apiError, deferred, stubMatchMedia } from './domHelpers'
 import { renderWithProviders } from '../../testUtils'
@@ -10,7 +10,7 @@ import SuperAdminRoute from '../../../Components/Route/SuperAdminRoute'
 import AuthService from '../../../Services/AuthService'
 import LocalStorageService from '../../../Services/LocalStorageService'
 import Locale from '../../../Components/Form/Locale'
-import { BACK_END_URL, LOGIN_URL } from '../../../UrlMap'
+import { ARTICLE_LIST_URL, BACK_END_URL, LOGIN_URL } from '../../../UrlMap'
 import { ROLE_ADMIN, ROLE_NON_ADMIN } from '../../../Types/Company/ICompanyUser'
 
 vi.mock('../../../Services/AuthService', async (importOriginal) => {
@@ -32,6 +32,8 @@ const renderProtected = (children: React.ReactNode = <div>secret</div>, state = 
     </Routes>,
     { route: BACK_END_URL, state },
   )
+
+const WantedPage = () => <div>wanted {useLocation().state?.from}</div>
 
 beforeAll(() => stubMatchMedia())
 
@@ -66,6 +68,18 @@ describe('ProtectedRoute', () => {
     expect(store.getState().auth.user).toBeUndefined()
     expect(store.getState().auth.company).toBeUndefined()
     expect(store.getState().auth.isAuthenticating).toBe(false)
+  })
+
+  test('tells the login page which page was wanted', async () => {
+    vi.mocked(AuthService.getMe).mockRejectedValue(apiError('401'))
+    renderWithProviders(
+      <Routes>
+        <Route path={LOGIN_URL} element={<WantedPage />} />
+        <Route path='*' element={<ProtectedRoute>secret</ProtectedRoute>} />
+      </Routes>,
+      { route: `${ARTICLE_LIST_URL}?page=2` },
+    )
+    expect(await screen.findByText(`wanted ${ARTICLE_LIST_URL}?page=2`)).toBeInTheDocument()
   })
 
   test('clears the stored company id when the session fails', async () => {

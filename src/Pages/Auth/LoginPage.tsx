@@ -2,19 +2,23 @@ import AuthPage from '../../Layouts/AuthPage'
 import PageBox from '../../Components/PageBox'
 import LoginForm from '../../Components/Auth/LoginForm'
 import AppLogo from '../../Components/AppLogo'
-import { lazy, startTransition, useEffect, useState } from 'react'
+import AppInit from '../../Components/AppInit'
+import { lazy, startTransition, Suspense, useEffect, useState } from 'react'
 import { FlexContainer, FormInputWrapper } from '../../Styles/AppWrapper'
 import Button from '../../Components/Form/Button'
 import { LockFilled, WechatFilled } from '@ant-design/icons'
 import { useSelector } from 'react-redux'
 import { RootState } from '../../Redux/makeReduxStore'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { BACK_END_URL } from '../../UrlMap'
 import { weChatBtnStyle } from '../../Constants'
 import AuthService from '../../Services/AuthService'
+import Alert from '../../Components/Form/Alert'
+import translate from '../../i18n/translate'
 
 const WeChatLoginForm = lazy(() => import('../../Components/Auth/WeChatLoginForm'))
 const WeChatInAppLoginBtn = lazy(() => import('../../Components/Auth/WeChatInAppLoginBtn'))
+const WeChatAutoLogin = lazy(() => import('../../Components/Auth/WeChatAutoLogin'))
 
 const LOGIN_METHOD_NORMAL = 'normal'
 const LOGIN_METHOD_WECHAT = 'wechat'
@@ -22,8 +26,12 @@ const LOGIN_METHOD_FACEBOOK = 'facebook'
 const LoginPage = () => {
   const { isInWeChat } = useSelector((state: RootState) => state.weChat)
   const [loginMethod, setLoginMethod] = useState(LOGIN_METHOD_NORMAL)
+  const [autoLoginFailed, setAutoLoginFailed] = useState<boolean>()
   const navigate = useNavigate()
+  const { search, state } = useLocation()
   const token = AuthService.getLocalAuthToken()
+  const searchParams = new URLSearchParams(search)
+  const from: string | null = state?.from || searchParams.get('from')
 
   useEffect(() => {
     if (`${token || ''}`.trim() !== '') {
@@ -56,7 +64,7 @@ const LoginPage = () => {
   }
   const getWeChatBtn = () => {
     if (isInWeChat === true) {
-      return <WeChatInAppLoginBtn />
+      return <WeChatInAppLoginBtn from={from} />
     }
     return (
       <Button
@@ -98,11 +106,29 @@ const LoginPage = () => {
     )
   }
 
+  // ?password=1 always reaches the password form, whatever WeChat is doing.
+  const isSignedOut = `${token || ''}`.trim() === ''
+  if (isInWeChat === true && isSignedOut && autoLoginFailed === undefined && !searchParams.has('password')) {
+    return (
+      <>
+        <AppInit />
+        <Suspense fallback={null}>
+          <WeChatAutoLogin from={from} search={search} navigate={navigate} onSettled={setAutoLoginFailed} />
+        </Suspense>
+      </>
+    )
+  }
+
   return (
     <AuthPage>
       <PageBox>
         <>
           <AppLogo />
+          {autoLoginFailed === true ? (
+            <FormInputWrapper>
+              <Alert message={translate('wechat-login-failed')} type='warning' />
+            </FormInputWrapper>
+          ) : null}
           <FormInputWrapper>{getLogForm()}</FormInputWrapper>
           <FormInputWrapper>{getLoginMethodDiv()}</FormInputWrapper>
         </>
