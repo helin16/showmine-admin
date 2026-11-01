@@ -7,6 +7,8 @@ type IUser = IBaseModel & {
   lastName: string
   nickName: string
   email?: string
+  // A new address waiting for its link to be opened. `email` keeps the old one until then.
+  pendingEmail?: string | null
   mobile?: string
   config?: any
   password?: string

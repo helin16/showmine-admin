@@ -1,6 +1,7 @@
 export const BACK_END_URL = '/b/'
 export const FORGOT_PASSWORD_URL = '/forgot-password'
 export const RESET_PASSWORD_URL = '/reset-password'
+export const CONFIRM_EMAIL_URL = '/confirm-email'
 export const INVITE_URL = '/invite'
 export const LOGIN_URL = '/login'
 // Always the password form: the sign-in page would otherwise go straight to WeChat when opened in there.

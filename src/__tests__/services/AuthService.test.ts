@@ -77,6 +77,11 @@ describe('password recovery', () => {
     expect(axios.post).toHaveBeenCalledExactlyOnceWith(`${API}/auth/forgot-password`, { email: 'a@b.c' }, anonymous)
   })
 
+  test('confirmEmail posts the token', async () => {
+    await expect(AuthService.confirmEmail('tok')).resolves.toEqual({ success: true })
+    expect(axios.post).toHaveBeenCalledExactlyOnceWith(`${API}/auth/confirm-email`, { token: 'tok' }, anonymous)
+  })
+
   test('resetPassword posts the token and the password', async () => {
     await expect(AuthService.resetPassword('tok', 'long-enough')).resolves.toEqual({ success: true })
     expect(axios.post).toHaveBeenCalledExactlyOnceWith(

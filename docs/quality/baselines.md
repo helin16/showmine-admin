@@ -26,6 +26,7 @@ Sign-in first-load JS is the sum of Vite's own gzip figure for every script and 
 | Comments: toggle and hide and reply controls on demand, messages in first load | 301.7 kB |
 | Links to a comment: company choice in first load, scrolling on demand | 302.1 kB |
 | Company kept per tab | 302.1 kB |
+| Email confirmation: page on demand, messages in first load | 302.4 kB |
 
 Measured and not changed:
 

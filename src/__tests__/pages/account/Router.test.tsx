@@ -26,6 +26,7 @@ import {
   MY_PROFILE_URL,
   INVITE_URL,
   RESET_PASSWORD_URL,
+  CONFIRM_EMAIL_URL,
   WIZARD_URL,
 } from '../../../UrlMap'
 
@@ -48,6 +49,7 @@ vi.mock('../../../Pages/Auth/ForgotPasswordPage', () => ({
   default: () => `page: forgot, ${useIntl().formatMessage({ id: 'homePage' })}`,
 }))
 vi.mock('../../../Pages/Auth/ResetPasswordPage', () => page('reset'))
+vi.mock('../../../Pages/Auth/ConfirmEmailPage', () => page('confirm email'))
 vi.mock('../../../Pages/Auth/InvitePage', () => page('invite'))
 vi.mock('../../../Pages/Dashboard/DashBoardPage', () => page('dashboard'))
 vi.mock('../../../Pages/Media/MediaListPage', () => page('media'))
@@ -87,6 +89,7 @@ describe('Router', () => {
     [LOGIN_URL, 'login'],
     [FORGOT_PASSWORD_URL, 'forgot, Home Page'],
     [RESET_PASSWORD_URL, 'reset'],
+    [CONFIRM_EMAIL_URL, 'confirm email'],
     [INVITE_URL, 'invite'],
   ])('%s is public', async (path, name) => {
     renderAt(path)
