@@ -52,6 +52,10 @@ const WeChatInAppLoginBtn = ({
       })
       .catch((err) => {
         if (isCancelled === true) return
+        setState((s) => ({
+          ...s,
+          loading: false,
+        }))
         message.error(`Error when fetch login url ${Utils.getErrorMessage(err)}`)
       })
     return () => {

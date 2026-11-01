@@ -68,8 +68,7 @@ describe('ProtectedRoute', () => {
     expect(store.getState().auth.isAuthenticating).toBe(false)
   })
 
-  // Known bug: the stored company id survives, so the next user's requests carry the previous company header.
-  test.fails('clears the stored company id when the session fails', async () => {
+  test('clears the stored company id when the session fails', async () => {
     LocalStorageService.setCompanyId('co-1')
     vi.mocked(AuthService.getMe).mockRejectedValue(apiError('401'))
     renderProtected()
@@ -77,8 +76,7 @@ describe('ProtectedRoute', () => {
     expect(LocalStorageService.getCompanyId()).toBeNull()
   })
 
-  // Known bug: isAuthenticating starts false, so children mount (and fire effects) once before the session is known.
-  test.fails('does not mount protected content before the session is known', async () => {
+  test('does not mount protected content before the session is known', async () => {
     const mounted = vi.fn()
     const Child = () => {
       useEffect(() => mounted(), [])

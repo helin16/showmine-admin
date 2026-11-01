@@ -132,16 +132,14 @@ describe('LogoutBtn', () => {
     expect(screen.getByText('login page')).toBeInTheDocument()
   })
 
-  // Known bug: the stored company id survives, so the next user's requests carry the previous company header.
-  test.fails('clears the stored company id', () => {
+  test('clears the stored company id', () => {
     LocalStorageService.setCompanyId('co-1')
     renderBtn()
     confirmLogout()
     expect(LocalStorageService.getCompanyId()).toBeNull()
   })
 
-  // Known bug: removedAuthentication leaves the memberships of the previous user in the store.
-  test.fails('clears the memberships of the signed-out user', () => {
+  test('clears the memberships of the signed-out user', () => {
     const { store } = renderBtn({ auth: { companyUsers: [{ companyId: 'co-1' }] } })
     confirmLogout()
     expect(store.getState().auth.companyUsers).toBeUndefined()
@@ -233,8 +231,7 @@ describe('WeChatInAppLoginBtn', () => {
     await waitFor(() => expect(message.error).toHaveBeenCalledWith('Error when fetch login url down'))
   })
 
-  // Known bug: the failure path never clears loading, so the button spins forever.
-  test.fails('stops loading after a failure', async () => {
+  test('stops loading after a failure', async () => {
     vi.mocked(WeChatService.getWeChatInAppLoginUrl).mockRejectedValue(apiError('down'))
     renderWithProviders(<WeChatInAppLoginBtn />, { state: inWeChat })
     await waitFor(() => expect(message.error).toHaveBeenCalled())

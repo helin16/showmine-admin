@@ -97,8 +97,7 @@ describe('auth slice', () => {
     })
   })
 
-  // KNOWN BUG: the previous user's company memberships stay in the store after logout. Remove .fails once fixed.
-  test.fails('removedAuthentication drops the company memberships', () => {
+  test('removedAuthentication drops the company memberships', () => {
     expect(reduceAuth(session, removedAuthentication()).companyUsers).toBeUndefined()
   })
 })

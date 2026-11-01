@@ -14,6 +14,7 @@ const getLocalAuthToken = () => {
 
 const removeLocalAuthToken = () => {
   LocalStorageService.removeToken()
+  LocalStorageService.removeCompanyId()
 }
 
 const login = async (email: string, password: string) => {

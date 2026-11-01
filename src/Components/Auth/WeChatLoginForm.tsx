@@ -89,8 +89,9 @@ const WeChatLoginForm = () => {
     if(token === '') { return }
 
     let isCanceled = false;
+    let pollTimer: ReturnType<typeof setTimeout>;
     const start = (i = 0) => {
-      return setTimeout(() => {
+      pollTimer = setTimeout(() => {
         WeChatService.getUserFromQrcode(token)
           .then(resp => {
             if (isCanceled) return;
@@ -111,6 +112,7 @@ const WeChatLoginForm = () => {
           .catch(err => {
             if (isCanceled) return;
             message.error(Utils.getErrorMessage(err));
+            setShowReloadBtn(true);
           })
           .finally(() => {
             if (isCanceled) return;
@@ -121,6 +123,7 @@ const WeChatLoginForm = () => {
     start();
     return () => {
       isCanceled = true;
+      clearTimeout(pollTimer);
     }
   }, [loginToken])
 

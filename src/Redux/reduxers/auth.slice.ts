@@ -40,6 +40,7 @@ const actions = {
     isAuthenticated: undefined,
     user: undefined,
     company: undefined,
+    companyUsers: undefined,
     companyPackage: undefined,
   }),
 }

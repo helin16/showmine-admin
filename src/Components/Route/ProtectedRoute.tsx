@@ -80,7 +80,7 @@ const ProtectedRoute = ({ children }: any) => {
     }
   }, [dispatch, navigate, user])
 
-  if (isAuthenticating === true) {
+  if (isAuthenticating === true || !user) {
     return <AppInit />
   }
 

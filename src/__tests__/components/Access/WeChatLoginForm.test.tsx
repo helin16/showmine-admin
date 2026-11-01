@@ -139,8 +139,7 @@ test('reports a polling failure', async () => {
   expect(message.error).toHaveBeenCalledWith('poll down')
 })
 
-// Known bug: a failed poll stops polling without offering a refresh, so the QR code silently goes dead.
-test.fails('offers a refresh after a polling failure', async () => {
+test('offers a refresh after a polling failure', async () => {
   vi.mocked(WeChatService.getUserFromQrcode).mockRejectedValue(apiError('poll down'))
   renderForm()
   await flush()
@@ -172,8 +171,7 @@ test('ignores a QR response or poll failure that arrives after leaving the page'
   expect(message.error).not.toHaveBeenCalled()
 })
 
-// Known bug: the poll timer is not cleared on unmount, so one more request goes out after leaving the page.
-test.fails('sends no poll request after leaving the page', async () => {
+test('sends no poll request after leaving the page', async () => {
   vi.mocked(WeChatService.getUserFromQrcode).mockResolvedValue(waiting)
   const { unmount } = renderForm()
   await flush()
