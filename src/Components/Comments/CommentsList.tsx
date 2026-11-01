@@ -139,7 +139,7 @@ const CommentsList = ({ itemId }: { itemId?: string }) => {
         message.success('Comment deleted.');
       })
       .catch((err) => {
-        message.error(`Failed to delete comments: ${err.data.message}`);
+        message.error(`Failed to delete comments: ${Utils.getErrorMessage(err)}`);
       })
       .finally(() => {
         setState({

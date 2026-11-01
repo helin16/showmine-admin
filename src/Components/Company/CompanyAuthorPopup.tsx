@@ -64,7 +64,7 @@ const CompanyAuthorPopup = ({isShowing, onSaved, onPreSave, onPostSave, companyA
         message.success(intl.formatMessage({id: 'companyAuthorSaved', }, { authorName: resp.name || '' }));
         onSaved(resp);
       }).catch(err => {
-        message.error(err.response.data.message);
+        message.error(Utils.getErrorMessage(err));
       }).finally(() => {
         setIsSaving(false);
         if (onPostSave) {

@@ -74,8 +74,7 @@ describe('LoginForm', () => {
     expect(AuthService.getLocalAuthToken()).toBeNull()
   })
 
-  // Known bug: an error body without `errors` crashes the form on errors.join.
-  test.fails('shows a server error that has no errors list', async () => {
+  test('shows a server error that has no errors list', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined)
     class Boundary extends React.Component<{ children: React.ReactNode }, { failed: boolean }> {
       state = { failed: false }

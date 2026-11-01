@@ -74,7 +74,7 @@ const CompanyTags = () => {
       })
       .catch((err) => {
         if (isCancelled === true) return;
-        message.error(err.response.data.message);
+        message.error(Utils.getErrorMessage(err));
       })
       .finally(() => {
         if (isCancelled === true) return;
@@ -97,7 +97,7 @@ const CompanyTags = () => {
         message.success(`Tag (=${res.name}) deleted!`);
       })
       .catch(err => {
-        message.error(err.response.data.message);
+        message.error(Utils.getErrorMessage(err));
       })
       .finally(() => {
         setIsSaving(false);
@@ -126,7 +126,7 @@ const CompanyTags = () => {
         message.success(`Tag (=${res.name}) created!`);
       })
       .catch(err => {
-        message.error(err.response.data.message);
+        message.error(Utils.getErrorMessage(err));
       })
       .finally(() => {
         setIsSaving(false);

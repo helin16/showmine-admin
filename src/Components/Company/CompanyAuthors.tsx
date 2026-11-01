@@ -15,6 +15,7 @@ import MathHelper from '../../Helpers/MathHelper';
 import Spin from '../Form/Spin';
 import CompanyAuthorPopup from './CompanyAuthorPopup';
 import {useIntl} from 'react-intl';
+import Utils from '../../Services/Utils'
 
 const AuthorsWrapper = styled(InlineInputDiv)`
   .author-tag-div {
@@ -64,7 +65,7 @@ const CompanyAuthors = () => {
       .then(() => {
         message.success(intl.formatMessage({id: 'companyAuthorDeleted'}))
       }).catch(err => {
-        message.error(err.response.data.message);
+        message.error(Utils.getErrorMessage(err));
       }).finally(() => {
         setIsSaving(false);
         setCount(MathHelper.add(count, 1));

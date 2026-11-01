@@ -10,6 +10,7 @@ import TagService from '../../Services/TagService';
 import IItemTag from '../../Types/Article/IItemTag';
 import ItemTagService from '../../Services/ItemTagService';
 import MathHelper from '../../Helpers/MathHelper';
+import Utils from '../../Services/Utils'
 
 type iArticleEditorTags = {
   article: IArticle
@@ -46,7 +47,7 @@ const ArticleEditorTags = ({ article }: iArticleEditorTags) => {
       })
       .catch((error) => {
         if (isCancelled === true) return;
-        message.error(error.response.data.message)
+        message.error(Utils.getErrorMessage(error))
       })
       .finally(() => {
         if (isCancelled === true) return;
@@ -70,7 +71,7 @@ const ArticleEditorTags = ({ article }: iArticleEditorTags) => {
       message.success('Tags updated.')
       setCount(MathHelper.add(count, 1));
     }).catch(err => {
-      message.error(err.response.data.message)
+      message.error(Utils.getErrorMessage(err))
     }).finally(() => {
       setIsSaving(false);
     })

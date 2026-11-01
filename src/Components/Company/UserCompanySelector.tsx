@@ -8,6 +8,7 @@ import Select from '../Form/Select'
 import message from '../Form/message'
 import AuthService from '../../Services/AuthService';
 import CompanyService from '../../Services/CompanyService';
+import Utils from '../../Services/Utils'
 
 /**
  *
@@ -58,7 +59,7 @@ const UserCompanySelector = () => {
         }, {}))
       }).catch(err => {
         if (isCanceled === true) return;
-        message.error(`Error: ${err.response.data.message}`)
+        message.error(`Error: ${Utils.getErrorMessage(err)}`)
       }).finally(() => {
         if (isCanceled === true) return;
         setIsLoading(false);
@@ -84,7 +85,7 @@ const UserCompanySelector = () => {
         window.location.href = BACK_END_URL;
       })
       .catch(err => {
-        message.error(err.response.data.message)
+        message.error(Utils.getErrorMessage(err))
       })
       .finally(() => {
         setIsSaving(false);

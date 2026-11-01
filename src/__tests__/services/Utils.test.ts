@@ -192,3 +192,14 @@ describe('isJSON', () => {
     expect(Utils.isJSON(input)).toBe(true)
   })
 })
+
+describe('getErrorMessage', () => {
+  test.each([
+    [{ response: { data: { message: 'from the server' } } }, 'from the server'],
+    [{ data: { message: 'unwrapped' } }, 'unwrapped'],
+    [new Error('Network Error'), 'Network Error'],
+    [undefined, ''],
+  ])('reads %j', (err, expected) => {
+    expect(Utils.getErrorMessage(err)).toBe(expected)
+  })
+})

@@ -12,6 +12,7 @@ import Icons from '../Icons'
 import { useNavigate } from 'react-router-dom'
 import IError from '../../Types/IError'
 import Alert from '../Form/Alert'
+import Utils from '../../Services/Utils'
 
 type iLoginForm = {
   className?: string
@@ -55,7 +56,7 @@ const LoginForm = ({ className }: iLoginForm) => {
       .catch((err) => {
         setState({
           ...state,
-          signingErr: err.response.data,
+          signingErr: { message: Utils.getErrorMessage(err), errors: err.response?.data?.errors || [] },
           signing: false,
         })
       })

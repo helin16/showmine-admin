@@ -24,6 +24,7 @@ import Spin from '../../Components/Form/Spin'
 import MathHelper from '../../Helpers/MathHelper'
 import message from '../../Components/Form/message'
 import {ARTICLE_LIST_URL} from '../../UrlMap';
+import Utils from '../../Services/Utils'
 
 type iState = {
   fetching: boolean
@@ -67,7 +68,7 @@ const ArticleDetailsPage = () => {
       })
       .catch((err) => {
         if (isCancelled === true) return
-        message.error(err.response.data.message)
+        message.error(Utils.getErrorMessage(err))
         setState((s) => ({
           ...s,
           fetching: false,

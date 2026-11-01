@@ -7,6 +7,7 @@ import UsageWrapperLink from '../Stats/UsageWrapperLink'
 import Statistic from '../Form/Statistic'
 import message from '../Form/message';
 import Spin from '../Form/Spin';
+import Utils from '../../Services/Utils'
 
 const CompanyMediaUsage = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -33,7 +34,7 @@ const CompanyMediaUsage = () => {
         });
       })
       .catch(err => {
-        message.error(err.response.data.message);
+        message.error(Utils.getErrorMessage(err));
       })
       .finally(() => {
         setIsLoading(false);

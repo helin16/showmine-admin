@@ -17,6 +17,7 @@ import WeChatService from '../../Services/WeChatService';
 import message from '../Form/message';
 import MathHelper from '../../Helpers/MathHelper';
 import Button from '../Form/Button';
+import Utils from '../../Services/Utils'
 
 const WeChatQRCodeDiv = styled.div`
   text-align: center;
@@ -71,7 +72,7 @@ const WeChatLoginForm = () => {
       })
       .catch(err => {
         if (isCanceled) return;
-        message.error(err.response.data.message);
+        message.error(Utils.getErrorMessage(err));
       })
       .finally(() => {
         if (isCanceled) return;
@@ -109,7 +110,7 @@ const WeChatLoginForm = () => {
           })
           .catch(err => {
             if (isCanceled) return;
-            message.error(err.response.data.message);
+            message.error(Utils.getErrorMessage(err));
           })
           .finally(() => {
             if (isCanceled) return;

@@ -12,6 +12,7 @@ import BackendPageContentTitle from '../../Layouts/BackendPageContentTitle'
 import CompanyService from '../../Services/CompanyService';
 import message from '../../Components/Form/message';
 import MathHelper from '../../Helpers/MathHelper';
+import Utils from '../../Services/Utils'
 
 type iState = {
   company?: ICompany
@@ -50,7 +51,7 @@ const CompanyEditPage = () => {
           company: resp,
         }))
       }).catch(err => {
-        message.error(err.response.data.message);
+        message.error(Utils.getErrorMessage(err));
       }).finally(() => {
         setState((s) => ({
           ...s,

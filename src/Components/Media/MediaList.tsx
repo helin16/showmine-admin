@@ -13,6 +13,7 @@ import IResList from '../../Types/IResList'
 import IAsset from '../../Types/Asset/IAsset'
 import MathHelper from '../../Helpers/MathHelper';
 import {APP_WIDTHS} from '../../Constants';
+import Utils from '../../Services/Utils'
 
 export const MediaListWrapper = styled.div`
   .media-list-item {
@@ -70,7 +71,7 @@ const MediaList = ({ keyword }: iMediaList) => {
       });
     }).catch(err => {
       if (isCanceled) return;
-      message.error(err.response.data.message);
+      message.error(Utils.getErrorMessage(err));
     }).finally(() => {
       setIsLoading(false);
     })
@@ -91,7 +92,7 @@ const MediaList = ({ keyword }: iMediaList) => {
         (assetList?.data || []).splice(index, 1);
       })
       .catch((err) => {
-        message.error(`Failed to delete selected media: ${err.response.data.message}`);
+        message.error(`Failed to delete selected media: ${Utils.getErrorMessage(err)}`);
       })
       .finally(() => {
         setIsSaving(false);

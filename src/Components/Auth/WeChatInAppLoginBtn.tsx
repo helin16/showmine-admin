@@ -7,6 +7,7 @@ import { getFullUrl, THIRD_PARTY_AUTH_URL_WE_CHAT } from '../../UrlMap'
 import Button, { iButton } from '../Form/Button'
 import Icons from '../Icons'
 import message from '../Form/message'
+import Utils from '../../Services/Utils'
 
 export const weChatBtnStyle = {
   background: STYLE_WECHAT_COLOR,
@@ -51,7 +52,7 @@ const WeChatInAppLoginBtn = ({
       })
       .catch((err) => {
         if (isCancelled === true) return
-        message.error(`Error when fetch login url ${err.response.data.message}`)
+        message.error(`Error when fetch login url ${Utils.getErrorMessage(err)}`)
       })
     return () => {
       // eslint-disable-line

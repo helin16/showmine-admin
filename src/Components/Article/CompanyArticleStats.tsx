@@ -7,6 +7,7 @@ import Icons from '../Icons'
 import Spin from '../Form/Spin';
 import ArticleService from '../../Services/ArticleService';
 import message from '../Form/message';
+import Utils from '../../Services/Utils'
 
 const initState = {
   realValue: 0,
@@ -34,7 +35,7 @@ const CompanyArticleStats = () => {
         });
       })
       .catch(err => {
-        message.error(err.response.data.message);
+        message.error(Utils.getErrorMessage(err));
       })
       .finally(() => {
         setIsLoading(false);

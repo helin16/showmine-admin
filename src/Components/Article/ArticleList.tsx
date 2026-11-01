@@ -16,6 +16,7 @@ import ICompany from '../../Types/Company/ICompany';
 import {iSearchParams} from '../../Pages/Article/ArticleListPage';
 import {OP_LIKE} from '../../Helpers/ServiceHelper';
 import message from '../Form/message';
+import Utils from '../../Services/Utils'
 
 
 type iState = {
@@ -112,7 +113,7 @@ const ArticleList = ({ company, searchParams }: iArticleList) => {
             loadingMore: false,
           }));
         }
-        message.error(error.response.data.message);
+        message.error(Utils.getErrorMessage(error));
       })
       .finally(() => {
         setState((st) => ({

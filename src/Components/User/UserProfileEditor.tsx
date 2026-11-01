@@ -21,6 +21,7 @@ import Spin from '../Form/Spin'
 import IAsset, {ASSET_TYPE_USER_AVATAR} from '../../Types/Asset/IAsset'
 import Locale from '../Form/Locale'
 import {isAuthenticated as isAuthed} from '../../Redux/reduxers/auth.slice';
+import Utils from '../../Services/Utils'
 
 const Wrapper = styled.div``
 const UserProfileEditor = ({ user }: { user: IUser }) => {
@@ -49,7 +50,7 @@ const UserProfileEditor = ({ user }: { user: IUser }) => {
         dispatch(changeLocale({ ...appState, locale: `${res.user.languageCode}` === Locale.enUS.locale ? Locale.enUS : Locale.zhCN}));
       })
       .catch(err => {
-        message.error(err.response.data.message);
+        message.error(Utils.getErrorMessage(err));
       })
       .finally(() => {
         setState({

@@ -18,6 +18,7 @@ import ItemVisitService from '../../Services/ItemVisitService';
 import message from '../Form/message';
 import IUser from '../../Types/User/IUser';
 import IItemVisit from '../../Types/Article/IItemVisit';
+import Utils from '../../Services/Utils'
 
 const StatsWrapper = styled.div``
 
@@ -63,7 +64,7 @@ const VisitStats = ({ article }: { article?: IArticle }) => {
       })
       .catch(err => {
         if (isCancelled === true) return;
-        message.error(err.response.data.message)
+        message.error(Utils.getErrorMessage(err))
       })
       .finally(() => {
         if (isCancelled === true) return;

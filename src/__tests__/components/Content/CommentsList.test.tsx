@@ -184,8 +184,7 @@ describe('CommentsList', () => {
     expect(screen.getByText('Nice post')).toBeInTheDocument()
   })
 
-  // Bug: the handler reads err.data, but axios errors carry err.response.data, so the handler itself throws.
-  test.fails('reports a failed delete from a real server error', async () => {
+  test('reports a failed delete from a real server error', async () => {
     service.getAll.mockResolvedValue(listOf([makeComment()]))
     const { chain, thrown } = rejectedChain(httpError('denied'))
     service.deactivate.mockReturnValue(chain)

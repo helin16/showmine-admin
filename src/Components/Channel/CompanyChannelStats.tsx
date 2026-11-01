@@ -9,6 +9,7 @@ import message from '../Form/message';
 import Spin from '../Form/Spin';
 import ChannelService from '../../Services/ChannelService';
 import {COMPANY_CHANNELS_URL} from '../../UrlMap';
+import Utils from '../../Services/Utils'
 
 const CompanyChannelStats = () => {
   const { user } = useSelector((s: RootState) => s.auth)
@@ -33,7 +34,7 @@ const CompanyChannelStats = () => {
         });
       })
       .catch(err => {
-        message.error(err.response.data.message);
+        message.error(Utils.getErrorMessage(err));
       })
       .finally(() => {
         setIsLoading(false);

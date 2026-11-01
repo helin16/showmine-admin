@@ -180,8 +180,7 @@ describe('ArticleDetailsPage', () => {
     expect(screen.queryByText(/comments for/)).not.toBeInTheDocument()
   })
 
-  // Bug: the handler reads err.response.data.message, so a network error with no response throws inside .catch.
-  test.fails('reports a network error that has no server response', () => {
+  test('reports a network error that has no server response', () => {
     const { chain, thrown } = rejectedChain(new Error('Network Error'))
     service.getItemById.mockReturnValue(chain)
     render()

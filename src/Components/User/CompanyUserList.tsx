@@ -14,6 +14,7 @@ import Switch from '../Form/Switch'
 import CompanyUserService from '../../Services/CompanyUserService';
 import MathHelper from '../../Helpers/MathHelper';
 import IResList from '../../Types/IResList';
+import Utils from '../../Services/Utils'
 
 type iCompanyUserList = {
   searchKeyWord?: string
@@ -38,7 +39,7 @@ const CompanyUserList = ({ searchKeyWord }: iCompanyUserList) => {
       })
       .catch((err) => {
         if (isCancelled === true) return;
-        message.error(err.data.message);
+        message.error(Utils.getErrorMessage(err));
       })
       .finally(() => {
         setIsLoading(false);
@@ -70,7 +71,7 @@ const CompanyUserList = ({ searchKeyWord }: iCompanyUserList) => {
       })
       .catch((err) => {
         message.error(translate('error-remove', {
-          text1: companyUser.User?.nickName, text2: err.response.data.message,
+          text1: companyUser.User?.nickName, text2: Utils.getErrorMessage(err),
         }));
       })
       .finally(() => {
@@ -91,7 +92,7 @@ const CompanyUserList = ({ searchKeyWord }: iCompanyUserList) => {
       })
       .catch((err) => {
         message.error(translate('error-update', {
-          text1: companyUser.User?.nickName, text2: err.response.data.message,
+          text1: companyUser.User?.nickName, text2: Utils.getErrorMessage(err),
         }));
       })
       .finally(() => {

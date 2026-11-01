@@ -81,6 +81,9 @@ const isJSON = (strValue: string) => {
   }
 }
 
+// eslint-disable-next-line
+const getErrorMessage = (err: any): string => err?.response?.data?.message || err?.data?.message || err?.message || ''
+
 const Utils = {
   validateUrl,
   validateEmailFormat,
@@ -94,6 +97,7 @@ const Utils = {
   compareArrays,
   getUrlParameter,
   isJSON,
+  getErrorMessage,
 }
 
 export default Utils
