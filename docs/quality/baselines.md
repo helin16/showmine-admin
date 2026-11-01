@@ -7,6 +7,26 @@ Lighthouse default mobile profile unless noted (FR-014, FR-015).
 | Sign-in first-load JS, gzipped, Create React App | Build output | 771 KB | | 2026-10-31 |
 | Sign-in first-load JS, gzipped, Vite, no on-demand loading yet | Build output | 761 KB | | 2026-10-31 |
 | Production build time | Local | 42s | about 1s | 2026-10-31 |
+| Sign-in page, performance score | Lighthouse mobile, production | 87 | | 2026-11-02 |
+| Sign-in page, First Contentful Paint | Lighthouse mobile, production | 1.1 s | | 2026-11-02 |
+| Sign-in page, Largest Contentful Paint | Lighthouse mobile, production | 3.2 s | | 2026-11-02 |
+| Sign-in page, Speed Index | Lighthouse mobile, production | 2.5 s | | 2026-11-02 |
+| Sign-in page, Total Blocking Time | Lighthouse mobile, production | 239 ms | | 2026-11-02 |
+| Sign-in page, Cumulative Layout Shift | Lighthouse mobile, production | 0.011 | | 2026-11-02 |
+| Sign-in page, total transfer | Lighthouse mobile, production | 464 KB | | 2026-11-02 |
+| Sign-in page, Largest Contentful Paint as observed, no throttling | Lighthouse trace, production | 1.4 s | | 2026-11-02 |
+| Sign-in first-load JS, Vite gzip figure | Fresh build of `master` | 302.1 kB | | 2026-11-02 |
+| Sign-in first-load JS, as transferred | Lighthouse network record, production | 306.2 kB | | 2026-11-02 |
+
+## Production baseline, 2026-11-02
+
+Conditions: measured from an Australian home connection on one Mac, whose speed was not measured. Server location and WeChat users in China differ, so these figures do not describe a visit from China.
+
+Method: `npx lighthouse@13.6.0` with headless Chrome, `--only-categories=performance --skip-audits=bf-cache`, and the default simulated mobile throttling of 150 ms round trip, 1.6 Mbps and 4x CPU slowdown. Each figure is the median of 3 sequential runs of `https://admin.showmine.com/`, taken per metric. Largest Contentful Paint ranged from 3.0 to 3.3 s. The observed figure is Lighthouse's own unthrottled trace, ranging from 0.6 to 1.5 s.
+
+First-load JS stays under the 308 kB target. The transferred figure includes response headers. The build had no `.env`, so its chunk name differs from production's.
+
+Not measured: sign-in to dashboard, article list, media list and statistics. They need a signed-in session, and no sign-in was attempted, so T034 stays open for those journeys.
 
 ## On-demand loading (T114)
 
