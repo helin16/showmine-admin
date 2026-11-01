@@ -7,14 +7,9 @@ import message from '../../../Components/Form/message'
 import CommentService from '../../../Services/CommentService'
 import IComment from '../../../Types/Comments/IComment'
 import { renderWithProviders } from '../../testUtils'
-import { FIXED_DATE, deferred, httpError, listOf, rejectedChain } from '../Article/fixtures'
+import { FIXED_DATE, deferred, listOf } from '../Article/fixtures'
 
 vi.mock('../../../Services/CommentService')
-vi.mock('../../../Components/Form/RichTextEditor', () => ({
-  default: ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
-    <button onClick={() => onChange('my reply')}>editor: {value}</button>
-  ),
-}))
 vi.mock('../../../Components/Form/message', async (importOriginal) => ({
   ...(await importOriginal<object>()),
   default: { success: vi.fn(), error: vi.fn() },
@@ -24,7 +19,8 @@ const service = vi.mocked(CommentService)
 const makeComment = (overrides: object = {}) =>
   ({
     id: 'c1',
-    comments: 'Nice post',
+    text: 'Nice post',
+    comments: '<p>Nice post</p>',
     entityId: 'art-1',
     entityName: 'Item',
     createdAt: FIXED_DATE,
@@ -32,10 +28,13 @@ const makeComment = (overrides: object = {}) =>
     ...overrides,
   }) as unknown as IComment
 const lastWhere = () => JSON.parse(service.getAll.mock.lastCall?.[0]?.where as string)
-const removeFirst = async () => {
-  fireEvent.click(screen.getAllByRole('button', { name: /delete/i })[0])
-  fireEvent.click(await screen.findByRole('button', { name: 'Yes' }))
+const openReply = async () => {
+  fireEvent.click(screen.getAllByRole('button', { name: /reply/i })[0])
+  return screen.findByRole('dialog')
 }
+const typeReply = (dialog: HTMLElement, value: string) =>
+  fireEvent.change(within(dialog).getByRole('textbox', { name: 'Your reply' }), { target: { value } })
+const clickOk = (dialog: HTMLElement) => fireEvent.click(within(dialog).getByRole('button', { name: 'Send reply' }))
 
 const localeAfterImports = moment.locale()
 
@@ -54,15 +53,19 @@ describe('CommentsList', () => {
     service.getAll.mockResolvedValue(listOf([]))
     renderWithProviders(<CommentsList itemId="  " />)
     await screen.findByText('No data', { selector: '.ant-empty-description' })
-    expect(lastWhere()).toEqual({ isActive: true, entityName: 'Item' })
-    expect(service.getAll.mock.lastCall?.[0]?.currentPage).toBe(1)
+    expect(lastWhere()).toEqual({ isActive: true, entityName: 'Item', replyToId: null })
+    expect(service.getAll.mock.lastCall?.[0]).toMatchObject({
+      currentPage: 1,
+      include: 'CreatedBy,Replys.CreatedBy',
+      sort: 'createdAt:DESC',
+    })
   })
 
   test('fetches only the comments of the given article', async () => {
     service.getAll.mockResolvedValue(listOf([]))
     renderWithProviders(<CommentsList itemId="art-1" />)
     await screen.findByText('No data', { selector: '.ant-empty-description' })
-    expect(lastWhere()).toEqual({ isActive: true, entityName: 'Item', entityId: 'art-1' })
+    expect(lastWhere()).toEqual({ isActive: true, entityName: 'Item', replyToId: null, entityId: 'art-1' })
   })
 
   test('spins during the first load', async () => {
@@ -74,9 +77,9 @@ describe('CommentsList', () => {
     await waitFor(() => expect(container.querySelector('.ant-spin-spinning')).not.toBeInTheDocument())
   })
 
-  test('shows stored HTML as plain text, so markup in a comment never runs', async () => {
+  test('shows the plain text, never stored HTML', async () => {
     const stored = '<img src=x onerror="window.hacked = 1"><script>window.hacked = 1</script>'
-    service.getAll.mockResolvedValue(listOf([makeComment({ comments: stored })]))
+    service.getAll.mockResolvedValue(listOf([makeComment({ text: stored, comments: stored })]))
     const { container } = renderWithProviders(<CommentsList />)
 
     expect(await screen.findByText(stored)).toBeInTheDocument()
@@ -84,12 +87,21 @@ describe('CommentsList', () => {
     expect(container.querySelector('script')).not.toBeInTheDocument()
   })
 
-  // Guards the dangerouslySetInnerHTML in the reply panel, which is dead code today because `replys` is always [].
-  test('never renders stored HTML from replies', async () => {
-    const reply = makeComment({ id: 'r1', comments: '<img src=x onerror="window.hacked = 1">' })
-    service.getAll.mockResolvedValue(listOf([makeComment({ replys: [reply] })]))
+  test('shows active replies under a comment, oldest first, as plain text', async () => {
+    const stored = '<img src=x onerror="window.hacked = 1">'
+    const later = '2024-03-16T00:00:00.000Z'
+    const Replys = [
+      makeComment({ id: 'r2', text: 'Second reply', createdAt: later, CreatedBy: { nickName: 'Staff' } }),
+      makeComment({ id: 'r1', text: stored, comments: stored }),
+      makeComment({ id: 'r3', text: 'Deleted long ago', isActive: false }),
+    ]
+    service.getAll.mockResolvedValue(listOf([makeComment({ Replys })]))
     const { container } = renderWithProviders(<CommentsList />)
-    await screen.findByText('Nice post')
+
+    const texts = (await screen.findAllByText(/Second reply|onerror/)).map((node) => node.textContent)
+    expect(texts).toEqual([stored, 'Second reply'])
+    expect(screen.getAllByText('Staff').length).toBeGreaterThan(0)
+    expect(screen.queryByText('Deleted long ago')).not.toBeInTheDocument()
     expect(container.querySelector('img[src="x"]')).not.toBeInTheDocument()
   })
 
@@ -103,7 +115,7 @@ describe('CommentsList', () => {
   test('appends the next page and hides the button on the last one', async () => {
     service.getAll
       .mockResolvedValueOnce(listOf([makeComment()], { currentPage: 1, pages: 2 }))
-      .mockResolvedValueOnce(listOf([makeComment({ id: 'c2', comments: 'Second' })], { currentPage: 2, pages: 2 }))
+      .mockResolvedValueOnce(listOf([makeComment({ id: 'c2', text: 'Second' })], { currentPage: 2, pages: 2 }))
     renderWithProviders(<CommentsList />)
     fireEvent.click(await screen.findByRole('button', { name: /load more/i }))
 
@@ -140,67 +152,100 @@ describe('CommentsList', () => {
     expect(screen.queryByText('Nice post')).not.toBeInTheDocument()
   })
 
-  test('deletes a comment after confirmation and removes it from the list', async () => {
-    service.getAll.mockResolvedValue(listOf([makeComment(), makeComment({ id: 'c2', comments: 'Keep me' })]))
-    service.deactivate.mockResolvedValue(makeComment())
+  test('has no way to delete', async () => {
+    service.getAll.mockResolvedValue(listOf([makeComment({ Replys: [makeComment({ id: 'r1', text: 'A reply' })] })]))
     renderWithProviders(<CommentsList />)
-    await screen.findByText('Nice post')
-    await removeFirst()
-
-    await waitFor(() => expect(message.success).toHaveBeenCalledWith('Comment deleted.'))
-    expect(service.deactivate).toHaveBeenCalledWith('c1')
-    await waitFor(() => expect(screen.queryByText('Nice post')).not.toBeInTheDocument())
-    expect(screen.getByText('Keep me')).toBeInTheDocument()
+    await screen.findByText('A reply')
+    expect(screen.queryByRole('button', { name: /delete/i })).not.toBeInTheDocument()
   })
 
-  test('does not delete when the confirmation is declined', async () => {
+  test('hides a comment, marks it, and offers to show it again', async () => {
     service.getAll.mockResolvedValue(listOf([makeComment()]))
+    service.hide.mockResolvedValue(makeComment({ isHidden: true }))
     renderWithProviders(<CommentsList />)
     await screen.findByText('Nice post')
-    fireEvent.click(screen.getByRole('button', { name: /delete/i }))
-    fireEvent.click(await screen.findByRole('button', { name: 'No' }))
-    expect(service.deactivate).not.toHaveBeenCalled()
-  })
+    fireEvent.click(screen.getByRole('button', { name: /Hide/ }))
 
-  test('ignores delete for a comment that has no id', async () => {
-    service.getAll.mockResolvedValue(listOf([makeComment({ id: ' ' })]))
-    renderWithProviders(<CommentsList />)
-    await screen.findByText('Nice post')
-    await removeFirst()
-    expect(service.deactivate).not.toHaveBeenCalled()
-  })
-
-  test('keeps the comment when the delete fails with a `data` error', async () => {
-    service.getAll.mockResolvedValue(listOf([makeComment()]))
-    service.deactivate.mockRejectedValue({ data: { message: 'denied' } })
-    renderWithProviders(<CommentsList />)
-    await screen.findByText('Nice post')
-    await removeFirst()
-    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Failed to delete comments: denied'))
+    expect(await screen.findByText('Hidden from readers')).toBeInTheDocument()
+    expect(service.hide).toHaveBeenCalledWith('c1', true)
     expect(screen.getByText('Nice post')).toBeInTheDocument()
+
+    service.hide.mockResolvedValue(makeComment({ isHidden: false }))
+    fireEvent.click(screen.getByRole('button', { name: /Show/ }))
+    await waitFor(() => expect(screen.queryByText('Hidden from readers')).not.toBeInTheDocument())
+    expect(service.hide).toHaveBeenLastCalledWith('c1', false)
   })
 
-  test('reports a failed delete from a real server error', async () => {
-    service.getAll.mockResolvedValue(listOf([makeComment()]))
-    const { chain, thrown } = rejectedChain(httpError('denied'))
-    service.deactivate.mockReturnValue(chain)
+  test('hides a reply, and leaves its comment alone', async () => {
+    const reply = makeComment({ id: 'r1', text: 'A reply', replyToId: 'c1' })
+    service.getAll.mockResolvedValue(listOf([makeComment({ Replys: [reply] })]))
+    service.hide.mockResolvedValue({ ...reply, isHidden: true })
     renderWithProviders(<CommentsList />)
-    await screen.findByText('Nice post')
-    await removeFirst()
-    await waitFor(() => expect(service.deactivate).toHaveBeenCalled())
-    expect(thrown).toEqual([])
+    await screen.findByText('A reply')
+    fireEvent.click(screen.getAllByRole('button', { name: /Hide/ })[1])
+
+    expect(await screen.findByText('Hidden from readers')).toBeInTheDocument()
+    expect(service.hide).toHaveBeenCalledWith('r1', true)
+    expect(screen.getAllByRole('button', { name: /Hide/ })).toHaveLength(1)
   })
 
-  test('the reply dialog opens from a comment and keeps what is typed', async () => {
+  test('keeps the comment as it was when hiding fails', async () => {
+    service.getAll.mockResolvedValue(listOf([makeComment()]))
+    service.hide.mockRejectedValue(new Error('nope'))
+    renderWithProviders(<CommentsList />)
+    await screen.findByText('Nice post')
+    fireEvent.click(screen.getByRole('button', { name: /Hide/ }))
+
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Failed to update the comment: nope'))
+    expect(screen.queryByText('Hidden from readers')).not.toBeInTheDocument()
+  })
+
+  test('a reply goes out, shows under its comment, and closes the dialog', async () => {
+    service.getAll.mockResolvedValue(listOf([makeComment()]))
+    service.reply.mockResolvedValue(makeComment({ id: 'r1', text: 'Thanks', replyToId: 'c1' }))
+    renderWithProviders(<CommentsList />)
+    await screen.findByText('Nice post')
+    const dialog = await openReply()
+    typeReply(dialog, '  Thanks  ')
+    clickOk(dialog)
+
+    expect(await screen.findByText('Thanks')).toBeInTheDocument()
+    expect(service.reply).toHaveBeenCalledWith('c1', 'Thanks')
+    expect(message.success).toHaveBeenCalledWith('Reply sent.')
+    expect(document.querySelector('.ant-modal')?.className).toMatch(/leave/)
+  })
+
+  test('sends no empty reply', async () => {
     service.getAll.mockResolvedValue(listOf([makeComment()]))
     renderWithProviders(<CommentsList />)
     await screen.findByText('Nice post')
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: /reply/i }))
+    const dialog = await openReply()
+    typeReply(dialog, '   ')
+    clickOk(dialog)
+    expect(service.reply).not.toHaveBeenCalled()
+  })
 
-    const dialog = await screen.findByRole('dialog')
-    fireEvent.click(within(dialog).getByRole('button', { name: /editor/ }))
-    expect(within(dialog).getByRole('button', { name: 'editor: my reply' })).toBeInTheDocument()
+  test('a failed reply keeps the dialog and the text', async () => {
+    service.getAll.mockResolvedValue(listOf([makeComment()]))
+    service.reply.mockRejectedValue(new Error('nope'))
+    renderWithProviders(<CommentsList />)
+    await screen.findByText('Nice post')
+    const dialog = await openReply()
+    typeReply(dialog, 'Thanks')
+    clickOk(dialog)
+
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Failed to send the reply: nope'))
+    expect(within(dialog).getByRole('textbox', { name: 'Your reply' })).toHaveValue('Thanks')
+  })
+
+  test('offers no reply on a hidden comment or on a reply', async () => {
+    const reply = makeComment({ id: 'r1', text: 'A reply', replyToId: 'c1' })
+    service.getAll.mockResolvedValue(
+      listOf([makeComment({ isHidden: true, Replys: [reply] }), makeComment({ id: 'c2', text: 'Open' })]),
+    )
+    renderWithProviders(<CommentsList />)
+    await screen.findByText('Open')
+    expect(screen.getAllByRole('button', { name: /reply/i })).toHaveLength(1)
   })
 
   test('keeps dates in English by default', () => {
@@ -239,7 +284,7 @@ describe('CommentsList', () => {
     }
     service.getAll
       .mockResolvedValueOnce(listOf([makeComment()]))
-      .mockResolvedValueOnce(listOf([makeComment({ id: 'c2', comments: 'Other article' })]))
+      .mockResolvedValueOnce(listOf([makeComment({ id: 'c2', text: 'Other article' })]))
     renderWithProviders(<Parent />)
     await screen.findByText('Nice post')
     fireEvent.click(screen.getByRole('button', { name: 'next article' }))

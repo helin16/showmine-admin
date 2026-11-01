@@ -11,24 +11,20 @@ const getItemById = async (id: string, params?: iConfigParams, config?: iConfigP
   return AppService.get(`${endPoint}/${id}`, params, config).then((resp) => resp.data)
 }
 
-const create = async (params: iConfigParams, config?: iConfigParams): Promise<IComment> => {
-  return AppService.post(endPoint, params, config).then((resp) => resp.data)
+// Comments can't be created, edited or deleted: staff hide them, and reply to them.
+const hide = async (id: string, isHidden: boolean, config?: iConfigParams): Promise<IComment> => {
+  return AppService.put(`${endPoint}/${id}/hide`, { isHidden }, config).then((resp) => resp.data)
 }
 
-const update = async (id: string, params: iConfigParams, config?: iConfigParams): Promise<IComment> => {
-  return AppService.put(`${endPoint}/${id}`, params, config).then((resp) => resp.data)
-}
-
-const deactivate = async (id: string, params?: iConfigParams, config?: iConfigParams): Promise<IComment> => {
-  return AppService.delete(`${endPoint}/${id}`, params, config).then((resp) => resp.data)
+const reply = async (id: string, comments: string, config?: iConfigParams): Promise<IComment> => {
+  return AppService.post(`${endPoint}/${id}/reply`, { comments }, config).then((resp) => resp.data)
 }
 
 const CommentService = {
   getAll,
   getItemById,
-  create,
-  update,
-  deactivate,
+  hide,
+  reply,
 }
 
 export default CommentService

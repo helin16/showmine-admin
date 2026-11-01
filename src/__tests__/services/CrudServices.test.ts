@@ -45,12 +45,39 @@ const readable: ServiceRow[] = [
   ['UserService', UserService, '/user'],
   ['WeChatUserService', WeChatUserService, '/weChatUser'],
 ]
-const writable = readable.filter(([name]) => name !== 'ChannelScriptService')
+// Comments only change through hide and reply.
+const writable = readable.filter(([name]) => !['ChannelScriptService', 'CommentService'].includes(name))
 
 beforeEach(() => {
   process.env.REACT_APP_REST_END_POINT = API
   LocalStorageService.setToken('tok')
   LocalStorageService.setCompanyId('co-1')
+})
+
+describe('CommentService', () => {
+  test('hide puts the new state', async () => {
+    vi.mocked(axios.put).mockResolvedValue({ data: body })
+    await expect(CommentService.hide('c1', true)).resolves.toEqual(body)
+    expect(axios.put).toHaveBeenCalledExactlyOnceWith(
+      `${API}/comment/c1/hide`,
+      { isHidden: true },
+      { headers: requestHeaders },
+    )
+  })
+
+  test('reply posts the text', async () => {
+    vi.mocked(axios.post).mockResolvedValue({ data: body })
+    await expect(CommentService.reply('c1', 'thanks')).resolves.toEqual(body)
+    expect(axios.post).toHaveBeenCalledExactlyOnceWith(
+      `${API}/comment/c1/reply`,
+      { comments: 'thanks' },
+      { headers: requestHeaders },
+    )
+  })
+
+  test.each(['create', 'update', 'deactivate'])('has no %s', (name) => {
+    expect(CommentService).not.toHaveProperty(name)
+  })
 })
 
 describe('CompanyUserService invites', () => {

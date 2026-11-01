@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { Input } from 'antd'
 import { Link } from 'react-router-dom'
 import moment from 'moment'
 import styled from 'styled-components'
@@ -16,238 +17,146 @@ import UserAvatar from '../User/UserAvatar'
 import Button from '../Form/Button'
 import Icons from '../Icons'
 import Comment from '../Form/Comment'
-import PopConfirm from '../Form/Popconfirm'
 import Modal from '../Form/Modal'
-import Collapse, { Panel } from '../Form/Collapse'
-import RichTextEditor from '../Form/RichTextEditor'
-import MathHelper from '../../Helpers/MathHelper';
-import IArticle from '../../Types/Article/IArticle';
+import Tag from '../Form/Tag'
+import MathHelper from '../../Helpers/MathHelper'
 
-// const { Panel } = Collapse;
+const MAX_REPLY_LENGTH = 1000
 
-type iCommentListItem = IComment & {
-  loading?: boolean
-}
-
-const CommentDiv = styled.div``
-const CommentArticleDiv = styled.div``
-const ReplyToDiv = styled.div`
-  color: rgba(0, 0, 0, 0.45);
+const CommentDiv = styled.div`
+  white-space: pre-wrap;
 `
+const CommentArticleDiv = styled.div``
 
 type iState = {
   initLoading: boolean
   loadingMore: boolean
   commentsList?: IResList<IComment>
   pageNo: number
-  newReplyContent: string
-  replyItemId: string | undefined
-  replyId: string | undefined
-  commentIndex: number
+  replyTo?: IComment
+  replyText: string
   isSaving: boolean
 }
 const initState: iState = {
   initLoading: false,
   loadingMore: false,
   pageNo: 1,
-  newReplyContent: '',
-  replyItemId: '',
-  replyId: '',
-  commentIndex: 0,
+  replyText: '',
   isSaving: false,
 }
 
+const getReplies = (comment: IComment) =>
+  (comment.Replys || [])
+    .filter((reply) => reply.isActive !== false)
+    .sort((a, b) => moment(a.createdAt).diff(moment(b.createdAt)))
+
 const CommentsListContent = ({ itemId }: { itemId?: string }) => {
-  const currentItemId = `${itemId || ''}`.trim();
-  const [state, setState] = useState(initState);
-  /**
-   * getting all comments for an company
-   */
+  const currentItemId = `${itemId || ''}`.trim()
+  const [state, setState] = useState(initState)
+
   useEffect(() => {
     setState((s) => ({
       ...s,
       initLoading: state.pageNo === 1,
       loadingMore: state.pageNo > 1,
-    }));
-    let isCancelled = false;
+    }))
+    let isCancelled = false
     CommentService.getAll({
-        where: JSON.stringify({
-          isActive: true,
-          entityName: 'Item',
-          ...(`${itemId || ''}`.trim() === '' ? {}: { entityId: itemId, entityName: 'Item' })
-        }),
-        currentPage: state.pageNo
-      })
+      where: JSON.stringify({
+        isActive: true,
+        entityName: 'Item',
+        replyToId: null,
+        ...(currentItemId === '' ? {} : { entityId: currentItemId }),
+      }),
+      include: 'CreatedBy,Replys.CreatedBy',
+      sort: 'createdAt:DESC',
+      currentPage: state.pageNo,
+    })
       .then((res) => {
-        if (isCancelled === true) return;
+        if (isCancelled === true) return
         setState((s) => ({
           ...s,
           commentsList: s.commentsList ? Utils.concatIRestList(s.commentsList, res) : res,
-          initLoading: false,
-          loadingMore: false,
-          newReplyContent: '',
-          replyItemId: '',
-          replyId: '',
-          commentIndex: 0,
-        }));
+        }))
       })
       .catch((err) => {
-        if (isCancelled === true) return;
-        message.error(`Error when fetching comments: ${err.message}`);
+        if (isCancelled === true) return
+        message.error(`Error when fetching comments: ${err.message}`)
       })
       .finally(() => {
-        setState((s) => ({
-          ...s,
-          initLoading: false,
-          loadingMore: false,
-          newReplyContent: '',
-          replyItemId: '',
-          replyId: '',
-          commentIndex: 0,
-        }));
-      });
+        setState((s) => ({ ...s, initLoading: false, loadingMore: false }))
+      })
     return () => { // eslint-disable-line
-      isCancelled = true;
-    };
-  }, [currentItemId, state.pageNo]);
-  /**
-   *
-   */
-  const delComment = (comment: IComment, index: number, replyIndex?: number) => {
-    const commentId = `${comment.id || ''}`.trim();
-    if (commentId === '') {
-      return;
+      isCancelled = true
     }
+  }, [currentItemId, state.pageNo])
 
-    setState({
-      ...state,
-      isSaving: true,
+  // Replies sit inside their comment, so one change can be at either level.
+  const updateRow = (id: string | undefined, change: (row: IComment) => IComment) => {
+    setState((s) => {
+      if (!s.commentsList) return s
+      const data = s.commentsList.data.map((row) => {
+        if (row.id === id) return change(row)
+        return { ...row, Replys: row.Replys?.map((reply) => (reply.id === id ? change(reply) : reply)) }
+      })
+      return { ...s, commentsList: { ...s.commentsList, data } }
     })
-    CommentService.deactivate(commentId)
-      .then(() => {
-        if (replyIndex === 0 || !!replyIndex) {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          (state.commentsList?.data || [])[index].replys.splice(replyIndex, 1);
-        } else {
-          (state.commentsList?.data || []).splice(index, 1);
-          setState({
-            ...state,
-            commentsList: state.commentsList,
-          });
-        }
-        message.success('Comment deleted.');
+  }
+
+  const toggleHidden = (comment: IComment) => {
+    const isHidden = comment.isHidden !== true
+    CommentService.hide(`${comment.id}`, isHidden)
+      .then(() => updateRow(comment.id, (row) => ({ ...row, isHidden })))
+      .catch((err) => {
+        message.error(translate('comment-hide-failed', { message: Utils.getErrorMessage(err) }))
+      })
+  }
+
+  const closeReply = () => setState((s) => ({ ...s, replyTo: undefined, replyText: '' }))
+
+  const sendReply = () => {
+    const text = state.replyText.trim()
+    const { replyTo } = state
+    if (!replyTo || text === '') return
+    setState((s) => ({ ...s, isSaving: true }))
+    CommentService.reply(`${replyTo.id}`, text)
+      .then((reply) => {
+        updateRow(replyTo.id, (row) => ({ ...row, Replys: [...(row.Replys || []), reply] }))
+        message.success(translate('comment-reply-sent'))
+        closeReply()
       })
       .catch((err) => {
-        message.error(`Failed to delete comments: ${Utils.getErrorMessage(err)}`);
+        message.error(translate('comment-reply-failed', { message: Utils.getErrorMessage(err) }))
       })
-      .finally(() => {
-        setState({
-          ...state,
-          isSaving: false,
-        })
-      });
-  };
-  const showModal = (replyID: string|undefined, replyItemID: string, idx: number) => {
-    setState({
-      ...state,
-      replyId: replyID,
-      replyItemId: replyItemID,
-      newReplyContent: '',
-      commentIndex: idx,
-    })
-  };
-
-  // const handleOk = () => {
-  //   const commentIndex = state.commentIndex || 0;
-  //   setState({
-  //     ...state,
-  //     isSaving: true,
-  //   })
-  //   CommentService.create({
-  //       content:
-  //     })
-  //     .then((res) => {
-  //       // @ts-ignore
-  //       (state.commentsList?.data || [])[commentIndex].replys.unshift(res);
-  //     })
-  //     .catch((err) => {
-  //       message.error(`Failed to delete comments: ${err.data.message}`);
-  //     })
-  //     .finally(() => {
-  //       setState({
-  //         ...state,
-  //         isSaving: false,
-  //       })
-  //     })
-  //   ;
-  // };
-  //
-  const handleCancel = () => {
-    setState({
-      ...state,
-      replyId: undefined,
-      replyItemId: undefined,
-      newReplyContent: '',
-      commentIndex: 0,
-    })
-  };
-
-  const onTextChange = (newValue: string) => {
-    setState({
-      ...state,
-      newReplyContent: newValue,
-    })
-  };
-
-  const getSubComments = (comment: IComment, index: number) => {
-    const replys: IComment[] = [];
-    if (replys.length <= 0) {
-      return null;
-    }
-    return (
-      <Collapse defaultActiveKey={[]} ghost>
-        <Panel header={translate('len-comments', { num: replys.length })} key="1">
-          {
-            replys.map((reply: IComment, replyIndex) => (
-              <Comment
-                key={reply.id}
-                author={reply.CreatedBy ? reply.CreatedBy.nickName : '*'}
-                avatar={<UserAvatar user={reply.CreatedBy}/>}
-                actions={[
-                  <Button type="link" id={reply.id} onClick={() => showModal(reply.id, reply.entityId, index)} key={'link'}>
-                    <Icons.CommentOutlined />
-                    {translate('reply')}
-                  </Button>,
-                  <PopConfirm
-                    title={translate('delete-confirm')}
-                    onConfirm={() => {
-                      delComment(reply, index, replyIndex);
-                    }}
-                    okText={translate('yes')}
-                    cancelText={translate('no')}
-                    key={'delete'}
-                  >
-                    <Button danger type="text">
-                      <Icons.DeleteOutlined />
-                      {translate('delete')}
-                    </Button>
-                  </PopConfirm>,
-                ]}
-                content={
-                  <CommentDiv>
-                    <ReplyToDiv>To: {reply.ReplyTo?.CreatedBy?.nickName || '*'}</ReplyToDiv>
-                    <div dangerouslySetInnerHTML={{ __html: reply.comments }}></div>
-                  </CommentDiv>
-                }
-                datetime={<span>{moment(comment.createdAt).format('lll')}</span>}
-              />
-            ))
-          }
-        </Panel>
-      </Collapse>
-    )
+      .finally(() => setState((s) => ({ ...s, isSaving: false })))
   }
+
+  const getHideBtn = (comment: IComment) => (
+    <Button size={'small'} type="text" onClick={() => toggleHidden(comment)}>
+      <Icons.EyeOutlined />
+      {translate(comment.isHidden === true ? 'comment-show' : 'comment-hide')}
+    </Button>
+  )
+
+  const getHiddenTag = (comment: IComment) =>
+    comment.isHidden === true ? <Tag>{translate('comment-hidden')}</Tag> : null
+
+  const getReplyRows = (comment: IComment) =>
+    getReplies(comment).map((reply) => (
+      <Comment
+        key={reply.id}
+        author={reply.CreatedBy?.nickName || ''}
+        avatar={<UserAvatar user={reply.CreatedBy} />}
+        actions={getHideBtn(reply)}
+        content={
+          <CommentDiv>
+            {getHiddenTag(reply)}
+            {reply.text}
+          </CommentDiv>
+        }
+        datetime={<span>{moment(reply.createdAt).format('lll')}</span>}
+      />
+    ))
 
   const getCommentsList = () => {
     return (
@@ -263,51 +172,45 @@ const CommentsListContent = ({ itemId }: { itemId?: string }) => {
         }
         itemLayout={'horizontal'}
         dataSource={state.commentsList?.data || []}
-        renderItem={(comment: IComment, index: number) => {
+        renderItem={(comment: IComment) => {
           return (
             <ListItem key={comment.id}>
               <Comment
                 author={comment.CreatedBy?.nickName || ''}
-                avatar={<UserAvatar user={comment.CreatedBy}/>}
+                avatar={<UserAvatar user={comment.CreatedBy} />}
                 actions={
                   <>
-                    <Button size={'small'} type="link" id={comment.id} onClick={() => showModal(comment.id, comment.entityId, index)}>
-                      <Icons.CommentOutlined />
-                      {translate('reply')}
-                    </Button>
-                    <PopConfirm
-                      title={translate('delete-confirm')}
-                      onConfirm={() => {
-                        delComment(comment, index);
-                      }}
-                      okText={translate('yes')}
-                      cancelText={translate('no')}
-                    >
-                      <Button danger type="text" size={'small'} >
-                        <Icons.DeleteOutlined />
-                        {translate('delete')}
+                    {comment.isHidden === true ? null : (
+                      <Button
+                        size={'small'}
+                        type="link"
+                        id={comment.id}
+                        onClick={() => setState((s) => ({ ...s, replyTo: comment, replyText: '' }))}
+                      >
+                        <Icons.CommentOutlined />
+                        {translate('reply')}
                       </Button>
-                    </PopConfirm>
+                    )}
+                    {getHideBtn(comment)}
                   </>
                 }
                 content={
                   <CommentDiv>
                     <CommentArticleDiv>
                       <Tooltip title={'comments'}>
-                        <Link to={getUrl(ARTICLE_DETAILS_URL, ':id', comment.entityId)}>
-                          {'Article'}
-                        </Link>
+                        <Link to={getUrl(ARTICLE_DETAILS_URL, ':id', comment.entityId)}>{'Article'}</Link>
                       </Tooltip>
                     </CommentArticleDiv>
-                    {comment.comments}
+                    {getHiddenTag(comment)}
+                    {comment.text}
                   </CommentDiv>
                 }
                 datetime={<span>{moment(comment.createdAt).format('lll')}</span>}
               >
-                {getSubComments(comment, index)}
+                {getReplyRows(comment)}
               </Comment>
             </ListItem>
-          );
+          )
         }}
       />
     )
@@ -316,29 +219,34 @@ const CommentsListContent = ({ itemId }: { itemId?: string }) => {
   const getReplyPopup = () => {
     return (
       <Modal
-        title={'Reply to Comments'}
-        open={`${state.replyId || ''}`.trim() !== ''}
-        // onOk={handleOk}
-        onCancel={handleCancel}
-        width={'80%'}
+        title={translate('comment-reply-title')}
+        open={!!state.replyTo}
+        onOk={sendReply}
+        okText={translate('comment-reply-send')}
+        okButtonProps={{ loading: state.isSaving }}
+        onCancel={closeReply}
       >
-        <RichTextEditor
-          value={state.newReplyContent}
-          onChange={(newValue: string) => onTextChange(newValue)}
-          placeholder={'Start to reply...'}
+        <Input.TextArea
+          aria-label={translate('comment-reply-label')}
+          placeholder={translate('comment-reply-label')}
+          value={state.replyText}
+          maxLength={MAX_REPLY_LENGTH}
+          rows={4}
+          onChange={(e) => {
+            const replyText = e.target.value
+            setState((s) => ({ ...s, replyText }))
+          }}
         />
       </Modal>
     )
   }
-  /**
-   *
-   */
+
   return (
     <>
       {getCommentsList()}
       {getReplyPopup()}
     </>
-  );
+  )
 }
 
 // A new article is a new list, so the key resets the page and the results.
