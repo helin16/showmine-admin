@@ -1,6 +1,7 @@
 import React from 'react'
 import { act, fireEvent, screen, waitFor } from '@testing-library/react'
 import { vi } from 'vitest'
+import LocalStorageService from '../../../Services/LocalStorageService'
 import { apiError, deferred, stubMatchMedia, type } from '../Access/domHelpers'
 import { renderWithProviders } from '../../testUtils'
 import UserCompanySelector from '../../../Components/Company/UserCompanySelector'
@@ -65,6 +66,7 @@ describe('UserCompanySelector', () => {
       fireEvent.click(await option('Globex'))
       expect(AuthService.updateMe).toHaveBeenCalledExactlyOnceWith({ lastVisitCompanyId: 'co-2' })
       await waitFor(() => expect(window.location.href).toBe(BACK_END_URL))
+      expect(LocalStorageService.getCompanyId()).toBe('co-2')
     })
 
     test('a failed switch stays on the current company and reports the error', async () => {

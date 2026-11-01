@@ -4,6 +4,7 @@ import styled from 'styled-components'
 import moment from 'moment'
 import { RootState } from '../../Redux/makeReduxStore'
 import CompanyService from '../../Services/CompanyService'
+import LocalStorageService from '../../Services/LocalStorageService'
 import InvalidAccessPanel from '../Error/InvalidAccessPanel'
 import { BACK_END_URL } from '../../UrlMap'
 import ICompany from '../../Types/Company/ICompany'
@@ -178,12 +179,13 @@ const CompanyList = () => {
     )
   }
 
-  // The company id header comes from localStorage, which ProtectedRoute only sets on a full load.
+  // The company id header comes from this tab's storage, and everything already loaded belongs to the old company.
   const switchCompany = (comp: ICompany) => {
     AuthService.updateMe({
       lastVisitCompanyId: comp.id,
     })
       .then(() => {
+        LocalStorageService.setCompanyId(`${comp.id}`)
         window.location.href = BACK_END_URL
       })
       .catch((err) => {

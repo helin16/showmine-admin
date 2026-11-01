@@ -49,9 +49,11 @@ const ProtectedRoute = ({ children, allowNoCompany = false }: any) => {
       .then((res) => {
         if (isCancelled === true) return
         // A notification names its company, as staff can be in several. Only one of theirs counts, and the API still decides.
-        const linkedCompanyId = new URLSearchParams(search).get('company')
-        const linkedCompany = res.companies.find(({ companyId }) => companyId === linkedCompanyId)?.Company
-        let userCompany = linkedCompany
+        const findCompany = (id: string | null | undefined) =>
+          res.companies.find(({ companyId }) => companyId === id)?.Company
+        // Then what this tab was on, so a reload stays there. A new tab has nothing yet.
+        let userCompany =
+          findCompany(new URLSearchParams(search).get('company')) || findCompany(LocalStorageService.getCompanyId())
         if (!userCompany && res.user.LastVisitCompany) {
           userCompany = res.user.LastVisitCompany
         } else if (!userCompany && res.companies.length > 0) {

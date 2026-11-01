@@ -105,6 +105,44 @@ describe('choosing the company from the link', () => {
   })
 })
 
+describe('a tab keeps its own company', () => {
+  beforeEach(() => LocalStorageService.setToken('tok'))
+
+  test('a reload stays on it, whatever the last visited company says', async () => {
+    LocalStorageService.setCompanyId('co-2')
+    vi.mocked(AuthService.getMe).mockResolvedValue(session())
+    renderApp('/b/articles/art-1')
+    expect(await screen.findByText(/in Globex sending co-2/)).toBeInTheDocument()
+  })
+
+  test('a link beats it', async () => {
+    LocalStorageService.setCompanyId('co-1')
+    vi.mocked(AuthService.getMe).mockResolvedValue(session())
+    renderApp(LINK)
+    expect(await screen.findByText(/in Globex sending co-2/)).toBeInTheDocument()
+  })
+
+  test.each([['co-3', 'still pending'], ['co-9', 'no longer theirs']])('%s, %s, is dropped', async (companyId) => {
+    LocalStorageService.setCompanyId(companyId)
+    vi.mocked(AuthService.getMe).mockResolvedValue(session())
+    renderApp('/b/articles/art-1')
+    expect(await screen.findByText(/in Acme sending co-1/)).toBeInTheDocument()
+  })
+
+  test('a new tab falls back to the last visited company, and shows no page until it knows', async () => {
+    let answer = (_: never) => undefined as void
+    vi.mocked(AuthService.getMe).mockReturnValue(new Promise((resolve) => (answer = resolve)) as never)
+    renderApp('/b/articles/art-1')
+
+    await waitFor(() => expect(AuthService.getMe).toHaveBeenCalled())
+    expect(screen.queryByText(/sending/)).not.toBeInTheDocument()
+    expect(AppService.getHeaders().headers).not.toHaveProperty('comid')
+
+    answer(session())
+    expect(await screen.findByText(/in Acme sending co-1/)).toBeInTheDocument()
+  })
+})
+
 describe('signing in on the way', () => {
   test('the password form comes back to the whole link', async () => {
     vi.mocked(AuthService.getMe).mockRejectedValueOnce(new Error('no token')).mockResolvedValue(session())

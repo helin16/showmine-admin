@@ -7,6 +7,7 @@ import Spin from '../Form/Spin'
 import Select from '../Form/Select'
 import message from '../Form/message'
 import AuthService from '../../Services/AuthService';
+import LocalStorageService from '../../Services/LocalStorageService';
 import CompanyService from '../../Services/CompanyService';
 import Utils from '../../Services/Utils'
 
@@ -82,6 +83,7 @@ const UserCompanySelector = () => {
         }),
       ])
       .then(res => {
+        LocalStorageService.setCompanyId(newCompanyId);
         window.location.href = BACK_END_URL;
       })
       .catch(err => {

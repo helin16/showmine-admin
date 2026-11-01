@@ -25,21 +25,28 @@ const setToken = (newToken: string) => {
   }
 }
 
+// Per tab, so a link that opens one company can't change what a tab open on another sends.
 const setCompanyId = (compId: string) => {
-  if (typeof window !== 'undefined') {
-    return localStorage.setItem(getCompanyIdName(), compId)
+  try {
+    sessionStorage.setItem(getCompanyIdName(), compId)
+  } catch {
+    // Company calls then send no company, and the API refuses them.
   }
 }
 
 const getCompanyId = () => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem(getCompanyIdName())
+  try {
+    return sessionStorage.getItem(getCompanyIdName())
+  } catch {
+    return null
   }
 }
 
 const removeCompanyId = () => {
-  if (typeof window !== 'undefined') {
-    return localStorage.removeItem(getCompanyIdName())
+  try {
+    sessionStorage.removeItem(getCompanyIdName())
+  } catch {
+    // Nothing could have been saved either.
   }
 }
 

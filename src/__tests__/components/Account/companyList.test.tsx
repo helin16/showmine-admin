@@ -2,6 +2,7 @@
 import React from 'react'
 import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { vi } from 'vitest'
+import LocalStorageService from '../../../Services/LocalStorageService'
 import { apiError, deferred, stubMatchMedia, type } from '../Access/domHelpers'
 import { renderWithProviders } from '../../testUtils'
 import CompanyList from '../../../Components/Company/CompanyList'
@@ -161,6 +162,7 @@ describe('switching company', () => {
     fireEvent.click(await switchBtn())
     expect(AuthService.updateMe).toHaveBeenCalledExactlyOnceWith({ lastVisitCompanyId: 'co-2' })
     await waitFor(() => expect(window.location.href).toBe(BACK_END_URL))
+    expect(LocalStorageService.getCompanyId()).toBe('co-2')
   })
 
   test('a failed switch stays put and survives a network error', async () => {

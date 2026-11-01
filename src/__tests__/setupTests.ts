@@ -28,6 +28,7 @@ afterEach(() => {
   vi.resetAllMocks()
   vi.clearAllTimers()
   localStorage.clear()
+  sessionStorage.clear()
 })
 
 afterAll(() => {
