@@ -1,15 +1,16 @@
-import { APIRequestContext, Browser, BrowserContext, expect, Page, request, test } from '@playwright/test'
+import { randomUUID } from 'crypto'
+import { APIRequestContext, Browser, BrowserContext, expect, Page, test } from '@playwright/test'
+import { COMPANY_NAME, PREFIX, READER_URL, signIn } from './support'
 
 const { E2E_EMAIL, E2E_PASSWORD } = process.env
-const API_URL = process.env.E2E_API_URL || 'https://i.showmine66.com'
-const READER_URL = process.env.E2E_READER_URL || 'https://r.showmine66.com'
-const COMPANY_NAME = process.env.E2E_COMPANY_NAME || 'test company'
-const COMPANY_ID = process.env.E2E_COMPANY_ID || 'b3f1fdbd-c990-493b-aedc-0f0776badf59'
-const PREFIX = 'e2e-'
 const ONE_PIXEL_PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
   'base64',
 )
+// A button's icon is part of its name, so these can't be anchored.
+const PUBLISH = /publish|发布/i
+const CONFIRM_PUBLISH = /yes|是的/i
+const FORBIDDEN = 'Sorry, you are not authorized to access this page.'
 
 test.describe.configure({ mode: 'serial' })
 test.skip(!E2E_EMAIL || !E2E_PASSWORD, 'Needs the test login in e2e/.env.local')
@@ -20,8 +21,11 @@ let page: Page
 let api: APIRequestContext
 let unauthenticatedApi: APIRequestContext
 let articleId = ''
+let uploads: Asset[] = []
+let isCleanedUp = false
 
 type Row = { id: string; title?: string; fileName?: string }
+type Asset = { id: string; url: string }
 
 const deleteRows = async (path: string, field: 'title' | 'fileName') => {
   const where = encodeURIComponent(JSON.stringify({ isActive: true, [field]: { OP_LIKE: `${PREFIX}%` } }))
@@ -34,47 +38,39 @@ const deleteRows = async (path: string, field: 'title' | 'fileName') => {
   return rows.length
 }
 
+const expectNoActiveChannels = async () => {
+  const where = encodeURIComponent(JSON.stringify({ isActive: true }))
+  const response = await api.get(`/channel?where=${where}&perPage=9999&currentPage=1`)
+  expect(response.ok(), 'listing the channels').toBeTruthy()
+  const channels: Row[] = (await response.json()).data
+  expect(channels, 'the test company must have no active channels: publishing could post to WeChat').toHaveLength(0)
+}
+
+const upload = async (fileName: string) => {
+  const uploaded = await api.post('/asset/upload', {
+    multipart: { file: { name: fileName, mimeType: 'image/png', buffer: ONE_PIXEL_PNG } },
+  })
+  expect(uploaded.ok()).toBeTruthy()
+  return (await uploaded.json()) as Asset
+}
+
+const cleanUp = async () => {
+  await deleteRows('/item', 'title')
+  await deleteRows('/asset', 'fileName')
+  expect(await deleteRows('/item', 'title'), 'no test articles should remain').toBe(0)
+  expect(await deleteRows('/asset', 'fileName'), 'no test files should remain').toBe(0)
+  await expectNoActiveChannels()
+  isCleanedUp = true
+}
+
 test.beforeAll(async ({ browser }: { browser: Browser }) => {
-  context = await browser.newContext()
-  page = await context.newPage()
-
-  const apiHeaders: Record<string, string> = {}
-  page.on('request', (sent) => {
-    const appToken = sent.headers()['x-shm-token']
-    if (appToken) apiHeaders['X-SHM-TOKEN'] = appToken
-  })
-
-  await page.goto('/login')
-  await page.getByPlaceholder('Email').fill(E2E_EMAIL as string)
-  await page.getByPlaceholder('password').fill(E2E_PASSWORD as string)
-  await page.keyboard.press('Enter')
-  await page.waitForURL(/\/b\//)
-
-  const companyId = await expect
-    .poll(() => page.evaluate(() => localStorage.getItem('comid')), { timeout: 15_000 })
-    .toBe(COMPANY_ID)
-    .then(() => COMPANY_ID)
-  const token = await page.evaluate(() => localStorage.getItem('token'))
-
-  // Every data-changing test depends on this guard, because the suite runs against production.
-  api = await request.newContext({
-    baseURL: API_URL,
-    extraHTTPHeaders: { ...apiHeaders, Authorization: `Bearer ${token}`, comid: companyId },
-  })
-  unauthenticatedApi = await request.newContext({ baseURL: API_URL, extraHTTPHeaders: apiHeaders })
-  const company = await (await api.get(`/company/${COMPANY_ID}`)).json()
-  if (company.name !== COMPANY_NAME) {
-    throw new Error(`Refusing to run: active company is not "${COMPANY_NAME}".`)
-  }
+  ;({ context, page, api, unauthenticatedApi } = await signIn(browser, E2E_EMAIL as string, E2E_PASSWORD as string))
 })
 
 test.afterAll(async () => {
   if (!api) return
   // Runs even after a failure, and also clears anything an earlier crashed run left behind.
-  await deleteRows('/item', 'title')
-  await deleteRows('/asset', 'fileName')
-  expect(await deleteRows('/item', 'title'), 'no test articles should remain').toBe(0)
-  expect(await deleteRows('/asset', 'fileName'), 'no test files should remain').toBe(0)
+  if (!isCleanedUp) await cleanUp()
   await api.dispose()
   await unauthenticatedApi.dispose()
   await context.close()
@@ -90,6 +86,18 @@ test('the article list opens', async () => {
   await expect(page.getByRole('button', { name: /new article|新/i }).first()).toBeVisible()
 })
 
+test('the channel pages open for an admin, and the company list is refused', async () => {
+  await page.goto('/b/company/channels')
+  await expect(page.locator('a[href="/b/company/channels"]')).toBeVisible()
+  // Only opens the page: a saved channel would break the publish guard.
+  await page.getByRole('button', { name: /new channel|新建渠道/i }).click()
+  await expect(page).toHaveURL(/\/b\/company\/channel\/new/)
+  await expect(page.getByText(/connecting a new|创建一个新的/i)).toBeVisible()
+
+  await page.goto('/b/super/company/')
+  await expect(page.getByText(FORBIDDEN)).toBeVisible()
+})
+
 test('an article can be created in the editor', async () => {
   await page.goto('/b/articles/new')
   await page.locator('input.inline-input').click()
@@ -100,19 +108,47 @@ test('an article can be created in the editor', async () => {
   await expect(page.locator('body')).toContainText(runId)
 })
 
+test('pressing Enter creates an article', async () => {
+  const title = `${runId}-enter`
+  await page.goto('/b/articles/new')
+  await page.locator('input.inline-input').click()
+  await page.keyboard.type(title)
+  await page.keyboard.press('Enter')
+  await page.waitForURL(/\/b\/articles\/[0-9a-f-]{36}/)
+  await expect(page.locator('body')).toContainText(title)
+})
+
 test('a draft stays hidden from the public', async () => {
   expect((await unauthenticatedApi.get(`/item/${articleId}`)).status()).toBe(404)
   await page.goto(`${READER_URL}/item/${articleId}`)
   await expect(page.getByText('文章无法访问')).toBeVisible()
 })
 
-test('a published article appears on the reader', async () => {
-  // Sets the date directly: the Publish button can post to connected channels, which cannot be undone.
-  const updated = await api.put(`/item/${articleId}`, { data: { publishedAt: new Date(Date.now() - 60_000).toISOString() } })
-  expect(updated.ok()).toBeTruthy()
-  await page.goto(`${READER_URL}/item/${articleId}`)
+test('publishing is disabled when the channels cannot be loaded', async () => {
+  const isChannelList = (url: URL) => url.pathname === '/channel'
+  await page.route(isChannelList, (route) => route.abort())
+  await page.goto(`/b/articles/${articleId}`)
+  await page.getByRole('button', { name: PUBLISH }).click()
+  const dialog = page.getByRole('dialog')
+  await expect(dialog.getByRole('alert')).toBeVisible()
+  await expect(dialog.getByRole('button', { name: CONFIRM_PUBLISH })).toBeDisabled()
+  await page.unroute(isChannelList)
+})
+
+test('the Publish button puts the article on the reader', async () => {
+  // Publishing can post to connected channels, which cannot be undone.
+  await expectNoActiveChannels()
+  await page.goto(`/b/articles/${articleId}`)
+  await page.getByRole('button', { name: PUBLISH }).click()
+  await page.getByRole('dialog').getByRole('button', { name: CONFIRM_PUBLISH }).click()
+  await expect(page.getByRole('button', { name: /re-publish|重新发布/i })).toBeVisible()
+
+  // The publish time comes from this machine's clock, so the API may be a moment behind it.
+  await expect(async () => {
+    await page.goto(`${READER_URL}/item/${articleId}`)
+    await expect(page.getByText('文章无法访问')).toHaveCount(0)
+  }).toPass({ timeout: 10_000 })
   await expect(page.locator('body')).toContainText(runId)
-  await expect(page.getByText('文章无法访问')).toHaveCount(0)
 })
 
 test('a deleted article disappears from the reader', async () => {
@@ -120,14 +156,49 @@ test('a deleted article disappears from the reader', async () => {
   expect((await unauthenticatedApi.get(`/item/${articleId}`)).status()).toBe(404)
 })
 
-test('an uploaded file appears in the media library', async () => {
+test('uploaded files appear in the media library, and search filters them by name', async () => {
   const fileName = `${runId}.png`
-  const uploaded = await api.post('/asset/upload', {
-    multipart: { file: { name: fileName, mimeType: 'image/png', buffer: ONE_PIXEL_PNG } },
-  })
-  expect(uploaded.ok()).toBeTruthy()
-  const { url } = await uploaded.json()
+  uploads = [await upload(fileName), await upload(`${runId}-other.png`)]
+  // The list shows no file names, so each row is identified by its image.
+  const [found, other] = uploads.map(({ url }) => page.locator(`.media-list-item img[src="${url}"]`))
   await page.goto('/b/media')
-  // The list shows no file names, so the row is identified by its image.
-  await expect(page.locator(`.media-list-item img[src="${url}"]`)).toBeVisible()
+  await expect(found).toBeVisible()
+  await expect(other).toBeVisible()
+
+  const search = page.getByPlaceholder(/search file name|搜索文件名/i)
+  await search.fill(fileName)
+  await search.press('Enter')
+  await expect(other).toHaveCount(0)
+  await expect(found).toBeVisible()
+})
+
+test('an English user sees English text and dates', async () => {
+  const { user } = await (await api.get('/auth/me')).json()
+  test.skip(user.languageCode !== 'en', 'The test user is not set to English')
+  await page.goto('/b/media')
+  await expect(page.getByPlaceholder('search file name...')).toBeVisible()
+  await expect(page.locator('.media-list-item').first()).toContainText(/[A-Z][a-z]{2} \d{1,2}, \d{4}/)
+})
+
+test('the API hides channel secrets and refuses another company', async () => {
+  // No status filter, so a deleted channel is checked too. With no channels at all this has nothing to check.
+  const channels = await api.get('/channel?perPage=9999&currentPage=1')
+  expect(channels.ok()).toBeTruthy()
+  for (const channel of (await channels.json()).data) {
+    expect(channel.settings?.auth).toBeUndefined()
+  }
+
+  // A made-up id, so this can't touch a real company. A 400 would mean the access check let it through.
+  expect([401, 403]).toContain((await api.put(`/company/${randomUUID()}`, { data: {} })).status())
+})
+
+// Stays last: the clean-up goes first in case signing out ever ends the token on the server.
+test('signing out clears the saved login', async () => {
+  await cleanUp()
+  await page.goto('/b/articles')
+  await page.getByRole('button', { name: 'logout' }).click()
+  await page.getByRole('dialog').getByRole('button', { name: /yes|是/i }).click()
+  await expect(page.getByPlaceholder('password')).toBeVisible()
+  const saved = await page.evaluate(() => [localStorage.getItem('comid'), localStorage.getItem('token')])
+  expect(saved).toEqual([null, null])
 })
