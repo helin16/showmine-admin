@@ -222,6 +222,47 @@ describe('returning with state', () => {
   })
 })
 
+describe('returning with wechatError', () => {
+  test.each([['declined'], ['expired'], ['failed']])(
+    '%s shows the message, cleans the address and does not go again',
+    async (reason) => {
+      LocalStorageService.setAutoLoginMark(AUTO_LOGIN_SENT)
+      renderLogin(`${LOGIN_URL}?from=%2Fb%2Fmedia&wechatError=${reason}`)
+      expect(await screen.findByText(FAILED_MESSAGE)).toBeInTheDocument()
+      expect(await loginForm()).toBeInTheDocument()
+      expect(screen.getByText(`address ${LOGIN_URL}?from=%2Fb%2Fmedia`)).toBeInTheDocument()
+      expect(goTo()).not.toHaveBeenCalled()
+      expect(LocalStorageService.getAutoLoginMark()).toBe(AUTO_LOGIN_FAILED)
+    },
+  )
+
+  test('counts as a failure even in a fresh tab, and leaves a clean address', async () => {
+    renderLogin(`${LOGIN_URL}?wechatError=declined`)
+    expect(await screen.findByText(FAILED_MESSAGE)).toBeInTheDocument()
+    expect(screen.getByText(`address ${LOGIN_URL}`)).toBeInTheDocument()
+    expect(goTo()).not.toHaveBeenCalled()
+  })
+
+  test('counts as a failure after logging out and tapping the button', async () => {
+    LocalStorageService.setAutoLoginMark(AUTO_LOGIN_DONE)
+    renderLogin(`${LOGIN_URL}?wechatError=declined`)
+    expect(await screen.findByText(FAILED_MESSAGE)).toBeInTheDocument()
+  })
+
+  test('wins over a state, which is never exchanged', async () => {
+    renderLogin(`${LOGIN_URL}?state=abc&wechatError=failed`)
+    expect(await screen.findByText(FAILED_MESSAGE)).toBeInTheDocument()
+    expect(getUser()).not.toHaveBeenCalled()
+    expect(screen.getByText(`address ${LOGIN_URL}`)).toBeInTheDocument()
+  })
+
+  test('the WeChat button still works afterwards', async () => {
+    renderLogin(`${LOGIN_URL}?from=%2Fb%2Fmedia&wechatError=expired`)
+    fireEvent.click(await screen.findByRole('button', { name: /WeChat/ }))
+    await waitFor(() => expect(goTo()).toHaveBeenCalledExactlyOnceWith('/b/media'))
+  })
+})
+
 test('the message exists in both languages', () => {
   expect(messages[Locale.zhCN.locale]['wechat-login-failed']).toMatch(/微信/)
   expect(FAILED_MESSAGE).toMatch(/WeChat/)

@@ -30,6 +30,18 @@ const WeChatAutoLogin = ({ from, search, navigate, onSettled }: iWeChatAutoLogin
     }
 
     const searchParams = new URLSearchParams(search)
+    const failAndCleanAddress = () => {
+      fail()
+      searchParams.delete('state')
+      searchParams.delete('wechatError')
+      navigate({ search: `?${searchParams}` }, { replace: true })
+    }
+
+    if (searchParams.has('wechatError')) {
+      failAndCleanAddress()
+      return
+    }
+
     const state = `${searchParams.get('state') || ''}`.trim()
     if (state !== '') {
       WeChatService.getUserFromQrcode(state)
@@ -42,11 +54,7 @@ const WeChatAutoLogin = ({ from, search, navigate, onSettled }: iWeChatAutoLogin
           LocalStorageService.setAutoLoginMark(AUTO_LOGIN_DONE)
           navigate(WeChatService.getSafeReturnPath(from), { replace: true })
         })
-        .catch(() => {
-          fail()
-          searchParams.delete('state')
-          navigate({ search: `?${searchParams}` }, { replace: true })
-        })
+        .catch(failAndCleanAddress)
       return
     }
 
