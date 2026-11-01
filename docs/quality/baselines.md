@@ -21,6 +21,7 @@ Sign-in first-load JS is the sum of Vite's own gzip figure for every script and 
 | In-WeChat login button on demand | 306.1 kB |
 | In-WeChat automatic sign-in, on demand | 307.4 kB |
 | Password recovery and the no-company notice, on demand, with first-load code in one chunk | 303.3 kB |
+| Session expiry and the 413 and 429 messages in `AppService` | 303.5 kB |
 
 Measured and not changed:
 
