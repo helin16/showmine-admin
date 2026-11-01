@@ -8,6 +8,10 @@ import MathHelper from '../../Helpers/MathHelper';
 import AssetService from '../../Services/AssetService';
 import AppService from '../../Services/AppService';
 import Utils from '../../Services/Utils';
+import { captureVideoCover, withTimeout } from '../../Helpers/VideoCoverHelper';
+import translate from '../../i18n/translate';
+
+const COVER_UPLOAD_TIMEOUT_MS = 30000
 
 const EditorWrapper = styled.div`
   height: 100%;
@@ -65,6 +69,18 @@ const imagesUploadHandler = (assetType?: string) => (
   xhr.send(formData)
 });
 
+// Resolves to nothing on any failure: a video must still be inserted without its cover.
+const uploadCover = async (capture: Promise<Blob>, file: File, assetType?: string) => {
+  try {
+    const cover = await capture
+    const blobInfo = { blob: () => cover, filename: () => `${file.name}-cover.jpg` }
+    const upload = imagesUploadHandler(assetType)(blobInfo, () => undefined)
+    return await withTimeout(upload, COVER_UPLOAD_TIMEOUT_MS) as string
+  } catch {
+    return undefined
+  }
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const customAction = (assetType?: string) => (editor: any) => {
   // eslint-disable-line
@@ -75,6 +91,8 @@ const customAction = (assetType?: string) => (editor: any) => {
     let file: File
     if (input && input.files) {
       file = input.files[0] // eslint-disable-line
+      const capture = captureVideoCover(file)
+      capture.catch(() => undefined) // A failed video upload never reads this.
       const formData = new FormData()
       const xhr = new XMLHttpRequest()
       xhr.withCredentials = false
@@ -88,7 +106,7 @@ const customAction = (assetType?: string) => (editor: any) => {
       xhr.upload.onprogress = function () {
         editor.setProgressState(true)
       }
-      xhr.onload = function () {
+      xhr.onload = async function () {
         editor.setProgressState(false)
         if (xhr.status === 200) {
           const json = Utils.isJSON(xhr.responseText) ? JSON.parse(xhr.responseText) : null
@@ -96,10 +114,16 @@ const customAction = (assetType?: string) => (editor: any) => {
             message.error(`Invalid JSON: ${xhr.responseText}`)
             return
           }
-          const videoDom = `<video width='100%' height='240px' poster='${json.url.replace(/\.[^./]+$/, '.jpg')}' controls="controls">
+          editor.setProgressState(true)
+          const poster = await uploadCover(capture, file, assetType)
+          editor.setProgressState(false)
+          const videoDom = `<video width='100%' height='240px' ${poster ? `poster='${poster}' ` : ''}controls="controls">
             <source src='${json.url}' type='${json.fileType}'/>
           </video>`
           editor.insertContent(videoDom)
+          if (!poster) {
+            message.warning(translate('video-cover-failed'))
+          }
         } else {
           message.error(`Image upload failed due to a XHR Transport error. Code: ${xhr.status}`)
         }

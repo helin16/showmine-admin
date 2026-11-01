@@ -4,13 +4,19 @@ import RichTextEditor from '../../../Components/Form/RichTextEditor'
 import message from '../../../Components/Form/message'
 import AppService from '../../../Services/AppService'
 import AssetService from '../../../Services/AssetService'
+import { captureVideoCover } from '../../../Helpers/VideoCoverHelper'
+import translate from '../../../i18n/translate'
 import { FakeXHR } from './fakeXhr'
 
 const editor = vi.hoisted(() => ({ props: {} as Record<string, any> })) // eslint-disable-line
 
 vi.mock('../../../Services/AppService')
 vi.mock('../../../Services/AssetService')
-vi.mock('../../../Components/Form/message', () => ({ default: { error: vi.fn() } }))
+vi.mock('../../../Components/Form/message', () => ({ default: { error: vi.fn(), warning: vi.fn() } }))
+vi.mock('../../../Helpers/VideoCoverHelper', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  captureVideoCover: vi.fn(),
+}))
 vi.mock('@tinymce/tinymce-react', () => ({
   Editor: (props: Record<string, unknown>) => {
     editor.props = props
@@ -182,6 +188,20 @@ describe('video upload button', () => {
     insertContent: vi.fn(),
   }
   const video = new File(['v'], 'clip.mp4', { type: 'video/mp4' })
+  const cover = new Blob(['jpeg'], { type: 'image/jpeg' })
+  const uploaded = { url: 'https://cdn.test/v/clip.mp4', fileType: 'video/mp4' }
+  const coverUrl = 'https://cdn.test/v/cover.jpg'
+
+  beforeEach(() => {
+    vi.mocked(captureVideoCover).mockResolvedValue(cover)
+  })
+
+  // The video finishes, then the cover capture settles and the cover upload starts.
+  const finishVideo = async (xhr: FakeXHR) => {
+    xhr.respond(200, uploaded)
+    await tick()
+    return FakeXHR.last
+  }
 
   const pick = (files: File[] | null = [video], assetType?: string) => {
     let input = document.createElement('input')
@@ -228,16 +248,83 @@ describe('video upload button', () => {
     expect(pick().xhr.headers).toEqual({})
   })
 
-  test('shows progress, then inserts the player with a poster image', () => {
-    const { xhr } = pick()
+  test('shows progress, then inserts the player with the captured cover', async () => {
+    const { xhr } = pick([video], ' clip ')
+    expect(captureVideoCover).toHaveBeenCalledWith(video)
     xhr.upload.onprogress?.({ loaded: 1, total: 2 })
     expect(tiny.setProgressState).toHaveBeenLastCalledWith(true)
-    xhr.respond(200, { url: 'https://cdn.test/v/clip.mp4', fileType: 'video/mp4', externalObj: { format: 'mp4' } })
+    const coverXhr = await finishVideo(xhr)
+    expect(coverXhr).not.toBe(xhr)
+    expect(coverXhr.url).toBe(UPLOAD_URL)
+    expect(coverXhr.headers).toEqual({ Authorization: 'Bearer tok', comid: 'co-1' })
+    expect(coverXhr.body?.get('type')).toBe('clip')
+    expect(coverXhr.body?.get('file')).toMatchObject({ name: 'clip.mp4-cover.jpg', type: 'image/jpeg' })
+    expect(tiny.setProgressState).toHaveBeenLastCalledWith(true)
+    expect(tiny.insertContent).not.toHaveBeenCalled()
+    coverXhr.respond(200, { url: coverUrl })
+    await tick()
     expect(tiny.setProgressState).toHaveBeenLastCalledWith(false)
     const html = tiny.insertContent.mock.calls[0][0]
-    expect(html).toContain('poster=\'https://cdn.test/v/clip.jpg\'')
+    expect(html).toContain(`<video width='100%' height='240px' poster='${coverUrl}' controls="controls">`)
     expect(html).toContain('<source src=\'https://cdn.test/v/clip.mp4\' type=\'video/mp4\'/>')
+    expect(message.warning).not.toHaveBeenCalled()
     expect(message.error).not.toHaveBeenCalled()
+  })
+
+  test('does not hold the video upload back while capturing', () => {
+    vi.mocked(captureVideoCover).mockReturnValue(new Promise(() => undefined))
+    expect(pick().xhr.body?.get('file')).toEqual(video)
+  })
+
+  const expectInsertedWithoutPoster = () => {
+    expect(tiny.setProgressState).toHaveBeenLastCalledWith(false)
+    const html = tiny.insertContent.mock.calls[0][0]
+    expect(html).toContain('<source src=\'https://cdn.test/v/clip.mp4\'')
+    expect(html).not.toContain('poster')
+    expect(message.warning).toHaveBeenCalledWith(translate('video-cover-failed'))
+    expect(message.error).not.toHaveBeenCalled()
+  }
+
+  test('inserts without a poster, with a notice, when capture fails or times out', async () => {
+    vi.mocked(captureVideoCover).mockRejectedValue(new Error('Timed out'))
+    const { xhr } = pick()
+    expect(await finishVideo(xhr)).toBe(xhr)
+    expectInsertedWithoutPoster()
+  })
+
+  test.each([
+    ['a failed status', (xhr: FakeXHR) => xhr.respond(500, '')],
+    ['an invalid reply', (xhr: FakeXHR) => xhr.respond(200, 'null')],
+    ['a network failure', (xhr: FakeXHR) => xhr.onerror?.()],
+  ])('inserts without a poster, with a notice, when the cover upload hits %s', async (_name, fail) => {
+    fail(await finishVideo(pick().xhr))
+    await tick()
+    expectInsertedWithoutPoster()
+  })
+
+  test('inserts without a poster, with a notice, when the cover upload hangs', async () => {
+    const { xhr } = pick()
+    vi.useFakeTimers()
+    xhr.respond(200, uploaded)
+    await vi.advanceTimersByTimeAsync(29999)
+    expect(tiny.insertContent).not.toHaveBeenCalled()
+    await vi.advanceTimersByTimeAsync(1)
+    vi.useRealTimers()
+    expectInsertedWithoutPoster()
+  })
+
+  test('uploads no cover when the video upload fails', async () => {
+    pick().xhr.respond(500, '')
+    await tick()
+    expect(FakeXHR.instances).toHaveLength(1)
+    expect(message.warning).not.toHaveBeenCalled()
+  })
+
+  test('survives a capture failure after the video upload failed', async () => {
+    vi.mocked(captureVideoCover).mockRejectedValue(new Error('no'))
+    pick().xhr.respond(500, '')
+    await tick()
+    expect(message.warning).not.toHaveBeenCalled()
   })
 
   test.each([['null'], ['{"url":1}']])('shows an error for the reply %s', (body) => {
@@ -258,11 +345,6 @@ describe('video upload button', () => {
     xhr.onerror?.()
     expect(tiny.setProgressState).toHaveBeenLastCalledWith(false)
     expect(message.error).toHaveBeenCalledWith('Image upload failed due to a XHR Transport error. Code: 0')
-  })
-
-  test('keeps the host intact when the reply has no format', () => {
-    pick().xhr.respond(200, { url: 'https://cdn.test/clip.mp4', fileType: 'video/mp4' })
-    expect(tiny.insertContent.mock.calls[0][0]).not.toContain('cdn.jpgtest')
   })
 
   test('shows an error for a reply that is not JSON', () => {

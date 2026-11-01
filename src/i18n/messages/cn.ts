@@ -27,6 +27,7 @@ const LanguageCN = {
     'not-authorize': '您还未被授权，请登录后重试',
     'upload-area': '点击或拖拽文件到此处上传',
     'upload-error': '上传失败，请重试。',
+    'video-cover-failed': '视频已插入，但未能生成封面，将显示占位图。',
     dashboard: '仪表盘',
     'new-article': '新建文章',
     articles: '文章',
