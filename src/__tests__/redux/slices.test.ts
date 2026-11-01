@@ -99,6 +99,9 @@ describe('auth slice', () => {
 
   test('removedAuthentication drops the company memberships', () => {
     expect(reduceAuth(session, removedAuthentication()).companyUsers).toBeUndefined()
+    expect(
+      reduceAuth({ ...session, pendingCompanies: [{ id: 'c2', name: 'B' }] }, removedAuthentication()).pendingCompanies,
+    ).toBeUndefined()
   })
 })
 

@@ -59,6 +59,7 @@ const ProtectedRoute = ({ children, allowNoCompany = false }: any) => {
             user: res.user,
             company: userCompany,
             companyUsers: res.companies,
+            pendingCompanies: res.pendingCompanies,
           }),
         );
         dispatch(

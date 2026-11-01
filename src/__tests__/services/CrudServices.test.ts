@@ -53,6 +53,47 @@ beforeEach(() => {
   LocalStorageService.setCompanyId('co-1')
 })
 
+describe('CompanyUserService invites', () => {
+  test('invite posts the email', async () => {
+    vi.mocked(axios.post).mockResolvedValue({ data: { success: true } })
+    await expect(CompanyUserService.invite('a@b.c')).resolves.toEqual({ success: true })
+    expect(axios.post).toHaveBeenCalledExactlyOnceWith(
+      `${API}/companyUser/invite`,
+      { email: 'a@b.c' },
+      { headers: requestHeaders },
+    )
+  })
+
+  test('getInviteQr returns the url', async () => {
+    vi.mocked(axios.post).mockResolvedValue({ data: { url: 'u', expiresInSeconds: 900 } })
+    await expect(CompanyUserService.getInviteQr()).resolves.toEqual({ url: 'u', expiresInSeconds: 900 })
+    expect(axios.post).toHaveBeenCalledExactlyOnceWith(
+      `${API}/companyUser/invite/qr`,
+      {},
+      { headers: requestHeaders },
+    )
+  })
+
+  test('getPending reads the list', async () => {
+    vi.mocked(axios.get).mockResolvedValue({ data: [{ id: 'cu-1' }] })
+    await expect(CompanyUserService.getPending()).resolves.toEqual([{ id: 'cu-1' }])
+    expect(axios.get).toHaveBeenCalledExactlyOnceWith(`${API}/companyUser/pending`, { headers: requestHeaders })
+  })
+
+  test.each([
+    ['approve', CompanyUserService.approve],
+    ['reject', CompanyUserService.reject],
+  ])('%s posts to the row', async (action, call) => {
+    vi.mocked(axios.post).mockResolvedValue({ data: { success: true } })
+    await call('cu-1')
+    expect(axios.post).toHaveBeenCalledExactlyOnceWith(
+      `${API}/companyUser/cu-1/${action}`,
+      {},
+      { headers: requestHeaders },
+    )
+  })
+})
+
 describe.each(readable)('%s reads', (_name, service, endPoint) => {
   test('getAll sends params with the company context and returns the response body', async () => {
     vi.mocked(axios.get).mockResolvedValue({ data: body })

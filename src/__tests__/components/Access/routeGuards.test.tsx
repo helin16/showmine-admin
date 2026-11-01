@@ -241,6 +241,27 @@ describe('ProtectedRoute', () => {
       expect(screen.queryByText(NO_COMPANY)).not.toBeInTheDocument()
     })
 
+    test('a user waiting for approval is told so, and sees no company', async () => {
+      const pendingCompanies = [
+        { id: 'co-1', name: 'Acme' },
+        { id: 'co-2', name: 'Globex' },
+      ]
+      vi.mocked(AuthService.getMe).mockResolvedValue({ ...session({}, []), pendingCompanies })
+      const { store } = renderProtected()
+      expect(
+        await screen.findByText('Your request to join Acme, Globex is waiting for an admin to approve it.'),
+      ).toBeInTheDocument()
+      expect(screen.queryByText(NO_COMPANY)).not.toBeInTheDocument()
+      expect(screen.queryByText('secret')).not.toBeInTheDocument()
+      expect(store.getState().auth.pendingCompanies).toEqual(pendingCompanies)
+    })
+
+    test('someone with no invite keeps the plain notice', async () => {
+      vi.mocked(AuthService.getMe).mockResolvedValue({ ...session({}, []), pendingCompanies: [] })
+      renderProtected()
+      expect(await screen.findByText(NO_COMPANY)).toBeInTheDocument()
+    })
+
     test('a last visited company counts as a company', async () => {
       vi.mocked(AuthService.getMe).mockResolvedValue(session({ LastVisitCompany: acme }, []))
       renderProtected()

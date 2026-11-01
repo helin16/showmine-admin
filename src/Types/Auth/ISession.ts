@@ -9,6 +9,7 @@ type ISession = {
   user?: IUser | null
   company?: ICompany | null;
   companyUsers?: ICompanyUser[];
+  pendingCompanies?: { id: string; name: string }[];
   companyPackage?: any; // IPackage | null, // null means no package information or there is an error
 }
 

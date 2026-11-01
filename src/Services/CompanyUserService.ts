@@ -23,7 +23,32 @@ const deactivate = async (id: string, params?: iConfigParams, config?: iConfigPa
   return AppService.delete(`${endPoint}/${id}`, params, config).then((resp) => resp.data)
 }
 
+const invite = async (email: string) => {
+  return AppService.post(`${endPoint}/invite`, { email }).then((resp) => resp.data)
+}
+
+const getInviteQr = async (): Promise<{ url: string; expiresInSeconds: number }> => {
+  return AppService.post(`${endPoint}/invite/qr`, {}).then((resp) => resp.data)
+}
+
+const getPending = async (): Promise<ICompanyUser[]> => {
+  return AppService.get(`${endPoint}/pending`).then((resp) => resp.data)
+}
+
+const approve = async (id: string) => {
+  return AppService.post(`${endPoint}/${id}/approve`, {}).then((resp) => resp.data)
+}
+
+const reject = async (id: string) => {
+  return AppService.post(`${endPoint}/${id}/reject`, {}).then((resp) => resp.data)
+}
+
 const CompanyUserService = {
+  invite,
+  getInviteQr,
+  getPending,
+  approve,
+  reject,
   getAll,
   getItemById,
   create,

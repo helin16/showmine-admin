@@ -45,6 +45,30 @@ describe('login', () => {
   })
 })
 
+describe('invites', () => {
+  beforeEach(() => vi.mocked(axios.post).mockResolvedValue({ data: { success: true } }))
+
+  test('checkInvite posts the token', async () => {
+    await AuthService.checkInvite('tok')
+    expect(axios.post).toHaveBeenCalledExactlyOnceWith(`${API}/auth/invite/check`, { token: 'tok' }, anonymous)
+  })
+
+  test('acceptInvite posts the new person', async () => {
+    const person = { firstName: 'Amy', lastName: 'Ng', password: 'long-enough' }
+    await AuthService.acceptInvite('tok', person)
+    expect(axios.post).toHaveBeenCalledExactlyOnceWith(
+      `${API}/auth/invite/accept`,
+      { token: 'tok', ...person },
+      anonymous,
+    )
+  })
+
+  test('joinInvite posts the token', async () => {
+    await AuthService.joinInvite('tok')
+    expect(axios.post).toHaveBeenCalledExactlyOnceWith(`${API}/auth/invite/join`, { token: 'tok' }, anonymous)
+  })
+})
+
 describe('password recovery', () => {
   beforeEach(() => vi.mocked(axios.post).mockResolvedValue({ data: { success: true } }))
 

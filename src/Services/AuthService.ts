@@ -21,9 +21,12 @@ const login = async (email: string, password: string) => {
   return AppService.post(endPoint, { email, password }).then((resp) => resp.data)
 }
 
+export type iPendingCompany = { id: string; name: string }
+
 type iMeData = {
   user: IUser,
   companies: ICompanyUser[];
+  pendingCompanies?: iPendingCompany[];
 }
 
 const getMe = async (config: object | undefined = undefined): Promise<iMeData> => {
@@ -46,7 +49,24 @@ const resetPassword = async (token: string, password: string) => {
   return AppService.post(`${endPoint}/reset-password`, { token, password }).then((res) => res.data)
 }
 
+const checkInvite = async (token: string): Promise<{ companyName: string; email: string }> => {
+  return AppService.post(`${endPoint}/invite/check`, { token }).then((res) => res.data)
+}
+
+type iNewPerson = { firstName: string; lastName?: string; password: string }
+
+const acceptInvite = async (token: string, person: iNewPerson) => {
+  return AppService.post(`${endPoint}/invite/accept`, { token, ...person }).then((res) => res.data)
+}
+
+const joinInvite = async (token: string): Promise<{ status: 'pending' | 'member' }> => {
+  return AppService.post(`${endPoint}/invite/join`, { token }).then((res) => res.data)
+}
+
 const AuthService = {
+  checkInvite,
+  acceptInvite,
+  joinInvite,
   login,
   retrievePassword,
   resetPassword,

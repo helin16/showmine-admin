@@ -241,6 +241,7 @@ const LanguageCN = {
     'request-new-link': '重新获取链接',
     'reset-password-done': '密码已重置，请登录。',
     'no-company-notice': '您的账号尚未关联公司。请联系公司管理员添加您。',
+    'no-company-pending': '您加入 {names} 的申请正在等待管理员审批。',
     'my-profile': '我的资料',
     'sign-out': '退出登录',
     'wechat-login-failed': '微信登录未完成。请使用密码登录，或点击微信按钮重试。',

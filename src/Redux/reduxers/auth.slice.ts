@@ -23,6 +23,7 @@ const actions = {
       user: action.payload.user,
       company: action.payload.company,
       companyUsers: action.payload.companyUsers,
+      pendingCompanies: action.payload.pendingCompanies,
       // companyPackage: action.payload.companyPackage,
     })
   },
@@ -41,6 +42,7 @@ const actions = {
     user: undefined,
     company: undefined,
     companyUsers: undefined,
+    pendingCompanies: undefined,
     companyPackage: undefined,
   }),
 }

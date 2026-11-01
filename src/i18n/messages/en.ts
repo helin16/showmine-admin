@@ -242,6 +242,7 @@ const LanguageEN = {
     'request-new-link': 'Request a new link',
     'reset-password-done': 'Your password has been reset. Please sign in.',
     'no-company-notice': "Your account isn't linked to a company yet. Please ask your company admin to add you.",
+    'no-company-pending': 'Your request to join {names} is waiting for an admin to approve it.',
     'my-profile': 'My Profile',
     'sign-out': 'Sign out',
     'wechat-login-failed': 'WeChat sign-in was not completed. Sign in with your password, or tap WeChat to try again.',
