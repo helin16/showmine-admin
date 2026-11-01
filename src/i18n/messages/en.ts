@@ -240,6 +240,9 @@ const LanguageEN = {
     invalidUrl: '{fieldName} is invalid URL',
     ErrorOccurred: 'Error Occurred',
     'more-options': 'More Options',
+    'channel-type-wechat': 'ShowMine WeChat Official Account',
+    'channel-editing': 'Editing {name}:',
+    'channel-creating': 'Creating a Channel:',
   },
 }
 

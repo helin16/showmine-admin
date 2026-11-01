@@ -17,6 +17,7 @@ import WizardDonePage from '../../../Pages/User/WizardDonePage'
 import WizardPage from '../../../Pages/User/WizardPage'
 import AuthService from '../../../Services/AuthService'
 import ArticleService from '../../../Services/ArticleService'
+import ChannelService from '../../../Services/ChannelService'
 import CompanyService from '../../../Services/CompanyService'
 import CompanyUserService from '../../../Services/CompanyUserService'
 import WeChatService from '../../../Services/WeChatService'
@@ -40,6 +41,7 @@ vi.mock('../../../Services/AuthService', async (importOriginal) => {
   return { default: { ...actual.default, updateMe: vi.fn(), login: vi.fn(), logout: vi.fn() } }
 })
 vi.mock('../../../Services/ArticleService', () => ({ default: { getAll: vi.fn() } }))
+vi.mock('../../../Services/ChannelService', () => ({ default: { getAll: vi.fn() } }))
 vi.mock('../../../Services/CompanyService', () => ({
   default: { getAll: vi.fn(), getItemById: vi.fn(), update: vi.fn(), deactivate: vi.fn() },
 }))
@@ -58,6 +60,10 @@ vi.mock('../../../Components/Company/CompanyEditor', () => ({
 }))
 
 const acme = { id: 'co-1', name: 'Acme', isActive: true, config: { theme: 'dark' } }
+
+beforeEach(() => {
+  vi.mocked(ChannelService.getAll).mockResolvedValue({ data: [] } as never)
+})
 const home = (text: string) => <Route path={BACK_END_URL} element={<div>{text}</div>} />
 
 beforeAll(() => stubMatchMedia())

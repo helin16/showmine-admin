@@ -4,12 +4,8 @@ import RetrievePasswordForm from '../../../Components/Auth/RetrievePasswordForm'
 import CompanyBasicInfoEditor from '../../../Components/Company/CompanyBasicInfoEditor'
 import CompanyList from '../../../Components/Company/CompanyList'
 import CompanyUserInviteBtn from '../../../Components/User/CompanyUserInviteBtn'
-import ChannelEditor from '../../../Components/Channel/ChannelEditor'
-import ChannelList from '../../../Components/Channel/ChannelList'
 import RedirectChannelEditor from '../../../Components/Channel/Wizard/RedirectChannelEditor'
-import ShowMineChannelEditor from '../../../Components/Channel/Wizard/ShowMineChannelEditor'
 import WordPressChannelEditor from '../../../Components/Channel/Wizard/WordPressChannelEditor'
-import CompanyNewChannelPage from '../../../Pages/Channel/CompanyNewChannelPage'
 
 const channel = { type: 'Facebook', name: 'Page' } as never
 const company = { id: 'co-1', name: 'Acme' } as never
@@ -20,11 +16,7 @@ test.each([
   ['CompanyBasicInfoEditor', <CompanyBasicInfoEditor key='0' company={company} />],
   ['CompanyList', <CompanyList key='0' />],
   ['CompanyUserInviteBtn', <CompanyUserInviteBtn key='0' company={company} />],
-  ['ChannelEditor', <ChannelEditor key='0' channel={channel} />],
-  ['ChannelList', <ChannelList key='0' />],
   ['RedirectChannelEditor', <RedirectChannelEditor key='0' channel={channel} />],
-  ['ShowMineChannelEditor', <ShowMineChannelEditor key='0' channel={channel} />],
-  ['CompanyNewChannelPage', <CompanyNewChannelPage key='0' />],
 ])('%s is disabled and renders nothing', (_name, ui) => {
   expect(renderWithProviders(ui).container).toBeEmptyDOMElement()
 })

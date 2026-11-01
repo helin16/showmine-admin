@@ -15,6 +15,7 @@ export const CHANNEL_TYPE_LINKED_IN = 'LinkedIn'
 export const LINKED_IN_MAIN_COLOR = '#0072b1'
 export const CHANNEL_TYPE_WORDPRESS = 'WordPress'
 export const WORDPRESS_MAIN_COLOR = '#21759b'
+export const CHANNEL_SCRIPT_WECHAT_OFFICIAL = 'WeChatOfficial'
 export const ADDRESS_ID_VIC = 'e9562f29ec33f9b04b4aaddef754f31c'
 export const ITEM_TYPE_ID_ARTICLE = '53c4b055f4b77e56691225d3c6498a26'
 export const DATE_TIME_MAX = '9999-12-31T12:59:59.000000Z'
@@ -29,18 +30,6 @@ export const APP_WIDTHS = {
   xl: '1200px',
   xxl: '1600px',
 }
-export interface iChannelType {
-  type: string
-  name: string
-}
-export const CHANNEL_TYPES: iChannelType[] = [
-  { type: CHANNEL_TYPE_SHOW_MINE, name: 'ShowMine WeChat Official Account' },
-  { type: CHANNEL_TYPE_FACEBOOK, name: 'Facebook Page' },
-  { type: CHANNEL_TYPE_GOOGLE, name: 'Google Business' },
-  { type: CHANNEL_TYPE_TWITTER, name: 'Twitter' },
-  { type: CHANNEL_TYPE_LINKED_IN, name: 'LinkedIn Page' },
-  { type: CHANNEL_TYPE_WORDPRESS, name: 'WordPress' },
-]
 
 const Constants = {
   APP_WIDTHS,

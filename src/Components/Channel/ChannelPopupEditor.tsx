@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import IChannel from '../../Types/Channel/IChannel'
 import ChannelEditor from './ChannelEditor'
 import Modal from '../Form/Modal'
+import translate from '../../i18n/translate'
 
 const ChannelPopupEditorWrapper = styled.div`
   .clickable {
@@ -24,20 +25,22 @@ const ChannelPopupEditor = ({ children, channel, onSaved }: iChannelPopupEditor)
         {children}
       </div>
       <Modal
-        title={channel && channel.id ? `Editing ${channel.name}:` : 'Creating a Channel:'}
+        title={channel && channel.id ? translate('channel-editing', { name: channel.name }) : translate('channel-creating')}
         width={'80%'}
         open={showing === true}
         footer={null}
         onCancel={() => setShowing(false)}
       >
-        <ChannelEditor
-          channel={channel}
-          onCancel={() => setShowing(false)}
-          onSaved={(newChannel: IChannel) => {
-            setShowing(false)
-            onSaved && onSaved(newChannel)
-          }}
-        />
+        {showing !== true ? null : (
+          <ChannelEditor
+            channel={channel}
+            onCancel={() => setShowing(false)}
+            onSaved={(newChannel: IChannel) => {
+              setShowing(false)
+              onSaved && onSaved(newChannel)
+            }}
+          />
+        )}
       </Modal>
     </ChannelPopupEditorWrapper>
   )

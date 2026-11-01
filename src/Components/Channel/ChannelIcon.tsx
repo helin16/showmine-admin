@@ -49,8 +49,8 @@ const ChannelIconWrapper = styled.div`
  */
 const ChannelIcon = ({ channel, ...props }: React.ComponentProps<any> & { channel: IChannel }) => {
   // eslint-disable-line
+  const channelName = `${channel.type || ''}`.toLowerCase()
   const getIcon = () => {
-    const channelName = channel.type.toLowerCase()
     if (channelName === CHANNEL_TYPE_FACEBOOK.toLowerCase()) {
       return <Icons.FacebookFilled />
     }
@@ -70,7 +70,7 @@ const ChannelIcon = ({ channel, ...props }: React.ComponentProps<any> & { channe
   }
 
   return (
-    <ChannelIconWrapper className={channel.type.toLowerCase()} {...props}>
+    <ChannelIconWrapper className={channelName} {...props}>
       {getIcon()}
     </ChannelIconWrapper>
   )

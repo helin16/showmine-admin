@@ -239,6 +239,9 @@ const LanguageCN = {
     invalidUrl: '{fieldName}不是正常的URL',
     ErrorOccurred: '有错误',
     'more-options': '更多选项',
+    'channel-type-wechat': 'ShowMine 微信公众号',
+    'channel-editing': '正在编辑 {name}：',
+    'channel-creating': '新建渠道：',
   },
 }
 
