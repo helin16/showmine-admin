@@ -20,6 +20,7 @@ Sign-in first-load JS is the sum of Vite's own gzip figure for every script and 
 | WeChat QR form on demand, sign-in imports its icons by name | 313.6 kB |
 | In-WeChat login button on demand | 306.1 kB |
 | In-WeChat automatic sign-in, on demand | 307.4 kB |
+| Password recovery and the no-company notice, on demand, with first-load code in one chunk | 303.3 kB |
 
 Measured and not changed:
 
@@ -28,5 +29,7 @@ Measured and not changed:
 | Import charts from `@ant-design/plots`, not `@ant-design/charts` | No gain: the charts chunk was 401.6 kB and became 402.1 kB. The graphs code was already tree-shaken out |
 | Load `BackendPage` eagerly | 387.0 kB, over the target, so it loads with the pages |
 | Load the charts on demand in the article editor | Not done: a reload for a stale chunk would discard unsaved edits |
+
+Without the one chunk the same code measured 311.0 kB: each new on-demand page cut the first-load chunks into more, worse-compressing pieces.
 
 Prefetching the dashboard was not tried, because nothing here measured a need for it.
