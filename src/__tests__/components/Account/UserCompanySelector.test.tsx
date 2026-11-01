@@ -150,8 +150,7 @@ describe('CompanyInvalidNotice', () => {
     expect(screen.getByText(`Acme has been deleted @ ${moment(updatedAt).format('lll')}`)).toBeInTheDocument()
   })
 
-  // Known bug: translate.ts imports the zh-cn moment locale, which stays global, so English users get Chinese dates.
-  test.fails('formats the deleted date in English for an English user', () => {
+  test('formats the deleted date in English for an English user', () => {
     const company = { id: 'co-1', name: 'Acme', isActive: false, updatedAt: '2024-03-05T12:00:00' }
     renderWithProviders(<CompanyInvalidNotice company={company as never} />)
     expect(screen.getByText('Acme has been deleted @ Mar 5, 2024 12:00 PM')).toBeInTheDocument()

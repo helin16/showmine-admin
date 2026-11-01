@@ -163,8 +163,7 @@ describe('ArticleUnPublishBtn', () => {
     expect(service.update).not.toHaveBeenCalled()
   })
 
-  // Bug: the English messages have no `unPublish` key, so the button shows the raw message id.
-  test.fails('has a translated button label', () => {
+  test('has a translated button label', () => {
     expect(messages[LOCALES.ENGLISH]).toHaveProperty('unPublish')
   })
 })

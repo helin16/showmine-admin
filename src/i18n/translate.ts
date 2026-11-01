@@ -4,6 +4,9 @@ import { messages } from './messages'
 import { LOCALES } from '../Constants'
 import 'moment/locale/zh-cn'
 
+// Importing a moment locale also selects it, and dates must follow the user's language instead.
+moment.locale(LOCALES.ENGLISH)
+
 const cache = createIntlCache()
 
 let int = createIntl(

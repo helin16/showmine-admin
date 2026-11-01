@@ -80,7 +80,7 @@ const LanguageCN = {
     'publish-alert-1': '当{text}完成时, ',
     'publish-alert-2': '您将不能取消发布.',
     'check-confirm-1': '您确定{text}这些内容吗',
-    'check-confirm-2': '个渠道吗?',
+    'check-confirm-2': '个渠道吗',
     'table-name': '文章名字',
     'invalid-content': '无效内容，请刷新后重试',
     'content-update': '内容已更新',

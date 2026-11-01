@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
-import moment from 'moment'
 import { vi } from 'vitest'
 import message from '../../../Components/Form/message'
 import CompanyMediaUsage from '../../../Components/Media/CompanyMediaUsage'
@@ -31,11 +30,6 @@ const asset = {
   createdAt: FIXED_DATE,
 } as unknown as IAsset
 const other = { ...asset, id: 'as-2', comments: 'Another' } as IAsset
-
-// Importing translate.ts leaves moment on zh-cn, so fix the locale for the date assertions.
-beforeEach(() => {
-  moment.locale('en')
-})
 
 describe('MediaList', () => {
   const removeFirst = async () => {

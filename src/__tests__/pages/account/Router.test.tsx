@@ -150,7 +150,14 @@ describe('App', () => {
     expect(screen.getByText(`page: forgot, ${messages['zh-cn'].homePage}`)).toBeInTheDocument()
   })
 
-  // Known bug: nothing calls changeLanguage, so every translate() string stays English in the Chinese UI.
+  test('translate() follows the language of the app', () => {
+    renderApp(Locale.zhCN, '/no/such/page')
+    expect(screen.getByText(messages['zh-cn'].pageNotExists)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '主 页' })).toBeInTheDocument()
+  })
+
+  // The page is translated (see above), but antd spaces out two-character Chinese button labels, so this exact text
+  // never renders. It needs a decision on ConfigProvider's autoInsertSpaceInButton.
   test.fails('translates the pages that use translate()', () => {
     renderApp(Locale.zhCN, '/no/such/page')
     expect(screen.getByText(messages['zh-cn'].homePage)).toBeInTheDocument()

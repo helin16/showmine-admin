@@ -231,8 +231,7 @@ describe('ArticlePublishBtn', () => {
     expect(articles.update).not.toHaveBeenCalled()
   })
 
-  // Bug: the English check-confirm-1 message uses {state.publishText}, which is never supplied, so the text is broken.
-  test.fails('shows a readable confirmation sentence', async () => {
+  test('shows a readable confirmation sentence', async () => {
     renderWithProviders(<ArticlePublishBtn article={article} />, { state: signedIn })
     open()
     await within(dialog()).findByText('Web')

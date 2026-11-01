@@ -37,11 +37,7 @@ const removeFirst = async () => {
   fireEvent.click(await screen.findByRole('button', { name: 'Yes' }))
 }
 
-// Importing translate.ts leaves moment on zh-cn (see the bug below), so fix the locale for the date assertions.
 const localeAfterImports = moment.locale()
-beforeEach(() => {
-  moment.locale('en')
-})
 
 describe('CommentsList', () => {
   test('shows author, date, text and a link to the article', async () => {
@@ -207,9 +203,7 @@ describe('CommentsList', () => {
     expect(within(dialog).getByRole('button', { name: 'editor: my reply' })).toBeInTheDocument()
   })
 
-  // Bug: translate.ts imports moment/locale/zh-cn, which switches moment globally, and changeLanguage is never called,
-  // so every date in the app is formatted in Chinese ("2024年3月15日 09:30") for English users.
-  test.fails('keeps dates in English by default', () => {
+  test('keeps dates in English by default', () => {
     expect(localeAfterImports).toBe('en')
   })
 
