@@ -154,6 +154,12 @@ test('CompanyListPage shows its title and selects its menu', () => {
   expect(store.getState().backendPage.selectedMenuKey).toBe(MENU_KEY_COMPANY_LIST)
 })
 
+test('CompanyListPage lists the companies for a super admin', async () => {
+  vi.mocked(CompanyService.getAll).mockResolvedValue({ data: [acme] } as never)
+  renderWithProviders(<CompanyListPage />, { state: { auth: { user: { isSuperAdmin: true } } } as never })
+  expect(await screen.findByRole('button', { name: 'Acme' })).toBeInTheDocument()
+})
+
 describe('CompanyUsersPage', () => {
   test('lists the users of the company', async () => {
     vi.mocked(CompanyUserService.getAll).mockResolvedValue({ data: [{ id: 'cu-1', User: { nickName: 'Amy' } }] } as never)

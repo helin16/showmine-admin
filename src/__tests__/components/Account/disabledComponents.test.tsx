@@ -2,7 +2,6 @@ import React from 'react'
 import { renderWithProviders } from '../../testUtils'
 import RetrievePasswordForm from '../../../Components/Auth/RetrievePasswordForm'
 import CompanyBasicInfoEditor from '../../../Components/Company/CompanyBasicInfoEditor'
-import CompanyList from '../../../Components/Company/CompanyList'
 import CompanyUserInviteBtn from '../../../Components/User/CompanyUserInviteBtn'
 import RedirectChannelEditor from '../../../Components/Channel/Wizard/RedirectChannelEditor'
 import WordPressChannelEditor from '../../../Components/Channel/Wizard/WordPressChannelEditor'
@@ -14,7 +13,6 @@ const company = { id: 'co-1', name: 'Acme' } as never
 test.each([
   ['RetrievePasswordForm', <RetrievePasswordForm key='0' />],
   ['CompanyBasicInfoEditor', <CompanyBasicInfoEditor key='0' company={company} />],
-  ['CompanyList', <CompanyList key='0' />],
   ['CompanyUserInviteBtn', <CompanyUserInviteBtn key='0' company={company} />],
   ['RedirectChannelEditor', <RedirectChannelEditor key='0' channel={channel} />],
 ])('%s is disabled and renders nothing', (_name, ui) => {

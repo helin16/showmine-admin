@@ -243,6 +243,14 @@ const LanguageEN = {
     'channel-type-wechat': 'ShowMine WeChat Official Account',
     'channel-editing': 'Editing {name}:',
     'channel-creating': 'Creating a Channel:',
+    'error-getting-companies': 'Error when getting companies: {message}.',
+    contacts: 'Contacts',
+    'company-setup': 'Setup',
+    'not-on-boarded': 'Not on-boarded',
+    'company-step-started': 'Started',
+    'company-view-json': 'Click to view the JSON',
+    'company-switch': 'Switch to this company',
+    'company-switch-error': 'Error when switching company: {message}',
   },
 }
 

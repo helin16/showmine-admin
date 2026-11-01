@@ -242,6 +242,14 @@ const LanguageCN = {
     'channel-type-wechat': 'ShowMine 微信公众号',
     'channel-editing': '正在编辑 {name}：',
     'channel-creating': '新建渠道：',
+    'error-getting-companies': '获取公司列表出错: {message}.',
+    contacts: '联系方式',
+    'company-setup': '设置进度',
+    'not-on-boarded': '尚未完成设置',
+    'company-step-started': '已开始',
+    'company-view-json': '点击查看 JSON',
+    'company-switch': '切换到此公司',
+    'company-switch-error': '切换公司时发生错误: {message}',
   },
 }
 
