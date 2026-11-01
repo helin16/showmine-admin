@@ -64,7 +64,7 @@ const ChannelIcon = ({ channel, ...props }: React.ComponentProps<any> & { channe
       return <Icons.LinkedinFilled />
     }
     if (channelName === CHANNEL_TYPE_WORDPRESS.toLowerCase()) {
-      return <FontAwesomeIcon icon={faWordpress} />
+      return <FontAwesomeIcon icon={faWordpress} widthAuto />
     }
     return <Image src={APP_ICON_PATH} />
   }
