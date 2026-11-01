@@ -1,19 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { STYLE_WECHAT_COLOR } from '../../Constants'
+import { weChatBtnStyle } from '../../Constants'
 import { RootState } from '../../Redux/makeReduxStore'
 import WeChatService from '../../Services/WeChatService'
 import { getFullUrl, THIRD_PARTY_AUTH_URL_WE_CHAT } from '../../UrlMap'
 import Button, { iButton } from '../Form/Button'
-import Icons from '../Icons'
+import { WechatFilled } from '@ant-design/icons'
 import message from '../Form/message'
 import Utils from '../../Services/Utils'
-
-export const weChatBtnStyle = {
-  background: STYLE_WECHAT_COLOR,
-  borderColor: STYLE_WECHAT_COLOR,
-  color: 'white',
-}
 
 const initialState = {
   loading: true,
@@ -71,7 +65,7 @@ const WeChatInAppLoginBtn = ({
     <Button
       {...{
         block: true,
-        icon: <Icons.WechatFilled />,
+        icon: <WechatFilled />,
         style: weChatBtnStyle,
         ...props,
       }}

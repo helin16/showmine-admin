@@ -8,7 +8,7 @@ import FormItem from '../Form/FormItem'
 import Button from '../Form/Button'
 import Row from '../Form/Row'
 import Col from '../Form/Col'
-import Icons from '../Icons'
+import { LockOutlined, LoginOutlined, UserOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import IError from '../../Types/IError'
 import Alert from '../Form/Alert'
@@ -83,7 +83,7 @@ const LoginForm = ({ className }: iLoginForm) => {
           },
         ]}
       >
-        <InputBox placeholder='Email' prefix={<Icons.UserOutlined />} />
+        <InputBox placeholder='Email' prefix={<UserOutlined />} />
       </FormItem>
 
       <FormItem
@@ -96,7 +96,7 @@ const LoginForm = ({ className }: iLoginForm) => {
           },
         ]}
       >
-        <InputPassword placeholder='password' prefix={<Icons.LockOutlined />} />
+        <InputPassword placeholder='password' prefix={<LockOutlined />} />
       </FormItem>
 
       {state.signingErr.message !== '' ? (
@@ -114,7 +114,7 @@ const LoginForm = ({ className }: iLoginForm) => {
           </Col>
           <Col xs={{ span: 24, order: 1 }} sm={{ span: 8, order: 2 }} style={{ textAlign: 'right' }}>
             <Button type='primary' htmlType='submit' loading={state.signing === true} block>
-              <Icons.LoginOutlined />
+              <LoginOutlined />
               Login
             </Button>
           </Col>

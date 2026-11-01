@@ -6,6 +6,11 @@ export const REQUEST_HEADER_APP_TOKEN_ID = 'X-SHM-TOKEN'
 // The palette of charts 1, which charts 2 changed.
 export const CHART_COLORS = ['#5B8FF9', '#5AD8A6', '#5D7092', '#F6BD16', '#6F5EF9', '#6DC8EC', '#945FB9', '#FF9845']
 export const STYLE_WECHAT_COLOR = 'rgb(123, 179, 46)'
+export const weChatBtnStyle = {
+  background: STYLE_WECHAT_COLOR,
+  borderColor: STYLE_WECHAT_COLOR,
+  color: 'white',
+}
 export const CHANNEL_TYPE_SHOW_MINE = 'Showmine'
 export const CHANNEL_TYPE_FACEBOOK = 'Facebook'
 export const FACEBOOK_MAIN_COLOR = '#4267B2'

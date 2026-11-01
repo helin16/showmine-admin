@@ -2,17 +2,19 @@ import AuthPage from '../../Layouts/AuthPage'
 import PageBox from '../../Components/PageBox'
 import LoginForm from '../../Components/Auth/LoginForm'
 import AppLogo from '../../Components/AppLogo'
-import { useEffect, useState } from 'react'
+import { lazy, startTransition, useEffect, useState } from 'react'
 import { FlexContainer, FormInputWrapper } from '../../Styles/AppWrapper'
 import Button from '../../Components/Form/Button'
-import Icons from '../../Components/Icons'
+import { LockFilled, WechatFilled } from '@ant-design/icons'
 import { useSelector } from 'react-redux'
 import { RootState } from '../../Redux/makeReduxStore'
 import { useNavigate } from 'react-router-dom'
 import { BACK_END_URL } from '../../UrlMap'
-import WeChatInAppLoginBtn, { weChatBtnStyle } from '../../Components/Auth/WeChatInAppLoginBtn'
-import WeChatLoginForm from '../../Components/Auth/WeChatLoginForm'
+import { weChatBtnStyle } from '../../Constants'
 import AuthService from '../../Services/AuthService'
+
+const WeChatLoginForm = lazy(() => import('../../Components/Auth/WeChatLoginForm'))
+const WeChatInAppLoginBtn = lazy(() => import('../../Components/Auth/WeChatInAppLoginBtn'))
 
 const LOGIN_METHOD_NORMAL = 'normal'
 const LOGIN_METHOD_WECHAT = 'wechat'
@@ -43,7 +45,7 @@ const LoginPage = () => {
     return (
       <Button
         block
-        icon={<Icons.LockFilled />}
+        icon={<LockFilled />}
         onClick={() => {
           setLoginMethod(LOGIN_METHOD_NORMAL)
         }}
@@ -59,10 +61,11 @@ const LoginPage = () => {
     return (
       <Button
         block
-        icon={<Icons.WechatFilled />}
+        icon={<WechatFilled />}
         style={weChatBtnStyle}
         onClick={() => {
-          setLoginMethod(LOGIN_METHOD_WECHAT)
+          // The password form stays up until the WeChat form has loaded.
+          startTransition(() => setLoginMethod(LOGIN_METHOD_WECHAT))
         }}
       >
         WeChat
