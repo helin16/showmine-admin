@@ -102,7 +102,7 @@ const InviteForm = () => {
     )
   }
 
-  const useOtherAccount = () => {
+  const switchAccount = () => {
     AuthService.removeLocalAuthToken()
     setIsSignedIn(false)
     setError('')
@@ -180,7 +180,7 @@ const InviteForm = () => {
         <Button type='primary' block loading={submitting} onClick={onJoin}>
           <FormattedMessage id='invite-join' />
         </Button>
-        <Button type='link' block onClick={useOtherAccount}>
+        <Button type='link' block onClick={switchAccount}>
           <FormattedMessage id='invite-other-account' />
         </Button>
       </>
