@@ -92,7 +92,7 @@ const send = async <T>(request: () => Promise<T>, canEndSession = true): Promise
 }
 
 // For the uploads that use XMLHttpRequest for their progress. Returns the message to show, if there is one.
-const getUploadFailure = (status: number, body?: unknown) => {
+const getUploadFailure = (status?: number, body?: unknown) => {
   if (LocalStorageService.getToken() && isTokenRefused(status, body)) {
     endSession()
   }

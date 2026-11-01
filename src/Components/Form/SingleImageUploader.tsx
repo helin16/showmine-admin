@@ -179,7 +179,7 @@ const SingleImageUploader = ({ initImgUrl, title, assetType, onChange, icon, hin
           loading: initialState.loading,
           loadingPercentage: initialState.loadingPercentage,
         });
-        message.error(intl.formatMessage({ id: 'upload-error' }));
+        message.error(AppService.getUploadFailure(file.error?.status, file.response) || intl.formatMessage({ id: 'upload-error' }));
       }
     }
   };

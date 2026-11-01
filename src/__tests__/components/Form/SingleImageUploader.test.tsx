@@ -183,3 +183,12 @@ describe('uploading', () => {
     await waitFor(() => expect(onSetIsSaving).toHaveBeenLastCalledWith(false), { timeout: 200 })
   })
 })
+
+test('a failed upload with its own message says that, and passes on what came back', async () => {
+  vi.mocked(AppService.getUploadFailure).mockReturnValueOnce('Too big')
+  renderWithProviders(<SingleImageUploader />)
+  const xhr = await pickFile()
+  act(() => xhr.respond(413, 'nope'))
+  await waitFor(() => expect(message.error).toHaveBeenCalledWith('Too big'))
+  expect(AppService.getUploadFailure).toHaveBeenLastCalledWith(413, 'nope')
+})

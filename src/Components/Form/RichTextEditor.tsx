@@ -49,7 +49,7 @@ const imagesUploadHandler = (assetType?: string) => (
       return;
     }
     if (xhr.status < 200 || xhr.status >= 300) {
-      reject({message: `HTTP Error: ${xhr.status}`});
+      reject({message: AppService.getUploadFailure(xhr.status, xhr.responseText) || `HTTP Error: ${xhr.status}`});
       return
     }
     const json = Utils.isJSON(xhr.responseText) ? JSON.parse(xhr.responseText) : null
@@ -125,7 +125,7 @@ const customAction = (assetType?: string) => (editor: any) => {
             message.warning(translate('video-cover-failed'))
           }
         } else {
-          message.error(`Image upload failed due to a XHR Transport error. Code: ${xhr.status}`)
+          message.error(AppService.getUploadFailure(xhr.status, xhr.responseText) || `Image upload failed due to a XHR Transport error. Code: ${xhr.status}`)
         }
       }
       xhr.onerror = function () {

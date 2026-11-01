@@ -144,6 +144,14 @@ describe('image upload', () => {
     await expect(result).rejects.toEqual({ message: 'HTTP Error: 403', remove: true })
   })
 
+  test('a failure with its own message says that, and passes on what came back', async () => {
+    vi.mocked(AppService.getUploadFailure).mockReturnValueOnce('Too big')
+    const { result, xhr } = upload()
+    xhr.respond(413, 'nope')
+    await expect(result).rejects.toEqual({ message: 'Too big' })
+    expect(AppService.getUploadFailure).toHaveBeenLastCalledWith(413, 'nope')
+  })
+
   test.each([[199], [300], [500]])('status %i rejects', async (status) => {
     const { result, xhr } = upload()
     xhr.respond(status, '')
@@ -337,6 +345,14 @@ describe('video upload button', () => {
     pick().xhr.respond(500, '')
     expect(tiny.setProgressState).toHaveBeenLastCalledWith(false)
     expect(message.error).toHaveBeenCalledWith('Image upload failed due to a XHR Transport error. Code: 500')
+  })
+
+  test('a failed video with its own message says that', async () => {
+    vi.mocked(AppService.getUploadFailure).mockReturnValueOnce('Too big')
+    pick().xhr.respond(413, 'nope')
+    await tick()
+    expect(message.error).toHaveBeenCalledWith('Too big')
+    expect(AppService.getUploadFailure).toHaveBeenLastCalledWith(413, 'nope')
     expect(tiny.insertContent).not.toHaveBeenCalled()
   })
 
