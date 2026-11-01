@@ -5,14 +5,12 @@ import { ThunkAction } from 'redux-thunk'
 import AppReducer from './reduxers/app.slice'
 import AuthReducer from './reduxers/auth.slice'
 import BackEndPageReducer from './reduxers/backendpage.slice'
-import BillingPageReducer from './reduxers/billingpage.slice'
 import WeChatReducer from './reduxers/wechat.slice'
 
 const reducers = {
   app: AppReducer,
   auth: AuthReducer,
   backendPage: BackEndPageReducer,
-  billingPage: BillingPageReducer,
   weChat: WeChatReducer,
 }
 

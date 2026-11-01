@@ -8,7 +8,6 @@ export const ARTICLE_DETAILS_URL = `${BACK_END_URL}articles/:id`
 export const COMMENTS_LIST_URL = `${BACK_END_URL}comments`
 export const MEDIA_LIST_URL = `${BACK_END_URL}media`
 export const COMPANY_ADMIN_URL = `${BACK_END_URL}company/`
-export const COMPANY_BILLING_URL = `${COMPANY_ADMIN_URL}billing`
 export const COMPANY_CHANNELS_URL = `${COMPANY_ADMIN_URL}channels`
 export const COMPANY_CHANNEL_NEW_URL = `${COMPANY_ADMIN_URL}channel/new`
 export const COMPANY_USERS_URL = `${COMPANY_ADMIN_URL}users`
@@ -34,7 +33,6 @@ const map = {
   ARTICLE_DETAILS_URL,
   COMMENTS_LIST_URL,
   MEDIA_LIST_URL,
-  COMPANY_BILLING_URL,
   COMPANY_CHANNELS_URL,
   COMPANY_USERS_URL,
   MY_PROFILE_URL,

@@ -9,7 +9,6 @@ import { combineReducers } from 'redux'
 import AppReducer from '../Redux/reduxers/app.slice'
 import AuthReducer from '../Redux/reduxers/auth.slice'
 import BackEndPageReducer from '../Redux/reduxers/backendpage.slice'
-import BillingPageReducer from '../Redux/reduxers/billingpage.slice'
 import WeChatReducer from '../Redux/reduxers/wechat.slice'
 import { messages } from '../i18n/messages'
 
@@ -17,7 +16,6 @@ const rootReducer = combineReducers({
   app: AppReducer,
   auth: AuthReducer,
   backendPage: BackEndPageReducer,
-  billingPage: BillingPageReducer,
   weChat: WeChatReducer,
 })
 

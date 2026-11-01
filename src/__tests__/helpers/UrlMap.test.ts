@@ -2,7 +2,6 @@ import UrlMap, {
   ARTICLE_DETAILS_URL,
   ARTICLE_LIST_URL,
   AUTH_URL_USER_CONFIRM,
-  COMPANY_BILLING_URL,
   COMPANY_LIST_URL,
   getCurrentUrl,
   getFullUrl,
@@ -13,7 +12,6 @@ import UrlMap, {
 describe('url constants', () => {
   test('back-end pages live under the back-end prefix', () => {
     expect(ARTICLE_LIST_URL).toBe('/b/articles')
-    expect(COMPANY_BILLING_URL).toBe('/b/company/billing')
     expect(COMPANY_LIST_URL).toBe('/b/super/company/')
   })
 

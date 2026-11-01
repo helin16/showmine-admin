@@ -12,16 +12,6 @@ import reduceBackend, {
   selectMenu,
   toggleSideMenu,
 } from '../../Redux/reduxers/backendpage.slice'
-import reduceBilling, {
-  displayChoosedPlan,
-  displayConfirm,
-  displayInvoice,
-  displayPlans,
-  hideChoosedPlan,
-  hideConfirm,
-  hideInvoice,
-  hidePlans,
-} from '../../Redux/reduxers/billingpage.slice'
 import reduceWeChat, { loadedWeChatJs, openedInWeChat } from '../../Redux/reduxers/wechat.slice'
 import { defaultSelectedKey } from '../../Components/Menu/MenuItems'
 import Locale from '../../Components/Form/Locale'
@@ -138,25 +128,6 @@ describe('backend page slice', () => {
       ...start,
       selectedMenuKey: 'other',
     })
-  })
-})
-
-describe('billing page slice', () => {
-  const start = reduceBilling(undefined, init)
-
-  test('starts with everything hidden', () => {
-    expect(start).toEqual({ showPlans: false, showConfirm: false, showChoosedPlan: false, showInvoice: false })
-  })
-
-  test.each([
-    ['showPlans', displayPlans, hidePlans],
-    ['showConfirm', displayConfirm, hideConfirm],
-    ['showChoosedPlan', displayChoosedPlan, hideChoosedPlan],
-    ['showInvoice', displayInvoice, hideInvoice],
-  ] as const)('%s is shown and hidden on its own', (flag, show, hide) => {
-    const shown = reduceBilling(start, show())
-    expect(shown).toEqual({ ...start, [flag]: true })
-    expect(reduceBilling(shown, hide())).toEqual(start)
   })
 })
 

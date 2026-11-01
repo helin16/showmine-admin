@@ -8,7 +8,6 @@ import { renderWithProviders } from '../../testUtils'
 import ForgotPasswordPage from '../../../Pages/Auth/ForgotPasswordPage'
 import LoginPage from '../../../Pages/Auth/LoginPage'
 import ChannelsPage from '../../../Pages/Channel/ChannelsPage'
-import BillingPage from '../../../Pages/Company/BillingPage'
 import CompanyEditPage from '../../../Pages/Company/CompanyEditPage'
 import CompanyListPage from '../../../Pages/Company/CompanyListPage'
 import CompanyUsersPage from '../../../Pages/Company/CompanyUsersPage'
@@ -23,7 +22,6 @@ import CompanyUserService from '../../../Services/CompanyUserService'
 import WeChatService from '../../../Services/WeChatService'
 import message from '../../../Components/Form/message'
 import {
-  MENU_KEY_COMPANY_BILLING,
   MENU_KEY_COMPANY_CHANNELS,
   MENU_KEY_COMPANY_LIST,
   MENU_KEY_COMPANY_USERS,
@@ -142,15 +140,6 @@ describe('ChannelsPage', () => {
     expect(screen.getByRole('button', { name: /New Channel/ })).toBeInTheDocument()
     expect(document.querySelector('.ant-card')).not.toBeInTheDocument()
   })
-})
-
-test.each([
-  ['with a company', { company: acme }],
-  ['without a company', {}],
-])('BillingPage renders %s', (_name, auth) => {
-  const { store } = renderWithProviders(<BillingPage />, { state: { auth } })
-  expect(screen.getByText('Billings')).toBeInTheDocument()
-  expect(store.getState().backendPage.selectedMenuKey).toBe(MENU_KEY_COMPANY_BILLING)
 })
 
 test('CompanyListPage shows its title and selects its menu', () => {

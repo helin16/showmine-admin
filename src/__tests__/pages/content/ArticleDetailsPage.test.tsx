@@ -22,7 +22,6 @@ vi.mock('../../../Layouts/BackendPage', () => ({
     </main>
   ),
 }))
-vi.mock('../../../Components/Package/PackageNoticeBoard', () => ({ default: () => null }))
 vi.mock('../../../Components/Article/NewArticleGuide', () => ({ default: () => <div>new article guide</div> }))
 vi.mock('../../../Components/Comments/CommentsList', () => ({
   default: ({ itemId }: { itemId: string }) => <div>comments for {itemId}</div>,

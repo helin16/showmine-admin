@@ -7,7 +7,6 @@ import MenuItems, {
   defaultSelectedKey,
   MENU_ACCESS_LEVEL_COMPANY_ADMIN,
   MENU_ACCESS_LEVEL_SUPER_ADMIN,
-  MENU_KEY_COMPANY_BILLING,
   MENU_KEY_COMPANY_LIST,
   MENU_KEY_COMPANY_USERS,
   MENU_KEY_DASHBOARD,
@@ -64,10 +63,6 @@ describe('MenuItems', () => {
   test('only the two admin sections are restricted', () => {
     expect(MenuItems.filter((section: Item) => section.access).length).toBe(2)
     expect(MenuItems.filter((section: Item) => !section.access).length).toBe(2)
-  })
-
-  test('billing stays out of the menu', () => {
-    expect(links.map((link: Item) => link.key)).not.toContain(MENU_KEY_COMPANY_BILLING)
   })
 
   test.each(Object.keys(messages))('every label has a %s translation', (locale) => {

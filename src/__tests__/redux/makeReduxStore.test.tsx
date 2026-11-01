@@ -5,7 +5,7 @@ import store, { useAppDispatch } from '../../Redux/makeReduxStore'
 import { collapseSideMenu, expandSideMenu } from '../../Redux/reduxers/backendpage.slice'
 
 test('combines every slice under its key', () => {
-  expect(Object.keys(store.getState()).sort()).toEqual(['app', 'auth', 'backendPage', 'billingPage', 'weChat'])
+  expect(Object.keys(store.getState()).sort()).toEqual(['app', 'auth', 'backendPage', 'weChat'])
 })
 
 test('dispatched actions reach their slice only', () => {

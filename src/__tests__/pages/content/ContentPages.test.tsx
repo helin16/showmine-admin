@@ -26,7 +26,6 @@ vi.mock('../../../Layouts/BackendPage', () => ({
     </main>
   ),
 }))
-vi.mock('../../../Components/Package/PackageNoticeBoard', () => ({ default: () => null }))
 vi.mock('../../../Components/Article/ArticleList', () => ({
   default: ({ searchParams }: { searchParams: iSearchParams }) => (
     <pre data-testid="article-list">{JSON.stringify(searchParams)}</pre>

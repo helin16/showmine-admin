@@ -13,7 +13,6 @@ import Col from '../Components/Form/Col'
 import Button from '../Components/Form/Button'
 import Icons from '../Components/Icons'
 import Space from '../Components/Form/Space'
-import UpgradeBtn from '../Components/Billing/UpgradeBtn'
 
 /**
  * Backend Page Header
@@ -62,7 +61,6 @@ const BackendPageHeader = () => {
           }}
         >
           <Space align={'center'}>
-            <UpgradeBtn />
             <UserCompanySelector />
             <Button href={MY_PROFILE_URL} type={'link'}>
               <UserAvatar user={user} />

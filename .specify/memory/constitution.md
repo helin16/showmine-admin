@@ -1,17 +1,14 @@
 <!--
 Sync Impact Report
-- Version: 1.1.0 draft -> 1.2.0 proposed (all-change impact assessment across all repositories)
-- Principles added: mandatory three-repository impact assessment
-- Principles expanded: feature initiation and cross-repository coordination
-- Sections expanded: Development Workflow
-- Follow-up: obtain project-owner approval and replace the ratification-date TODO
+- Version: 1.2.0 proposed -> 1.3.0 ratified by the project owner on 2026-11-01
+- Stack updated: Create React App 5 -> Vite
+- Merge test command updated: `yarn test`, which also enforces coverage
 -->
 
 # ShowMine Admin Constitution
 
 This constitution governs the ShowMine admin repository and its integration with the
-ShowMine reader and API repositories. It is a proposed baseline and remains a draft
-until approved by the project owner.
+ShowMine reader and API repositories.
 
 ## Core Principles
 
@@ -48,7 +45,7 @@ remain local when the other repositories are explicitly assessed as unaffected.
 ### V. Keep Browser Configuration and Data Safe
 HTTP calls MUST use the shared service layer and preserve its established handling of
 authentication and company context. Values embedded in the browser bundle, including
-Create React App `REACT_APP_*` variables, MUST be treated as public; secrets MUST NOT be
+Vite `REACT_APP_*` variables, MUST be treated as public; secrets MUST NOT be
 placed in them or committed to the repository. Authentication tokens and private user
 data MUST NOT be written to logs or error messages.
 
@@ -62,7 +59,7 @@ where applicable. Existing Ant Design and shared form components SHOULD be reuse
 Behavioral changes MUST have regression tests at the narrowest useful level. Tests for
 authentication, role access, company context, and API behavior MUST cover relevant
 success and failure cases. Before merging application changes, run `yarn lint`,
-`CI=true yarn test --watchAll=false`, and `yarn build`; document any command that cannot
+`yarn test`, and `yarn build`; document any command that cannot
 run and its reason.
 
 ### VIII. Preserve Vercel Deployment Behavior
@@ -74,7 +71,7 @@ production. Vercel environment values exposed to the client MUST follow Principl
 
 ## Technical Constraints
 
-- The current application stack is React 18, TypeScript, Create React App 5, Redux
+- The current application stack is React 18, TypeScript, Vite, Redux
   Toolkit, React Router, and Ant Design. Changes MUST preserve compatibility with the
   installed stack unless an approved migration explicitly changes it.
 - Localization uses `react-intl` with English and Chinese message catalogs.
@@ -116,4 +113,4 @@ MUST identify any deviation and its justification. When this constitution confli
 with a higher-priority security or platform requirement, the higher-priority
 requirement takes precedence and the conflict MUST be documented.
 
-**Version**: 1.2.0 | **Ratified**: TODO (pending project-owner approval) | **Last Amended**: 2026-10-31
+**Version**: 1.3.0 | **Ratified**: 2026-11-01 | **Last Amended**: 2026-11-01

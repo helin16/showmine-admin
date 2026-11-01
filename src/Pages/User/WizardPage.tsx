@@ -61,7 +61,7 @@ const WizardPage = () => {
       title: translate('setup-account'),
       content: (
         <>
-          <BackendPageContentTitle title={translate('company')} checkPackage={false} />
+          <BackendPageContentTitle title={translate('company')} />
           {state.company ? <CompanyBasicInfoEditor company={state.company} /> : null}
         </>
       ),
@@ -74,7 +74,7 @@ const WizardPage = () => {
           <BackendPageContentTitle
             title={translate('channels')}
             // description='Channel setting has been completed, now you can try add new article'
-            checkPackage={false}
+           
           />
           {state.company ? <ChannelList /> : null}
         </>
@@ -85,7 +85,7 @@ const WizardPage = () => {
       title: translate('news_article'),
       content: (
         <>
-          <BackendPageContentTitle title={translate('news_article')} checkPackage={false} />
+          <BackendPageContentTitle title={translate('news_article')} />
           {state.company && state.showArticleList ? (
             <ArticleList company={state.company} />
           ) : (
@@ -132,7 +132,7 @@ const WizardPage = () => {
     <BackendPage
       selectedMenu={''}
       checkPackage={false}
-      ContentHeader={<BackendPageContentTitle title={translate('setup-wizard')} checkPackage={false} />}
+      ContentHeader={<BackendPageContentTitle title={translate('setup-wizard')} />}
     >
       <Card>
         <Steps

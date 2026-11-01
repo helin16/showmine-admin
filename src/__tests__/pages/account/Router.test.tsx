@@ -16,7 +16,6 @@ import {
   BACK_END_URL,
   COMMENTS_LIST_URL,
   COMPANY_ADMIN_URL,
-  COMPANY_BILLING_URL,
   COMPANY_CHANNEL_NEW_URL,
   COMPANY_CHANNELS_URL,
   COMPANY_LIST_URL,
@@ -43,7 +42,6 @@ vi.mock('../../../Pages/Media/MediaListPage', () => page('media'))
 vi.mock('../../../Pages/Comments/CommentsListPage', () => page('comments'))
 vi.mock('../../../Pages/User/MyProfilePage', () => page('profile'))
 vi.mock('../../../Pages/Company/CompanyEditPage', () => page('company'))
-vi.mock('../../../Pages/Company/BillingPage', () => page('billing'))
 vi.mock('../../../Pages/Company/CompanyUsersPage', () => page('users'))
 vi.mock('../../../Pages/Company/CompanyListPage', () => page('company list'))
 vi.mock('../../../Pages/Channel/ChannelsPage', () => page('channels'))
@@ -102,7 +100,6 @@ describe('Router', () => {
 
   test.each([
     [COMPANY_ADMIN_URL, 'company'],
-    [COMPANY_BILLING_URL, 'billing'],
     [COMPANY_CHANNEL_NEW_URL, 'new channel'],
     [COMPANY_CHANNELS_URL, 'channels'],
     [COMPANY_USERS_URL, 'users'],

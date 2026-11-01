@@ -9,7 +9,6 @@ import {
   BACK_END_URL,
   COMMENTS_LIST_URL,
   COMPANY_ADMIN_URL,
-  COMPANY_BILLING_URL,
   COMPANY_CHANNEL_NEW_URL,
   COMPANY_CHANNELS_URL,
   COMPANY_LIST_URL,
@@ -28,7 +27,6 @@ import CommentsListPage from './Pages/Comments/CommentsListPage'
 import MyProfilePage from './Pages/User/MyProfilePage'
 import CompanyAdminRoute from './Components/Route/CompanyAdminRoute'
 import CompanyEditPage from './Pages/Company/CompanyEditPage'
-import BillingPage from './Pages/Company/BillingPage'
 import CompanyUsersPage from './Pages/Company/CompanyUsersPage'
 import SuperAdminRoute from './Components/Route/SuperAdminRoute'
 import CompanyListPage from './Pages/Company/CompanyListPage'
@@ -115,16 +113,6 @@ const Router = () => {
                 <ProtectedRoute>
                   <CompanyAdminRoute>
                     <CompanyEditPage />
-                  </CompanyAdminRoute>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path={COMPANY_BILLING_URL}
-              element={
-                <ProtectedRoute>
-                  <CompanyAdminRoute>
-                    <BillingPage />
                   </CompanyAdminRoute>
                 </ProtectedRoute>
               }

@@ -45,7 +45,7 @@ test('FullPageWrapper renders its children', () => {
 
 test('BackendPageContentTitle shows the title, description and controls', () => {
   renderWithProviders(
-    <BackendPageContentTitle title='Title' description='Desc' controls={<button>act</button>} checkPackage={false} />,
+    <BackendPageContentTitle title='Title' description='Desc' controls={<button>act</button>} />,
   )
   expect(screen.getByText('Title')).toBeInTheDocument()
   expect(screen.getByText('Desc')).toBeInTheDocument()

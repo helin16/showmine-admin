@@ -8,7 +8,7 @@ const CompanyListPage = () => (
   <BackendPage
     selectedMenu={MENU_KEY_COMPANY_LIST}
     checkPackage={false}
-    ContentHeader={<BackendPageContentTitle title={'Company List'} checkPackage={false} />}
+    ContentHeader={<BackendPageContentTitle title={'Company List'} />}
   >
     <CompanyList />
   </BackendPage>
