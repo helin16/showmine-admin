@@ -101,8 +101,17 @@ describe('ArticleEditorSideOptions', () => {
     const onUpdate = vi.fn()
     renderWithProviders(<ArticleEditorSideOptions article={article} onUpdate={onUpdate} />)
     click(/excerpt/)
-    fireEvent.click(screen.getByRole('switch'))
+    fireEvent.click(screen.getByRole('switch', { name: 'Enable Google Translate?' }))
     expect(onUpdate).toHaveBeenCalledWith('excerpt', 'new excerpt')
     expect(onUpdate).toHaveBeenCalledWith('enableGTranslateFlag', true)
+  })
+
+  test('turns comments on, and they are off unless the article says otherwise', () => {
+    const onUpdate = vi.fn()
+    renderWithProviders(<ArticleEditorSideOptions article={article} onUpdate={onUpdate} />)
+    const toggle = screen.getByRole('switch', { name: 'Allow comments?' })
+    expect(toggle).not.toBeChecked()
+    fireEvent.click(toggle)
+    expect(onUpdate).toHaveBeenCalledWith('enableCommentsFlag', true)
   })
 })

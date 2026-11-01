@@ -90,7 +90,23 @@ const ArticleEditorSideOptions = ({
           <FormattedMessage id="gTranslateFlag" />
           <BoxTitleSuffix><FormattedMessage id="gTranslateFlagMsg" /></BoxTitleSuffix>
         </BoxTitleDiv>
-        <Switch checked={article.enableGTranslateFlag} onClick={(checked) => onUpdate('enableGTranslateFlag', checked)}/>{' '}<FormattedMessage id="gTranslateFlag" />
+        <Switch
+          aria-label={intl.formatMessage({ id: 'gTranslateFlag' })}
+          checked={article.enableGTranslateFlag}
+          onClick={(checked) => onUpdate('enableGTranslateFlag', checked)}
+        />{' '}<FormattedMessage id="gTranslateFlag" />
+      </FormInputWrapper>
+
+      <FormInputWrapper>
+        <BoxTitleDiv>
+          <FormattedMessage id="commentsFlag" />
+          <BoxTitleSuffix><FormattedMessage id="commentsFlagMsg" /></BoxTitleSuffix>
+        </BoxTitleDiv>
+        <Switch
+          aria-label={intl.formatMessage({ id: 'commentsFlag' })}
+          checked={article.enableCommentsFlag === true}
+          onClick={(checked) => onUpdate('enableCommentsFlag', checked)}
+        />{' '}<FormattedMessage id="commentsFlag" />
       </FormInputWrapper>
 
       <FormInputWrapper>

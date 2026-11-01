@@ -23,6 +23,7 @@ type IArticle = IBaseModel & {
   UpdatedBy?: IUser
   Author?: IAuthor;
   enableGTranslateFlag: boolean;
+  enableCommentsFlag?: boolean;
 }
 
 export default IArticle
