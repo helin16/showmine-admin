@@ -1,8 +1,9 @@
 import { Avatar as AntdAvatar, AvatarProps } from 'antd'
 
 type iAvatar = AvatarProps
-const Avatar = ({ className, ...props }: iAvatar) => {
-  return <AntdAvatar {...props} className={`app-Avatar ${className || ''}`} />
+// antd now applies the app's large componentSize to avatars, which enlarges them.
+const Avatar = ({ className, size = 'medium', ...props }: iAvatar) => {
+  return <AntdAvatar {...props} size={size} className={`app-Avatar ${className || ''}`} />
 }
 
 export default Avatar

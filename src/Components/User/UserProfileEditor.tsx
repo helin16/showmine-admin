@@ -65,7 +65,7 @@ const UserProfileEditor = ({ user }: { user: IUser }) => {
       <Spin spinning={state.isSaving}>
         <Row gutter={[listGutter, listGutter]}>
           <Col xs={24} sm={24} md={6} style={{ height: '160px' }}>
-            <Space direction="vertical">
+            <Space orientation="vertical">
               <SingleImageUploader
                 assetType={ASSET_TYPE_USER_AVATAR}
                 onSetIsSaving={(saving) => setState({...state, isSaving: saving})}
@@ -156,7 +156,7 @@ const UserProfileEditor = ({ user }: { user: IUser }) => {
                 </FormInputWrapper>
               </Col>
               <Col md={24}>
-                <Divider orientation="left" plain>{intl.formatMessage({ id: 'reset-password' })}</Divider>
+                <Divider titlePlacement="start" plain>{intl.formatMessage({ id: 'reset-password' })}</Divider>
               </Col>
               <Col md={24}>
                 <PasswordConfirm

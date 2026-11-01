@@ -135,11 +135,15 @@ const AppWrapper = styled.div`
 
   min-height: ${pageMinHeight};
 
-  .ant-select-selector,
+  .ant-select,
   .app-button,
   .app-input-box,
   .app-input-password-box {
     border-radius: 0px !important;
+  }
+
+  .ant-input-search .ant-input-search-btn {
+    color: rgba(0, 0, 0, 0.45);
   }
 
   .ant-statistic {

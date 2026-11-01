@@ -21,10 +21,10 @@ const globex = { id: 'co-2', name: 'Globex' }
 const memberships = [{ Company: acme }, { Company: globex }, {}]
 
 const open = (container: HTMLElement) => {
-  fireEvent.mouseDown(container.querySelector('.ant-select-selector') as Element)
+  fireEvent.mouseDown(container.querySelector('.ant-select') as Element)
 }
 const option = (name: string) => screen.findByTitle(name, { selector: '.ant-select-item-option' })
-const selected = (container: HTMLElement) => container.querySelector('.ant-select-selection-item')
+const selected = (container: HTMLElement) => container.querySelector('.ant-select-content')
 
 beforeAll(() => stubMatchMedia())
 beforeEach(() => {
@@ -55,7 +55,7 @@ describe('UserCompanySelector', () => {
       const { container } = renderWithProviders(<UserCompanySelector />, {
         state: { auth: { companyUsers: memberships } } as never,
       })
-      expect(selected(container)).toBeEmptyDOMElement()
+      expect(selected(container)).toHaveProperty('textContent', '')
     })
 
     test('switching saves the last visited company and reloads the backend', async () => {

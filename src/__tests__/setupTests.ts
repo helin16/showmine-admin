@@ -7,6 +7,16 @@ Object.keys(process.env)
   .filter((key) => key.startsWith('REACT_APP_'))
   .forEach((key) => delete process.env[key])
 
+// antd 6 needs this, and jsdom has no layout to observe.
+vi.stubGlobal(
+  'ResizeObserver',
+  class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  },
+)
+
 const oldEnv = { ...process.env }
 
 beforeEach(() => {

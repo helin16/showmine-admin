@@ -36,7 +36,7 @@ const WizardDonePage = () => {
               <Card
                 className='wizard-done-card'
                 hoverable
-                bordered={false}
+                variant="borderless"
                 cover={<Icons.DashboardFilled style={{ fontSize: '48px', color: '#08c', padding: '30px 0' }} />}
               >
                 <CardMeta
@@ -52,7 +52,7 @@ const WizardDonePage = () => {
               <Card
                 className='wizard-done-card'
                 hoverable
-                bordered={false}
+                variant="borderless"
                 cover={<Icons.FileFilled style={{ fontSize: '48px', color: '#08c', padding: '30px 0' }} />}
               >
                 <CardMeta
@@ -68,7 +68,7 @@ const WizardDonePage = () => {
               <Card
                 className='wizard-done-card'
                 hoverable
-                bordered={false}
+                variant="borderless"
                 cover={
                   <Icons.ApartmentOutlined
                     rotate={270}
@@ -89,7 +89,7 @@ const WizardDonePage = () => {
               <Card
                 className='wizard-done-card'
                 hoverable
-                bordered={false}
+                variant="borderless"
                 cover={<Icons.SettingFilled style={{ fontSize: '48px', color: '#08c', padding: '30px 0' }} />}
               >
                 <CardMeta

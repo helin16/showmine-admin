@@ -25,6 +25,7 @@ import translate from '../../i18n/translate'
 const CompanyListWrapper = styled.div`
   .ant-steps-item-title {
     font-size: 10px !important;
+    white-space: nowrap;
   }
   .company-name-link {
     padding: 0px;
@@ -35,20 +36,16 @@ const CompanyListWrapper = styled.div`
     text-align: left;
     font-size: 14px;
   }
-  .ant-steps-label-vertical .ant-steps-item-content {
+  .ant-steps-title-vertical .ant-steps-item-section {
     width: 50px !important;
   }
   .ant-steps-dot .ant-steps-item-icon,
   .ant-steps-dot.ant-steps-small .ant-steps-item-icon {
     margin-inline-start: 20px !important;
   }
-  .ant-steps-dot .ant-steps-item-tail,
-  .ant-steps-dot.ant-steps-small .ant-steps-item-tail {
+  .ant-steps-dot .ant-steps-item-rail,
+  .ant-steps-dot.ant-steps-small .ant-steps-item-rail {
     margin-inline-start: 24px !important;
-  }
-
-  .ant-steps-item.ant-steps-item-process.ant-steps-item-active .ant-steps-item-content {
-    margin-top: 10px;
   }
 `
 
@@ -168,7 +165,7 @@ const CompanyList = () => {
 
     return (
       <Steps
-        progressDot
+        type={'dot'}
         current={currentStep}
         size={'small'}
         items={[

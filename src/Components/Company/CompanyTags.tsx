@@ -156,7 +156,7 @@ const CompanyTags = () => {
      )
    }
    return (
-     <Tag className={'company-tag-div new-tag'} color={primaryBtnBgColor} onClick={() => setShowingNewTagDiv(true)}>
+     <Tag className={'company-tag-div new-tag'} variant='solid' color={primaryBtnBgColor} onClick={() => setShowingNewTagDiv(true)}>
        <Icons.PlusOutlined /> {translate('new-tag')}
      </Tag>
    )

@@ -16,7 +16,7 @@ import AppService from '../../Services/AppService';
 const UploadWrapper = styled.div`
   height: 100%;
   width: 100%;
-  .ant-spin-nested-loading {
+  .ant-spin {
     height: 100%;
     width: 100%;
     display: table;
@@ -38,7 +38,7 @@ const UploadWrapper = styled.div`
       }
     }
 
-    .ant-spin.ant-spin-spinning {
+    &.ant-spin-spinning {
       .percentage-wrapper {
         top: 0px;
         bottom: 0px;

@@ -25,7 +25,7 @@ const Wrapper = styled.div`
     border-bottom: 1px dashed #ccc;
     margin: 18px 0px 7px 0px;
   }
-  .ant-input-group-addon button,
+  .ant-input-search-btn,
   .ant-input-affix-wrapper {
     border: none;
   }

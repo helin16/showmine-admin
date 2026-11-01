@@ -76,7 +76,7 @@ const CompanyEditor = ({ company, onSaved }: { company: ICompany; onSaved?: (new
         <Card>
           <Row gutter={32}>
             <Col md={{ span: 7 }}>
-              <Space direction="vertical" style={{ width: '100%' }}>
+              <Space orientation="vertical" style={{ width: '100%' }}>
                 <FormInputWrapper style={{ height: '180px' }}>
                   <SingleImageUploader
                      assetType={ASSET_TYPE_COMPANY_LOGO}

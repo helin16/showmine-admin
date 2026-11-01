@@ -74,7 +74,7 @@ const UserCompanySelector = () => {
    * @param newValue
    */
   const onChange = (newValue: any) => { // eslint-disable-line
-    const newCompanyId = newValue.key;
+    const newCompanyId = newValue.value;
     setIsSaving(true);
     Promise.all([
         AuthService.updateMe({

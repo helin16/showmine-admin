@@ -1,6 +1,5 @@
 import React from 'react'
 import { Timeline as AntdTimeline, TimelineProps } from 'antd'
-import { TimeLineItemProps } from 'antd/lib/timeline/TimelineItem'
 
 type iTimeline = TimelineProps
 const Timeline = ({ className, children, ...props }: iTimeline) => {
@@ -16,7 +15,7 @@ const Timeline = ({ className, children, ...props }: iTimeline) => {
   )
 }
 
-type iTimelineItem = TimeLineItemProps
+type iTimelineItem = NonNullable<TimelineProps['items']>[number]
 export const TimelineItem = ({ className, ...props }: iTimelineItem) => {
   return <AntdTimeline.Item {...props} className={`app-TimelineItem ${className || ''}`} />
 }

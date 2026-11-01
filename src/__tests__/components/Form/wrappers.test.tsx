@@ -122,7 +122,7 @@ const cases: Case[] = [
   )],
   ['Tag', 'app-Tag', 'new', (c) => <Tag className={c}>new</Tag>],
   ['Timeline', 'app-Timeline', 'Created', (c) => <Timeline className={c}><TimelineItem>Created</TimelineItem></Timeline>],
-  ['TimelineItem', 'app-TimelineItem', 'Created', (c) => <TimelineItem className={c}>Created</TimelineItem>],
+  ['TimelineItem', 'app-TimelineItem', 'Created', (c) => <Timeline><TimelineItem className={c}>Created</TimelineItem></Timeline>],
   ['Tooltip', 'app-Tooltip', 'Hint', (c) => <Tooltip className={c} open title='Hint'><a>open</a></Tooltip>],
   ['Upload', 'app-upload', 'Attach', (c) => <Upload className={c}>Attach</Upload>],
   ['UploadDragger', 'app-UploadDragger', 'Drop here', (c) => <UploadDragger className={c}>Drop here</UploadDragger>],

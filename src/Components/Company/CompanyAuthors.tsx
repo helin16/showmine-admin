@@ -106,7 +106,7 @@ const CompanyAuthors = () => {
             </Tag>
           );
         })}
-        <Tag className={'author-tag-div new-author'} color={primaryBtnBgColor} onClick={() => setEditingAuthor(null)}>
+        <Tag className={'author-tag-div new-author'} variant='solid' color={primaryBtnBgColor} onClick={() => setEditingAuthor(null)}>
           <Icons.PlusOutlined /> {translate('new-author')}
         </Tag>
       </Spin>

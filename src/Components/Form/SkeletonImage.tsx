@@ -1,6 +1,7 @@
-import { Skeleton as AntdSkeleton, ImageProps } from 'antd'
+import { ComponentProps } from 'react'
+import { Skeleton as AntdSkeleton } from 'antd'
 
-type iSkeletonImage = ImageProps
+type iSkeletonImage = ComponentProps<typeof AntdSkeleton.Image>
 const SkeletonImage = ({ className, ...props }: iSkeletonImage) => {
   return <AntdSkeleton.Image {...props} className={`app-skeleton-image ${className || ''}`} />
 }

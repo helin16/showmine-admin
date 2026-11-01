@@ -13,7 +13,12 @@ const App = () => {
   // Runs before the children render, so translate() and moment are right on their first render.
   changeLanguage(locale.locale)
   return (
-    <ConfigProvider locale={locale} componentSize={componentSize}>
+    <ConfigProvider
+      locale={locale}
+      componentSize={componentSize}
+      // antd 6 made tags borderless, without their trailing margin.
+      tag={{ variant: 'outlined', styles: { root: { marginInlineEnd: 8 } } }}
+    >
       <IntlProvider locale={locale.locale} messages={messages[locale.locale]}>
         <Router />
       </IntlProvider>
