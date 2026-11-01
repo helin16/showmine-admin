@@ -40,6 +40,18 @@ afterEach(() => {
 })
 
 describe('ArticlePublishBtn', () => {
+  test('offers every channel except the deleted ones', async () => {
+    renderWithProviders(<ArticlePublishBtn article={article} />, { state: signedIn })
+    open()
+    await waitFor(() =>
+      expect(channels.getAll).toHaveBeenCalledExactlyOnceWith({
+        where: JSON.stringify({ isActive: true }),
+        perPage: 9999,
+        currentPage: 1,
+      }),
+    )
+  })
+
   test('renders nothing without an article', () => {
     const { container } = renderWithProviders(<ArticlePublishBtn />, { state: signedIn })
     expect(container).toBeEmptyDOMElement()

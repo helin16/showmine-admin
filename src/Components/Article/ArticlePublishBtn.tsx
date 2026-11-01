@@ -67,7 +67,11 @@ const ArticlePublishBtn = ({ article, children, onPublished, ...props }: iArticl
       channels: [],
       channelLoadingErr: undefined,
     }))
-    ChannelService.getAll()
+    ChannelService.getAll({
+      where: JSON.stringify({ isActive: true }),
+      perPage: 9999,
+      currentPage: 1,
+    })
       .then((res) => {
         if (isCancelled === true) return
         const channels = res.data
