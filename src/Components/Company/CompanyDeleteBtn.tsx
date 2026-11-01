@@ -55,10 +55,6 @@ const CompanyDeleteBtn = ({
       .then((res) => {
         setState(initialState)
         message.success('Company deleted successfully.')
-        setState({
-          ...state,
-          deleting: false,
-        })
         if (typeof onDeleted === 'function') {
           onDeleted(res)
         }

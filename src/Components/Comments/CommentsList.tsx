@@ -57,7 +57,7 @@ const initState: iState = {
   isSaving: false,
 }
 
-const CommentsList = ({ itemId }: { itemId?: string }) => {
+const CommentsListContent = ({ itemId }: { itemId?: string }) => {
   const currentItemId = `${itemId || ''}`.trim();
   const [state, setState] = useState(initState);
   /**
@@ -183,15 +183,15 @@ const CommentsList = ({ itemId }: { itemId?: string }) => {
   //   ;
   // };
   //
-  // const handleCancel = () => {
-  //   setState({
-  //     ...state,
-  //     replyId: undefined,
-  //     replyItemId: undefined,
-  //     newReplyContent: '',
-  //     commentIndex: 0,
-  //   })
-  // };
+  const handleCancel = () => {
+    setState({
+      ...state,
+      replyId: undefined,
+      replyItemId: undefined,
+      newReplyContent: '',
+      commentIndex: 0,
+    })
+  };
 
   const onTextChange = (newValue: string) => {
     setState({
@@ -319,7 +319,7 @@ const CommentsList = ({ itemId }: { itemId?: string }) => {
         title={'Reply to Comments'}
         open={`${state.replyId || ''}`.trim() !== ''}
         // onOk={handleOk}
-        // onCancel={handleCancel}
+        onCancel={handleCancel}
         width={'80%'}
       >
         <RichTextEditor
@@ -340,5 +340,8 @@ const CommentsList = ({ itemId }: { itemId?: string }) => {
     </>
   );
 }
+
+// A new article is a new list, so the key resets the page and the results.
+const CommentsList = ({ itemId }: { itemId?: string }) => <CommentsListContent key={itemId} itemId={itemId} />
 
 export default CommentsList

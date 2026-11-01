@@ -101,7 +101,7 @@ const UserCompanySelector = () => {
       <Select
         labelInValue
         showSearch
-        optionFilterProp="children"
+        optionFilterProp="label"
         value={getSelectedValue()}
         style={{ width: '160px' }}
         onChange={onChange}
@@ -109,7 +109,7 @@ const UserCompanySelector = () => {
           if (!option) {
             return false;
           }
-          return `${option?.children || ''}`.toLowerCase().indexOf(input.toLowerCase()) >= 0;
+          return `${option?.label || ''}`.toLowerCase().indexOf(input.toLowerCase()) >= 0;
         }}
         options={
           Object.values(companyMap).map((comp: ICompany) => {

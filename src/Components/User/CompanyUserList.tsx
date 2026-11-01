@@ -109,7 +109,7 @@ const CompanyUserList = ({ searchKeyWord }: iCompanyUserList) => {
       loading={isLoading || isSaving}
       itemLayout="horizontal"
       dataSource={(companyUserList?.data || []).sort((a: ICompanyUser, b: ICompanyUser) => (
-          `${a.User?.nickName || ''}`.trim() >= `${b.User?.nickName || ''}`.trim() ? 0 : 1
+          `${a.User?.nickName || ''}`.trim().localeCompare(`${b.User?.nickName || ''}`.trim())
         ))
       }
       renderItem={(companyUser: ICompanyUser, index: number) => (

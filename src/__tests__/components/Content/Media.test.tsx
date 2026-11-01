@@ -139,16 +139,14 @@ describe('MediaList', () => {
     expect(service.deactivate).not.toHaveBeenCalled()
   })
 
-  // Bug: the keyword re-fires the request but is never put in `where`, so media search changes nothing.
-  test.fails('filters by the search keyword', async () => {
+  test('filters by the search keyword', async () => {
     service.getAll.mockResolvedValue(listOf([asset]))
     renderWithProviders(<MediaList keyword="cat" />)
     await screen.findByText('A picture')
     expect(service.getAll.mock.lastCall?.[0]?.where).toContain('cat')
   })
 
-  // Bug: a keyword change keeps the current page, so results from page N are merged into the old list.
-  test.fails('a new keyword starts again from page one', async () => {
+  test('a new keyword starts again from page one', async () => {
     const Parent = () => {
       const [keyword, setKeyword] = useState('')
       return (
@@ -202,6 +200,7 @@ describe('CompanyMediaUsage', () => {
   })
 
   // Bug: `total` is the number of assets, but it is shown as a size, so 2,000 files reads as "2.00 KB".
+  // Needs the API to return the company's total size: the list endpoint only pages through assets.
   test.fails('does not report the file count as a storage size', async () => {
     service.getAll.mockResolvedValue(listOf([], { total: 2000 }))
     const { container } = renderWithProviders(<CompanyMediaUsage />)

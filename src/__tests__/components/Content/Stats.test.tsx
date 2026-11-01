@@ -162,8 +162,7 @@ describe('VisitsByChannelLineChart', () => {
     expect(chartData('line')).toEqual([{ date: '9', total: 1, type: 'WEB' }])
   })
 
-  // Bug: the 'h' format drops AM/PM, so 9 AM and 9 PM in a one-day range land in the same bucket.
-  test.fails('keeps morning and evening apart in a one-day range', () => {
+  test('keeps morning and evening apart in a one-day range', () => {
     const evening = new Date(2024, 2, 15, 21, 30)
     const visits = [visit({ source: 'web' }), visit({ source: 'web', createdAt: evening })]
     renderWithProviders(<VisitsByChannelLineChart itemVisits={visits} itemsOverDays={1} />)

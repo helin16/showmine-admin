@@ -13,6 +13,7 @@ import IResList from '../../Types/IResList'
 import IAsset from '../../Types/Asset/IAsset'
 import MathHelper from '../../Helpers/MathHelper';
 import {APP_WIDTHS} from '../../Constants';
+import {OP_LIKE, OP_OR} from '../../Helpers/ServiceHelper';
 import Utils from '../../Services/Utils'
 
 export const MediaListWrapper = styled.div`
@@ -46,7 +47,8 @@ export const MediaListWrapper = styled.div`
 type iMediaList = {
   keyword?: string
 }
-const MediaList = ({ keyword }: iMediaList) => {
+const MediaListContent = ({ keyword }: iMediaList) => {
+  const searchText = `${keyword || ''}`.trim();
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [pageNo, setPageNo] = useState(1);
@@ -59,7 +61,10 @@ const MediaList = ({ keyword }: iMediaList) => {
     setIsLoading(true);
     AssetService.getAll({
       where: JSON.stringify({
-        isActive: true
+        isActive: true,
+        ...(searchText === '' ? {} : {
+          [OP_OR]: [{ fileName: {[OP_LIKE]: `%${searchText}%`} }, { comments: {[OP_LIKE]: `%${searchText}%`} }]
+        })
       }),
       sort: 'createdAt:DESC',
       currentPage: pageNo,
@@ -167,5 +172,8 @@ const MediaList = ({ keyword }: iMediaList) => {
     </MediaListWrapper>
   );
 }
+
+// A new keyword is a new list, so the key resets the page and the results.
+const MediaList = ({ keyword }: iMediaList) => <MediaListContent key={keyword} keyword={keyword} />
 
 export default MediaList

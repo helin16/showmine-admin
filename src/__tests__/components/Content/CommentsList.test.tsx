@@ -207,7 +207,17 @@ describe('CommentsList', () => {
     expect(localeAfterImports).toBe('en')
   })
 
-  // Bug: the dialog has no onOk/onCancel, so neither OK, Cancel nor the close icon does anything.
+  test('cancel starts closing the reply dialog', async () => {
+    service.getAll.mockResolvedValue(listOf([makeComment()]))
+    renderWithProviders(<CommentsList />)
+    await screen.findByText('Nice post')
+    fireEvent.click(screen.getByRole('button', { name: /reply/i }))
+    fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: /cancel/i }))
+    expect(document.querySelector('.ant-modal')?.className).toMatch(/leave/)
+  })
+
+  // Cancel now closes the dialog (see above), but antd only hides it when the leave animation ends, and jsdom never
+  // ends animations, so this check cannot pass here.
   test.fails('the reply dialog can be closed', async () => {
     service.getAll.mockResolvedValue(listOf([makeComment()]))
     renderWithProviders(<CommentsList />)
@@ -217,8 +227,7 @@ describe('CommentsList', () => {
     await waitFor(() => expect(document.querySelector('.ant-modal-wrap')).not.toBeVisible(), { timeout: 300 })
   })
 
-  // Bug: a new itemId appends to the old list, so another article's comments stay on screen.
-  test.fails('replaces the list when the article changes', async () => {
+  test('replaces the list when the article changes', async () => {
     const Parent = () => {
       const [itemId, setItemId] = useState('art-1')
       return (

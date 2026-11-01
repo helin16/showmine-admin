@@ -121,8 +121,7 @@ describe('CompanyUserList', () => {
     })
   })
 
-  // Known bug: the comparator never returns a negative number, so Array.sort leaves the list in API order.
-  test.fails('sorts the users by nickname', async () => {
+  test('sorts the users by nickname', async () => {
     load()
     const { container } = renderWithProviders(<CompanyUserList />, { state })
     await findName('Amy')

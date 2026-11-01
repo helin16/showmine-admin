@@ -281,8 +281,7 @@ describe('CompanyTags', () => {
     expect(screen.queryByPlaceholderText('New Tag Name ...')).not.toBeInTheDocument()
   })
 
-  // Known bug: closing the input keeps the typed name, so Enter on the reopened empty box creates the old tag.
-  test.fails('forgets the typed name when the input is closed', async () => {
+  test('forgets the typed name when the input is closed', async () => {
     load([])
     vi.mocked(TagService.create).mockResolvedValue(news as never)
     renderWithProviders(<CompanyTags />)
@@ -362,8 +361,7 @@ describe('CompanyDeleteBtn', () => {
     expect(message.success).toHaveBeenCalledWith('Company deleted successfully.')
   })
 
-  // Known bug: the second setState reuses the stale state, so the modal stays open after a successful delete.
-  test.fails('closes the modal after deleting', async () => {
+  test('closes the modal after deleting', async () => {
     vi.mocked(CompanyService.deactivate).mockResolvedValue({} as never)
     renderWithProviders(<CompanyDeleteBtn company={company} />)
     openModal()

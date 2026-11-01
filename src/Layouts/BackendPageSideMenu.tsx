@@ -25,7 +25,7 @@ const BackendPageSideMenu = () => {
   const { selectedMenuKey } = useSelector((s: RootState) => s.backendPage)
 
   const getMenuItems = () => {
-    const isCurrentCompanyAdmin = (companyUsers || []).filter(companyUser => companyUser.companyId === company?.id && companyUser.role === ROLE_ADMIN).length > 0;
+    const isCurrentCompanyAdmin = (companyUsers || []).filter(companyUser => companyUser.companyId === company?.id && companyUser.isActive === true && companyUser.isPending === false && companyUser.role === ROLE_ADMIN).length > 0;
     return MenuItems.map((item) => {
       if (isCurrentCompanyAdmin !== true && user?.isSuperAdmin !== true && item.access === MENU_ACCESS_LEVEL_COMPANY_ADMIN) {
         return undefined;

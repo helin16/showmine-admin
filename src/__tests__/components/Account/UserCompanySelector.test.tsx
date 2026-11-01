@@ -77,8 +77,7 @@ describe('UserCompanySelector', () => {
       expect(selected(container)).toHaveTextContent('Acme')
     })
 
-    // Known bug: filterOption reads option.children but options only carry label, so every search comes back empty.
-    test.fails('search finds a company by name', async () => {
+    test('search finds a company by name', async () => {
       const { container } = renderWithProviders(<UserCompanySelector />, { state: state as never })
       open(container)
       await option('Globex')

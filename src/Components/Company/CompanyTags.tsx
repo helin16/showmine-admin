@@ -134,6 +134,11 @@ const CompanyTags = () => {
       })
   }
 
+  const closeNewTagDiv = () => {
+    setNewTagName('');
+    setShowingNewTagDiv(false);
+  }
+
   const getNewTagDiv = () => {
     if (showingNewTagDiv === true) {
       return (
@@ -144,7 +149,7 @@ const CompanyTags = () => {
            onChange={newTagNameChanged}
            onPressEnter={createTag}
            addonAfter={
-             <Button size={'small'} type={'text'} onClick={() => setShowingNewTagDiv(false)}><Icons.CloseOutlined /></Button>
+             <Button size={'small'} type={'text'} onClick={closeNewTagDiv}><Icons.CloseOutlined /></Button>
            }
          />
        </Tag>

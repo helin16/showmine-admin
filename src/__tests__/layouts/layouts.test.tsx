@@ -90,8 +90,7 @@ describe('BackendPageSideMenu', () => {
     expect(screen.queryByText('My Company')).not.toBeInTheDocument()
   })
 
-  // Known bug: the menu ignores isActive and isPending, unlike CompanyAdminRoute, so these links lead to a 403.
-  test.fails.each([
+  test.each([
     ['pending', { isPending: true }],
     ['inactive', { isActive: false }],
   ])('hides the company items for an admin who is %s', (_name, overrides) => {

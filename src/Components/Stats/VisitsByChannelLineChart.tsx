@@ -19,7 +19,7 @@ const VisitsByChannelLineChart = ({title, itemVisits, itemsOverDays}: iVisitsByC
     setVisitsMap(
       itemVisits.reduce((map: iMap, itemVisit) => {
         const channelName = `${itemVisit.source || ''}`.trim().toUpperCase();
-        const date = moment(itemVisit.createdAt).format(`${itemsOverDays <= 1 ? 'h': 'll'}`);
+        const date = moment(itemVisit.createdAt).format(`${itemsOverDays <= 1 ? 'H': 'll'}`);
         return {
           ...map,
           [channelName]: {
@@ -35,7 +35,7 @@ const VisitsByChannelLineChart = ({title, itemVisits, itemsOverDays}: iVisitsByC
   const getData = () => Object.keys(visitsMap).reduce((arr: any[], type) => {
     return [
       ...arr,
-      ...Object.keys(visitsMap[type]).map(date => ({date, total: visitsMap[type][date], type: type})),
+      ...Object.keys(visitsMap[type]).map(date => ({date, total: visitsMap[type][date], type: Utils.translateChannelType(type)})),
     ]
   }, []);
   const getConfig = () => ({
