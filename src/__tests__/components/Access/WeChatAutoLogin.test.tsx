@@ -209,7 +209,7 @@ describe('returning with state', () => {
     renderLogin(`${LOGIN_URL}?from=%2Fb%2F&state=abc`)
     expect(await screen.findByText(FAILED_MESSAGE)).toBeInTheDocument()
     expect(await loginForm()).toBeInTheDocument()
-    expect(screen.getByText(`address ${LOGIN_URL}?from=%2Fb%2F`)).toBeInTheDocument()
+    expect(await screen.findByText(`address ${LOGIN_URL}?from=%2Fb%2F`)).toBeInTheDocument()
     expect(goTo()).not.toHaveBeenCalled()
     expect(LocalStorageService.getAutoLoginMark()).toBe(AUTO_LOGIN_FAILED)
     expect(AuthService.getLocalAuthToken()).toBeNull()
