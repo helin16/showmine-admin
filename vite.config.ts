@@ -9,6 +9,8 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     envPrefix: ENV_PREFIX,
+    // moment/locale/* require the CommonJS copy, so without this Vite bundles a second, ESM moment that has no zh-cn.
+    resolve: { alias: [{ find: /^moment$/, replacement: 'moment/moment.js' }] },
     server: { port: 3000 },
     build: { outDir: 'build', target: 'es2020' },
     // Source reads process.env.*, including names that are never set, so this must stay a whole object.
