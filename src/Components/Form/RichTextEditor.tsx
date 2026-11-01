@@ -227,6 +227,8 @@ const RichTextEditor = ({ className, onChange, value, placeholder, isInLine = fa
         }}
         {...props}
         apiKey={process.env.REACT_APP_TINYMCE_API_KEY}
+        // Newer channels are a new editor major version, with plugins removed from the list above.
+        cloudChannel='6'
         // initialValue={state.value}
         value={state.value}
         onEditorChange={handleContentChange}

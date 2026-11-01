@@ -50,7 +50,7 @@ vi.mock('../../../Services/WeChatService', () => ({
   default: { getLoginQrCodeUrl: vi.fn(), getUserFromQrcode: vi.fn(), getWeChatInAppLoginUrl: vi.fn() },
 }))
 vi.mock('../../../Components/Form/message', () => ({ default: { error: vi.fn(), success: vi.fn() } }))
-vi.mock('qrcode.react', () => ({ default: () => <div>qr code</div> }))
+vi.mock('qrcode.react', () => ({ QRCodeCanvas: () => <div>qr code</div> }))
 vi.mock('../../../Components/Article/ArticleList', () => ({ default: () => <div>article list</div> }))
 vi.mock('../../../Components/Form/SingleImageUploader', () => ({ default: () => <div>uploader</div> }))
 vi.mock('../../../Components/Company/CompanyEditor', () => ({

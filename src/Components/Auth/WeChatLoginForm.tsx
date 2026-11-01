@@ -12,7 +12,7 @@ import Alert from '../Form/Alert'
 import Icons from '../Icons'
 import SkeletonImage from '../Form/SkeletonImage'
 import { useNavigate } from 'react-router-dom'
-import QRCode from 'qrcode.react';
+import { QRCodeCanvas } from 'qrcode.react';
 import WeChatService from '../../Services/WeChatService';
 import message from '../Form/message';
 import MathHelper from '../../Helpers/MathHelper';
@@ -138,7 +138,7 @@ const WeChatLoginForm = () => {
     }
 
     if (`${loginUrl || ''}`.trim() !== '') {
-      return <QRCode value={`${loginUrl || ''}`.trim()} />
+      return <QRCodeCanvas value={`${loginUrl || ''}`.trim()} />
     }
 
     return refreshBtn

@@ -14,7 +14,7 @@ vi.mock('../../../Services/WeChatService', () => ({
   default: { getLoginQrCodeUrl: vi.fn(), getUserFromQrcode: vi.fn() },
 }))
 vi.mock('../../../Components/Form/message', () => ({ default: { error: vi.fn(), success: vi.fn() } }))
-vi.mock('qrcode.react', () => ({ default: ({ value }: { value: string }) => <div>qr:{value}</div> }))
+vi.mock('qrcode.react', () => ({ QRCodeCanvas: ({ value }: { value: string }) => <div>qr:{value}</div> }))
 
 const qr = { url: 'https://wx.test/qr', token: 'login-token' }
 const waiting = { userId: null, error: null, token: '' }

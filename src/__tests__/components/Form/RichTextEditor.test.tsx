@@ -40,6 +40,7 @@ describe('editing', () => {
     expect(screen.getByTestId('editor')).toHaveTextContent('<p>Hi</p>')
     expect(screen.getByTestId('editor').parentElement).toHaveClass('body')
     expect(editor.props.apiKey).toBe('tiny-key')
+    expect(editor.props.cloudChannel).toBe('6')
     expect(editor.props.init).toMatchObject({ placeholder: 'Write here', inline: true, menubar: true })
     expect(editor.props.init.plugins).toContain('autoresize')
   })
