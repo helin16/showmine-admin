@@ -19,6 +19,7 @@ import {
   MEDIA_LIST_URL,
   MY_PROFILE_URL,
   RESET_PASSWORD_URL,
+  CONFIRM_EMAIL_URL,
   WIZARD_URL,
 } from './UrlMap'
 import ProtectedRoute from './Components/Route/ProtectedRoute'
@@ -31,6 +32,7 @@ import translate from './i18n/translate'
 
 const ForgotPasswordPage = lazy(() => import('./Pages/Auth/ForgotPasswordPage'))
 const ResetPasswordPage = lazy(() => import('./Pages/Auth/ResetPasswordPage'))
+const ConfirmEmailPage = lazy(() => import('./Pages/Auth/ConfirmEmailPage'))
 const InvitePage = lazy(() => import('./Pages/Auth/InvitePage'))
 const DashBoardPage = lazy(() => import('./Pages/Dashboard/DashBoardPage'))
 const MediaListPage = lazy(() => import('./Pages/Media/MediaListPage'))
@@ -64,6 +66,7 @@ const Router = () => {
                 <Route path={LOGIN_URL} element={<LoginPage />} />
                 <Route path={FORGOT_PASSWORD_URL} element={<ForgotPasswordPage />} />
                 <Route path={RESET_PASSWORD_URL} element={<ResetPasswordPage />} />
+                <Route path={CONFIRM_EMAIL_URL} element={<ConfirmEmailPage />} />
                 <Route path={INVITE_URL} element={<InvitePage />} />
 
                 <Route

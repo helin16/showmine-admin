@@ -37,6 +37,8 @@ const UserProfileEditor = ({ user }: { user: IUser }) => {
     user,
     isSaving: false,
   });
+  // The saved address may not change, and InlineInput only follows a new value, so this drops what was typed.
+  const [emailInputKey, setEmailInputKey] = useState(0);
 
   const modifyUser = (newData: { [key: string]: string | null }) => {
     setState({
@@ -45,7 +47,11 @@ const UserProfileEditor = ({ user }: { user: IUser }) => {
     })
     AuthService.updateMe(newData)
       .then((res) => {
-        message.success('Profile updated.')
+        const isWaiting = !!res.user.pendingEmail && res.user.pendingEmail === newData.email?.trim();
+        message.success(isWaiting ? intl.formatMessage({ id: 'email-confirm-sent' }, { email: res.user.pendingEmail }) : 'Profile updated.')
+        if ('email' in newData) {
+          setEmailInputKey((key) => key + 1);
+        }
         dispatch(isAuthed({...authState, user: res.user}));
         dispatch(changeLocale({ ...appState, locale: `${res.user.languageCode}` === Locale.enUS.locale ? Locale.enUS : Locale.zhCN}));
       })
@@ -112,12 +118,14 @@ const UserProfileEditor = ({ user }: { user: IUser }) => {
                 <FormInputWrapper>
                   <BoxTitleDiv><FormattedMessage id='email' />:</BoxTitleDiv>
                   <InlineInput
+                    key={emailInputKey}
                     allowClear
                     placeholder={intl.formatMessage({ id: 'email-placeholder' })}
                     prefix={<MailFilled/>}
                     value={user.email || ''}
                     onChange={(newValue: string) => { modifyUser({email: newValue}); }}
                   />
+                  {user.pendingEmail ? <FormattedMessage id='email-pending' values={{ email: user.pendingEmail }} /> : null}
                 </FormInputWrapper>
               </Col>
               <Col md={12}>

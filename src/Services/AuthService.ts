@@ -47,6 +47,10 @@ const resetPassword = async (token: string, password: string) => {
   return AppService.post(`${endPoint}/reset-password`, { token, password }).then((res) => res.data)
 }
 
+const confirmEmail = async (token: string) => {
+  return AppService.post(`${endPoint}/confirm-email`, { token }).then((res) => res.data)
+}
+
 const checkInvite = async (token: string): Promise<{ companyName: string; email: string }> => {
   return AppService.post(`${endPoint}/invite/check`, { token }).then((res) => res.data)
 }
@@ -68,6 +72,7 @@ const AuthService = {
   login,
   retrievePassword,
   resetPassword,
+  confirmEmail,
   getMe,
   updateMe,
   setLocalAuthToken,

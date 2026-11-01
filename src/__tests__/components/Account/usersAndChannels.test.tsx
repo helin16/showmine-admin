@@ -236,6 +236,25 @@ describe('UserProfileEditor', () => {
     expect(message.success).toHaveBeenCalledWith('Profile updated.')
   })
 
+  test('a new email waits for its mailbox: the field keeps the saved address, and leaving it sends nothing more', async () => {
+    const pendingEmail = 'new@b.co'
+    vi.mocked(AuthService.updateMe).mockResolvedValue({ user: { ...user, pendingEmail } } as never)
+    const { store } = renderEditor()
+    const typed = screen.getByPlaceholderText('The email address')
+    typeInline(typed, ` ${pendingEmail} `)
+    await waitFor(() => expect(store.getState().auth.user?.pendingEmail).toBe(pendingEmail))
+    expect(message.success).toHaveBeenCalledWith('Check your new mailbox: we sent a link to new@b.co.')
+    expect(message.success).not.toHaveBeenCalledWith('Profile updated.')
+    const input = await screen.findByDisplayValue('a@b.co')
+    fireEvent.blur(input)
+    expect(AuthService.updateMe).toHaveBeenCalledOnce()
+  })
+
+  test('shows the address that is waiting', () => {
+    renderEditor({ ...user, pendingEmail: 'new@b.co' } as never)
+    expect(screen.getByText(/Waiting for new@b\.co\./)).toBeInTheDocument()
+  })
+
   test('renders blanks for a sparse profile', () => {
     renderEditor({ id: 'u-1' } as never)
     expect(screen.getByPlaceholderText('First Name')).toHaveValue('')

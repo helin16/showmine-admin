@@ -7,16 +7,17 @@ import { renderWithProviders } from '../../testUtils'
 import ForgotPasswordPage from '../../../Pages/Auth/ForgotPasswordPage'
 import LoginPage from '../../../Pages/Auth/LoginPage'
 import ResetPasswordPage from '../../../Pages/Auth/ResetPasswordPage'
+import ConfirmEmailPage from '../../../Pages/Auth/ConfirmEmailPage'
 import AuthService from '../../../Services/AuthService'
 import WeChatService from '../../../Services/WeChatService'
 import Locale from '../../../Components/Form/Locale'
 import message from '../../../Components/Form/message'
 import { messages } from '../../../i18n/messages'
-import { FORGOT_PASSWORD_URL, LOGIN_URL, RESET_PASSWORD_URL } from '../../../UrlMap'
+import { CONFIRM_EMAIL_URL, FORGOT_PASSWORD_URL, LOGIN_URL, RESET_PASSWORD_URL } from '../../../UrlMap'
 
 vi.mock('../../../Services/AuthService', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../Services/AuthService')>()
-  return { default: { ...actual.default, retrievePassword: vi.fn(), resetPassword: vi.fn() } }
+  return { default: { ...actual.default, retrievePassword: vi.fn(), resetPassword: vi.fn(), confirmEmail: vi.fn() } }
 })
 vi.mock('../../../Services/WeChatService', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../Services/WeChatService')>()
@@ -202,6 +203,59 @@ describe('reset password', () => {
   })
 })
 
+describe('confirm email', () => {
+  const confirmEmail = () => vi.mocked(AuthService.confirmEmail)
+  const INVALID = 'This confirmation link cannot be used.'
+  const renderPage = (search = '?token=email-token') => {
+    window.history.pushState({ idx: 3 }, '', `${CONFIRM_EMAIL_URL}${search}`)
+    renderWithProviders(<ConfirmEmailPage />, { route: CONFIRM_EMAIL_URL })
+  }
+  const clickConfirm = () => fireEvent.click(screen.getByRole('button', { name: /Confirm/ }))
+
+  afterAll(() => window.history.pushState({}, '', '/'))
+
+  test('removes the token from the address, and uses it only on a click', () => {
+    renderPage()
+    expect(window.location.search).toBe('')
+    expect(window.history.state).toEqual({ idx: 3 })
+    expect(confirmEmail()).not.toHaveBeenCalled()
+  })
+
+  test('says the email changed', async () => {
+    confirmEmail().mockResolvedValue({ success: true })
+    renderPage()
+    clickConfirm()
+    expect(await screen.findByText('Your email has been changed.')).toBeInTheDocument()
+    expect(confirmEmail()).toHaveBeenCalledExactlyOnceWith('email-token')
+  })
+
+  test('a link with no token cannot be used', () => {
+    renderPage('')
+    expect(screen.getByText(INVALID)).toBeInTheDocument()
+  })
+
+  test('shows why the API refused the link', async () => {
+    confirmEmail().mockRejectedValue(badRequest('This email cannot be used.'))
+    renderPage()
+    clickConfirm()
+    expect(await screen.findByText(INVALID)).toBeInTheDocument()
+    expect(screen.getByText('This email cannot be used.')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Confirm/ })).not.toBeInTheDocument()
+  })
+
+  test('keeps the button after a network failure, and clears the error on another try', async () => {
+    confirmEmail().mockRejectedValueOnce(new Error('Network Error'))
+    renderPage()
+    clickConfirm()
+    expect(await screen.findByText('Network Error')).toBeInTheDocument()
+    await waitFor(() => expect(screen.getByRole('button', { name: /Confirm/ })).not.toHaveClass('ant-btn-loading'))
+    confirmEmail().mockResolvedValue({ success: true })
+    clickConfirm()
+    expect(await screen.findByText('Your email has been changed.')).toBeInTheDocument()
+    expect(screen.queryByText('Network Error')).not.toBeInTheDocument()
+  })
+})
+
 test('every recovery message exists in both languages', () => {
   const ids = [
     'forgot-password',
@@ -216,6 +270,12 @@ test('every recovery message exists in both languages', () => {
     'reset-link-invalid',
     'request-new-link',
     'reset-password-done',
+    'email-confirm-sent',
+    'email-pending',
+    'confirm-email',
+    'confirm-email-intro',
+    'confirm-email-done',
+    'confirm-email-invalid',
     'back-to-login',
     'confirm-password-diff',
   ]
