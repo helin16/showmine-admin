@@ -8,6 +8,10 @@ on:
   schedule:
     - cron: '0 20 * * *'
   workflow_dispatch:
+    inputs:
+      admin_url:
+        description: Admin address to test, such as a preview. Leave empty for production.
+        required: false
 
 permissions:
   contents: read
@@ -31,6 +35,7 @@ jobs:
       E2E_MEMBER_EMAIL: ${{ secrets.E2E_MEMBER_EMAIL }}
       E2E_MEMBER_PASSWORD: ${{ secrets.E2E_MEMBER_PASSWORD }}
       E2E_COMPANY_NAME: test company
+      E2E_ADMIN_URL: ${{ inputs.admin_url }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
