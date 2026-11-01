@@ -48,12 +48,17 @@ const ProtectedRoute = ({ children, allowNoCompany = false }: any) => {
     AuthService.getMe()
       .then((res) => {
         if (isCancelled === true) return
-        let userCompany = undefined
-        if (res.user.LastVisitCompany) {
+        // A notification names its company, as staff can be in several. Only one of theirs counts, and the API still decides.
+        const linkedCompanyId = new URLSearchParams(search).get('company')
+        const linkedCompany = res.companies.find(({ companyId }) => companyId === linkedCompanyId)?.Company
+        let userCompany = linkedCompany
+        if (!userCompany && res.user.LastVisitCompany) {
           userCompany = res.user.LastVisitCompany
-        } else if (res.companies.length > 0) {
+        } else if (!userCompany && res.companies.length > 0) {
           userCompany = res.companies[0].Company;
         }
+        // Before the page can render, as its API calls send this.
+        LocalStorageService.setCompanyId(`${userCompany?.id || ''}`.trim());
         dispatch(
           isAuthed({
             user: res.user,
@@ -67,7 +72,6 @@ const ProtectedRoute = ({ children, allowNoCompany = false }: any) => {
           ...appState,
           locale: `${res.user.languageCode}` === Locale.enUS.locale ? Locale.enUS : Locale.zhCN
         }));
-        LocalStorageService.setCompanyId(`${userCompany?.id || ''}`.trim());
       })
       .catch((err) => {
         if (isCancelled === true) return
