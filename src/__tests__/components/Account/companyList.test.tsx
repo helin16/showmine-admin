@@ -64,7 +64,7 @@ describe('loading', () => {
   test('shows an empty table', async () => {
     services.getAll.mockResolvedValue(listOf([]))
     renderList()
-    expect(await screen.findByText('No data')).toBeInTheDocument()
+    expect(await screen.findByText('No data', { selector: '.ant-empty-description' })).toBeInTheDocument()
   })
 
   test('a load failure is an error, not an empty table', async () => {

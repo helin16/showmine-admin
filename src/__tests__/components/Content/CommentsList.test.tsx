@@ -53,7 +53,7 @@ describe('CommentsList', () => {
   test('fetches all company comments when no article is given', async () => {
     service.getAll.mockResolvedValue(listOf([]))
     renderWithProviders(<CommentsList itemId="  " />)
-    await screen.findByText('No data')
+    await screen.findByText('No data', { selector: '.ant-empty-description' })
     expect(lastWhere()).toEqual({ isActive: true, entityName: 'Item' })
     expect(service.getAll.mock.lastCall?.[0]?.currentPage).toBe(1)
   })
@@ -61,7 +61,7 @@ describe('CommentsList', () => {
   test('fetches only the comments of the given article', async () => {
     service.getAll.mockResolvedValue(listOf([]))
     renderWithProviders(<CommentsList itemId="art-1" />)
-    await screen.findByText('No data')
+    await screen.findByText('No data', { selector: '.ant-empty-description' })
     expect(lastWhere()).toEqual({ isActive: true, entityName: 'Item', entityId: 'art-1' })
   })
 

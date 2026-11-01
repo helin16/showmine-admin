@@ -19,7 +19,7 @@ describe('AppInit', () => {
     const { container } = renderWithProviders(<AppInit />)
     expect(screen.getByText('Fetching your account details...')).toBeInTheDocument()
     expect(screen.getByText('please be patient...')).toBeInTheDocument()
-    expect(container.querySelector('.anticon-sync svg')).toHaveClass('anticon-spin')
+    expect(container.querySelector('.anticon-sync')).toHaveClass('anticon-spin')
   })
 })
 

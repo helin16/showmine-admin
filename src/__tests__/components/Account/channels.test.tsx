@@ -55,7 +55,7 @@ describe('ChannelList', () => {
   test('shows an empty list', async () => {
     services.getAll.mockResolvedValue(listOf([]))
     renderWithProviders(<ChannelList />)
-    expect(await screen.findByText('No data')).toBeInTheDocument()
+    expect(await screen.findByText('No data', { selector: '.ant-empty-description' })).toBeInTheDocument()
   })
 
   test('a load failure is an error, not an empty list', async () => {

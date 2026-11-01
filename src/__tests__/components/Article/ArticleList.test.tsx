@@ -45,7 +45,7 @@ describe('ArticleList', () => {
   test('shows the empty state', async () => {
     service.getAll.mockResolvedValue(listOf([]))
     renderWithProviders(<ArticleList company={company} />)
-    expect(await screen.findByText('No data')).toBeInTheDocument()
+    expect(await screen.findByText('No data', { selector: '.ant-empty-description' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /load more/i })).not.toBeInTheDocument()
   })
 
@@ -104,7 +104,7 @@ describe('ArticleList', () => {
     const { container } = renderWithProviders(<ArticleList company={company} />)
     await waitFor(() => expect(message.error).toHaveBeenCalledWith('denied'))
     await waitFor(() => expect(container.querySelector('.ant-spin-spinning')).not.toBeInTheDocument())
-    expect(await screen.findByText('No data')).toBeInTheDocument()
+    expect(await screen.findByText('No data', { selector: '.ant-empty-description' })).toBeInTheDocument()
   })
 
   test('removes an article deleted from its context menu', async () => {

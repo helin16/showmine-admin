@@ -62,7 +62,7 @@ describe('MediaList', () => {
   test('shows the empty state', async () => {
     service.getAll.mockResolvedValue(listOf([]))
     renderWithProviders(<MediaList />)
-    expect(await screen.findByText('No data')).toBeInTheDocument()
+    expect(await screen.findByText('No data', { selector: '.ant-empty-description' })).toBeInTheDocument()
   })
 
   test('spins during the first load', async () => {

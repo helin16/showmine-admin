@@ -58,7 +58,7 @@ test('offers only scripts with a working editor', async () => {
 test('shows an empty list when the API has no usable script', async () => {
   scripts.getAll.mockResolvedValue({ data: [wordpress] } as never)
   renderPage()
-  expect(await screen.findByText('No data')).toBeInTheDocument()
+  expect(await screen.findByText('No data', { selector: '.ant-empty-description' })).toBeInTheDocument()
 })
 
 test('a load failure is an error and leaves the way back', async () => {
