@@ -199,7 +199,7 @@ describe('an expired session', () => {
       expect(assign).toHaveBeenCalledExactlyOnceWith(
         `/login?password=1&from=${encodeURIComponent('/b/articles?page=2#top')}`,
       )
-      expect(LocalStorageService.takeLoginNotice()).toBe(en['session-expired'])
+      expect(LocalStorageService.getLoginNotice()).toBe(en['session-expired'])
     })
   })
 
@@ -208,7 +208,7 @@ describe('an expired session', () => {
     LocalStorageService.setToken(fakeToken)
     axios.get = vi.fn().mockRejectedValue(failure(401, REJECTED))
     await settled(AppService.get(fakeUrl))
-    expect(LocalStorageService.takeLoginNotice()).toBe(cn['session-expired'])
+    expect(LocalStorageService.getLoginNotice()).toBe(cn['session-expired'])
   })
 
   test('a wrong password on POST /auth rejects, even with an old token around', async () => {

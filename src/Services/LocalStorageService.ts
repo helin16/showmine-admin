@@ -75,13 +75,19 @@ const setLoginNotice = (notice: string) => {
   }
 }
 
-const takeLoginNotice = () => {
+const getLoginNotice = () => {
   try {
-    const notice = sessionStorage.getItem(LOGIN_NOTICE_NAME)
-    sessionStorage.removeItem(LOGIN_NOTICE_NAME)
-    return notice
+    return sessionStorage.getItem(LOGIN_NOTICE_NAME)
   } catch {
     return null
+  }
+}
+
+const removeLoginNotice = () => {
+  try {
+    sessionStorage.removeItem(LOGIN_NOTICE_NAME)
+  } catch {
+    // Nothing could have been saved either.
   }
 }
 
@@ -98,7 +104,8 @@ const LocalStorageService = {
   setAutoLoginMark,
 
   setLoginNotice,
-  takeLoginNotice,
+  getLoginNotice,
+  removeLoginNotice,
 }
 
 export default LocalStorageService

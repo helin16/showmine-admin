@@ -285,7 +285,7 @@ describe('coming back from an expired session', () => {
     expect(await loginForm()).toBeInTheDocument()
     expect(screen.getByText(EXPIRED_MESSAGE)).toBeInTheDocument()
     expect(goTo()).not.toHaveBeenCalled()
-    expect(LocalStorageService.takeLoginNotice()).toBeNull()
+    await waitFor(() => expect(LocalStorageService.getLoginNotice()).toBeNull())
   })
 
   test('the WeChat button still returns to the wanted page', async () => {

@@ -89,8 +89,9 @@ describe('login notice', () => {
       removeItem: (name: string) => store.delete(name),
     })
     LocalStorageService.setLoginNotice('hello')
-    expect(LocalStorageService.takeLoginNotice()).toBe('hello')
-    expect(LocalStorageService.takeLoginNotice()).toBeNull()
+    expect(LocalStorageService.getLoginNotice()).toBe('hello')
+    LocalStorageService.removeLoginNotice()
+    expect(LocalStorageService.getLoginNotice()).toBeNull()
   })
 
   test('blocked storage loses the notice and nothing else', () => {
@@ -99,6 +100,7 @@ describe('login notice', () => {
     }
     vi.stubGlobal('sessionStorage', { getItem: blocked, setItem: blocked, removeItem: blocked })
     expect(() => LocalStorageService.setLoginNotice('hello')).not.toThrow()
-    expect(LocalStorageService.takeLoginNotice()).toBeNull()
+    expect(LocalStorageService.getLoginNotice()).toBeNull()
+    expect(() => LocalStorageService.removeLoginNotice()).not.toThrow()
   })
 })

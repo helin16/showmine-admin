@@ -28,7 +28,7 @@ const LoginPage = () => {
   const { isInWeChat } = useSelector((state: RootState) => state.weChat)
   const [loginMethod, setLoginMethod] = useState(LOGIN_METHOD_NORMAL)
   const [autoLoginFailed, setAutoLoginFailed] = useState<boolean>()
-  const [notice] = useState(LocalStorageService.takeLoginNotice)
+  const [notice] = useState(LocalStorageService.getLoginNotice)
   const navigate = useNavigate()
   const { search, state } = useLocation()
   const token = AuthService.getLocalAuthToken()
@@ -36,6 +36,9 @@ const LoginPage = () => {
   const from: string | null = state?.from || searchParams.get('from')
   // It comes from the address, so anyone can write it.
   const returnPath = WeChatService.getSafeReturnPath(from)
+
+  // Not while rendering: the WeChat button's chunk can suspend this page, which starts it over with new state.
+  useEffect(() => LocalStorageService.removeLoginNotice(), [])
 
   useEffect(() => {
     if (`${token || ''}`.trim() !== '') {
