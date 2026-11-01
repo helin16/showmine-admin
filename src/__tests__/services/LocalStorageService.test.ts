@@ -77,3 +77,28 @@ describe.each([
     expect(getFakeStorage().removeItem).toHaveBeenLastCalledWith(expectedCompanyIdName)
   })
 })
+
+describe('login notice', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  test('is handed over once', () => {
+    const store = new Map<string, string>()
+    vi.stubGlobal('sessionStorage', {
+      getItem: (name: string) => store.get(name) ?? null,
+      setItem: (name: string, value: string) => store.set(name, value),
+      removeItem: (name: string) => store.delete(name),
+    })
+    LocalStorageService.setLoginNotice('hello')
+    expect(LocalStorageService.takeLoginNotice()).toBe('hello')
+    expect(LocalStorageService.takeLoginNotice()).toBeNull()
+  })
+
+  test('blocked storage loses the notice and nothing else', () => {
+    const blocked = () => {
+      throw new Error('blocked')
+    }
+    vi.stubGlobal('sessionStorage', { getItem: blocked, setItem: blocked, removeItem: blocked })
+    expect(() => LocalStorageService.setLoginNotice('hello')).not.toThrow()
+    expect(LocalStorageService.takeLoginNotice()).toBeNull()
+  })
+})

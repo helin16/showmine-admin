@@ -3,6 +3,7 @@ const AUTO_LOGIN_MARK_NAME = 'wechatAutoLogin'
 export const AUTO_LOGIN_SENT = 'sent'
 export const AUTO_LOGIN_FAILED = 'failed'
 export const AUTO_LOGIN_DONE = 'done'
+const LOGIN_NOTICE_NAME = 'loginNotice'
 
 const getTokenName = () => {
   return process.env.REACT_APP_LOCAL_USER_TOKEN_NAME || 'token'
@@ -66,6 +67,24 @@ const setAutoLoginMark = (mark: string) => {
   }
 }
 
+const setLoginNotice = (notice: string) => {
+  try {
+    sessionStorage.setItem(LOGIN_NOTICE_NAME, notice)
+  } catch {
+    // Only the notice is lost.
+  }
+}
+
+const takeLoginNotice = () => {
+  try {
+    const notice = sessionStorage.getItem(LOGIN_NOTICE_NAME)
+    sessionStorage.removeItem(LOGIN_NOTICE_NAME)
+    return notice
+  } catch {
+    return null
+  }
+}
+
 const LocalStorageService = {
   getToken,
   setToken,
@@ -77,6 +96,9 @@ const LocalStorageService = {
 
   getAutoLoginMark,
   setAutoLoginMark,
+
+  setLoginNotice,
+  takeLoginNotice,
 }
 
 export default LocalStorageService

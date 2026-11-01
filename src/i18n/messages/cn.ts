@@ -232,6 +232,8 @@ const LanguageCN = {
     'send-reset-link': '发送重置链接',
     'request-too-many': '请求过于频繁，请等待几分钟后重试。',
     'request-not-sent': '请求未能发送，请重试。',
+    'request-too-large': '内容过大，无法发送。请减小后重试。',
+    'session-expired': '登录已过期，请重新登录。',
     'email-required': '请输入邮箱',
     'email-invalid': '请输入有效的邮箱地址',
     'password-too-short': '密码至少需要 8 个字符',

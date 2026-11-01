@@ -27,8 +27,11 @@ const RetrievePasswordForm = () => {
     AuthService.retrievePassword(email)
       .then(() => setSubmitted(true))
       .catch((err) => {
-        const title = err.response?.status === 429 ? 'request-too-many' : 'request-not-sent'
-        setError({ title: intl.formatMessage({ id: title }), detail: Utils.getErrorMessage(err) })
+        if (err.response?.status === 429) {
+          setError({ title: intl.formatMessage({ id: 'request-too-many' }), detail: '' })
+          return
+        }
+        setError({ title: intl.formatMessage({ id: 'request-not-sent' }), detail: Utils.getErrorMessage(err) })
       })
       .finally(() => setSubmitting(false))
   }

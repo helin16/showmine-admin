@@ -233,6 +233,8 @@ const LanguageEN = {
     'send-reset-link': 'Send reset link',
     'request-too-many': 'Too many requests. Please wait a few minutes and try again.',
     'request-not-sent': 'The request could not be sent. Please try again.',
+    'request-too-large': 'This is too large to send. Please make it smaller and try again.',
+    'session-expired': 'Your session has expired. Please sign in again.',
     'email-required': 'Please input your email!',
     'email-invalid': 'Please provide a valid email address.',
     'password-too-short': 'Password must be at least 8 characters.',

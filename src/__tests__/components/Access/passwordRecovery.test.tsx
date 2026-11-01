@@ -67,6 +67,7 @@ describe('forgot password', () => {
     retrieve().mockRejectedValue(rateLimited())
     submit('ann@example.com')
     expect(await screen.findByText('Too many requests. Please wait a few minutes and try again.')).toBeInTheDocument()
+    expect(screen.queryByText('Request failed with status code 429')).not.toBeInTheDocument()
     expect(screen.queryByText(NEUTRAL)).not.toBeInTheDocument()
     expect(screen.getByPlaceholderText('Email')).toHaveValue('ann@example.com')
   })
