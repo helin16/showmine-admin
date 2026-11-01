@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { lazy, useEffect } from 'react'
+import { lazy, useEffect, useState } from 'react'
 import { RootState } from '../../Redux/makeReduxStore'
 import AuthService from '../../Services/AuthService'
 import {
@@ -14,6 +14,9 @@ import { LOGIN_URL } from '../../UrlMap'
 import LocalStorageService from '../../Services/LocalStorageService';
 import {changeLocale} from '../../Redux/reduxers/app.slice';
 import Locale from '../Form/Locale';
+import Result from '../Form/Result';
+import Button from '../Form/Button';
+import translate from '../../i18n/translate';
 
 const NoCompanyNotice = lazy(() => import('../Company/NoCompanyNotice'))
 
@@ -27,6 +30,7 @@ const ProtectedRoute = ({ children, allowNoCompany = false }: any) => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { pathname, search } = useLocation()
+  const [isRateLimited, setIsRateLimited] = useState(false)
 
   /**
    * getting the details for the current user
@@ -64,8 +68,13 @@ const ProtectedRoute = ({ children, allowNoCompany = false }: any) => {
         }));
         LocalStorageService.setCompanyId(`${userCompany?.id || ''}`.trim());
       })
-      .catch(() => {
+      .catch((err) => {
         if (isCancelled === true) return
+        // The sign-in is still good. Dropping it would send WeChat users off to sign in again, adding to the load.
+        if (err.response?.status === 429) {
+          setIsRateLimited(true)
+          return
+        }
         AuthService.removeLocalAuthToken()
         dispatch(removedAuthentication())
         navigate(LOGIN_URL, { state: { from: `${pathname}${search}` } })
@@ -82,6 +91,16 @@ const ProtectedRoute = ({ children, allowNoCompany = false }: any) => {
       isCancelled = true
     }
   }, [dispatch, navigate, user, pathname, search])
+
+  if (isRateLimited === true) {
+    return (
+      <Result
+        status='warning'
+        title={translate('request-too-many')}
+        extra={<Button onClick={() => window.location.reload()}>{translate('retry')}</Button>}
+      />
+    )
+  }
 
   if (isAuthenticating === true || !user) {
     return <AppInit />

@@ -77,6 +77,32 @@ describe('ProtectedRoute', () => {
     expect(store.getState().auth.isAuthenticating).toBe(false)
   })
 
+  describe('rate limited while loading the session', () => {
+    const limited = () => Object.assign(apiError('Too many'), { response: { status: 429 } })
+    const TOO_MANY = messages[Locale.enUS.locale]['request-too-many']
+
+    test('keeps the sign-in and says so, without trying again', async () => {
+      AuthService.setLocalAuthToken('tok')
+      vi.mocked(AuthService.getMe).mockReset().mockRejectedValue(limited())
+      const { store } = renderProtected()
+      expect(await screen.findByText(TOO_MANY)).toBeInTheDocument()
+      expect(screen.queryByText('login page')).not.toBeInTheDocument()
+      expect(AuthService.getLocalAuthToken()).toBe('tok')
+      expect(store.getState().auth.isAuthenticating).toBe(false)
+      expect(AuthService.getMe).toHaveBeenCalledTimes(1)
+    })
+
+    test('trying again is the user\'s choice, and reloads', async () => {
+      const reload = vi.fn()
+      vi.stubGlobal('location', { ...window.location, reload })
+      vi.mocked(AuthService.getMe).mockRejectedValue(limited())
+      renderProtected()
+      fireEvent.click(await screen.findByRole('button', { name: /Try again/ }))
+      expect(reload).toHaveBeenCalledTimes(1)
+      vi.unstubAllGlobals()
+    })
+  })
+
   test('tells the login page which page was wanted', async () => {
     vi.mocked(AuthService.getMe).mockRejectedValue(apiError('401'))
     renderWithProviders(
