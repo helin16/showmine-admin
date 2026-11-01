@@ -32,7 +32,15 @@ vi.mock('../../../Services/AuthService', async (importOriginal) => {
   return { default: { ...actual.default, getMe: vi.fn() } }
 })
 
-const { page } = vi.hoisted(() => ({ page: (name: string) => ({ default: () => `page: ${name}` }) }))
+// A page's module only runs when its chunk loads, so this shows which screens were asked for.
+const { page, loaded } = vi.hoisted(() => {
+  const loaded: string[] = []
+  const page = (name: string) => {
+    loaded.push(name)
+    return { default: () => `page: ${name}` }
+  }
+  return { page, loaded }
+})
 vi.mock('../../../Pages/Auth/LoginPage', () => page('login'))
 vi.mock('../../../Pages/Auth/ForgotPasswordPage', () => ({
   default: () => `page: forgot, ${useIntl().formatMessage({ id: 'homePage' })}`,
@@ -74,9 +82,9 @@ describe('Router', () => {
     ['/', 'login'],
     [LOGIN_URL, 'login'],
     [FORGOT_PASSWORD_URL, 'forgot, Home Page'],
-  ])('%s is public', (path, name) => {
+  ])('%s is public', async (path, name) => {
     renderAt(path)
-    expect(screen.getByText(`page: ${name}`)).toBeInTheDocument()
+    expect(await screen.findByText(`page: ${name}`)).toBeInTheDocument()
     expect(AuthService.getMe).not.toHaveBeenCalled()
   })
 
@@ -93,9 +101,9 @@ describe('Router', () => {
     [COMMENTS_LIST_URL, 'comments'],
     [MEDIA_LIST_URL, 'media'],
     [WIZARD_URL, 'wizard'],
-  ])('%s is open to any signed-in user', (path, name) => {
+  ])('%s is open to any signed-in user', async (path, name) => {
     renderAt(path, member)
-    expect(screen.getByText(`page: ${name}`)).toBeInTheDocument()
+    expect(await screen.findByText(`page: ${name}`)).toBeInTheDocument()
   })
 
   test.each([
@@ -103,9 +111,9 @@ describe('Router', () => {
     [COMPANY_CHANNEL_NEW_URL, 'new channel'],
     [COMPANY_CHANNELS_URL, 'channels'],
     [COMPANY_USERS_URL, 'users'],
-  ])('%s is limited to company admins', (path, name) => {
+  ])('%s is limited to company admins', async (path, name) => {
     const allowed = renderAt(path, companyAdmin)
-    expect(screen.getByText(`page: ${name}`)).toBeInTheDocument()
+    expect(await screen.findByText(`page: ${name}`)).toBeInTheDocument()
     allowed.unmount()
 
     renderAt(path, member)
@@ -113,9 +121,9 @@ describe('Router', () => {
     expect(screen.queryByText(`page: ${name}`)).not.toBeInTheDocument()
   })
 
-  test('the company list is limited to super admins', () => {
+  test('the company list is limited to super admins', async () => {
     const allowed = renderAt(COMPANY_LIST_URL, superAdmin)
-    expect(screen.getByText('page: company list')).toBeInTheDocument()
+    expect(await screen.findByText('page: company list')).toBeInTheDocument()
     allowed.unmount()
 
     renderAt(COMPANY_LIST_URL, companyAdmin)
@@ -130,6 +138,59 @@ describe('Router', () => {
   })
 })
 
+describe('on-demand pages', () => {
+  // React.lazy remembers a loaded page, so each test needs a Router that has not loaded any yet.
+  const freshApp = async () => {
+    vi.resetModules()
+    loaded.length = 0
+    return (await import('../../../App')).default
+  }
+
+  const renderFresh = (FreshApp: typeof App, path: string, state: object) => {
+    window.history.pushState({}, '', path)
+    render(
+      <Provider store={makeTestStore(state)}>
+        <FreshApp />
+      </Provider>,
+    )
+  }
+
+  test.each([
+    [Locale.enUS, messages.en],
+    [Locale.zhCN, messages['zh-cn']],
+  ])('shows a labelled loading state until the page arrives', async (locale, text) => {
+    const FreshApp = await freshApp()
+    renderFresh(FreshApp, MEDIA_LIST_URL, { ...member, app: { locale } })
+    expect(screen.getByRole('status')).toHaveTextContent(text['page-loading'])
+    expect(await screen.findByText('page: media')).toBeInTheDocument()
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+  })
+
+  test('a signed-out visitor never loads or sees a protected page', async () => {
+    let refuse: (error: Error) => void = () => {}
+    vi.mocked(AuthService.getMe).mockReturnValue(new Promise((_, reject) => (refuse = reject)))
+    const FreshApp = await freshApp()
+    renderFresh(FreshApp, BACK_END_URL, {})
+    expect(screen.getByText('Fetching your account details...')).toBeInTheDocument()
+
+    await new Promise((resolve) => setTimeout(resolve))
+    expect(loaded).not.toContain('dashboard')
+    expect(screen.queryByText('page: dashboard')).not.toBeInTheDocument()
+
+    refuse(new Error('401'))
+    expect(await screen.findByText('page: login')).toBeInTheDocument()
+    expect(loaded).not.toContain('dashboard')
+  })
+
+  test('a member is refused an admin page without loading it', async () => {
+    const FreshApp = await freshApp()
+    renderFresh(FreshApp, COMPANY_ADMIN_URL, member)
+    expect(screen.getByText('403')).toBeInTheDocument()
+    await new Promise((resolve) => setTimeout(resolve))
+    expect(loaded).not.toContain('company')
+  })
+})
+
 describe('App', () => {
   const renderApp = (locale: typeof Locale.enUS | typeof Locale.zhCN, path = FORGOT_PASSWORD_URL) => {
     window.history.pushState({}, '', path)
@@ -140,14 +201,14 @@ describe('App', () => {
     )
   }
 
-  test('runs the app in English', () => {
+  test('runs the app in English', async () => {
     renderApp(Locale.enUS)
-    expect(screen.getByText('page: forgot, Home Page')).toBeInTheDocument()
+    expect(await screen.findByText('page: forgot, Home Page')).toBeInTheDocument()
   })
 
-  test('runs the app in Chinese', () => {
+  test('runs the app in Chinese', async () => {
     renderApp(Locale.zhCN)
-    expect(screen.getByText(`page: forgot, ${messages['zh-cn'].homePage}`)).toBeInTheDocument()
+    expect(await screen.findByText(`page: forgot, ${messages['zh-cn'].homePage}`)).toBeInTheDocument()
   })
 
   test('translate() follows the language of the app', () => {

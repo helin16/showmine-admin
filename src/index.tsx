@@ -4,6 +4,10 @@ import App from './App'
 import { Provider } from 'react-redux'
 import store from './Redux/makeReduxStore'
 import reportWebVitals from './reportWebVitals'
+import { reloadOnce } from './Components/Error/ChunkErrorBoundary'
+
+// A tab left open across a deployment asks for chunks that are gone. import.meta.url names this build.
+window.addEventListener('vite:preloadError', () => reloadOnce(import.meta.url))
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
 root.render(

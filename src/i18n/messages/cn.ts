@@ -4,6 +4,9 @@ import { LOCALES } from '../../Constants'
 const LanguageCN = {
   [LOCALES.CHINESE]: {
     homePage: '主页',
+    'page-loading': '正在加载页面...',
+    'page-load-failed': '页面加载失败，请重试。',
+    retry: '重试',
     pageNotExists: '抱歉，您访问的页面不存在。',
     'editFile': 'Edit {file} and save to reload.',
     hello: 'Hello',

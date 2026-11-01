@@ -4,6 +4,9 @@ import { LOCALES } from '../../Constants'
 const LanguageEN = {
   [LOCALES.ENGLISH]: {
     homePage: 'Home Page',
+    'page-loading': 'Loading this page...',
+    'page-load-failed': 'This page could not be loaded. Please try again.',
+    retry: 'Try again',
     pageNotExists: 'Sorry, the page you visited does not exist.',
     editFile: 'Edit {file} and save to reload.',
     hello: 'Hello',
