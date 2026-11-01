@@ -128,7 +128,7 @@ const LanguageCN = {
     'hold-content': '我们将保存您发布内容多久',
     'channel-connect': '您可以链接到的渠道全部数额',
 
-    'search-article-title': '搜索文章标题...',
+    'search-file-name': '搜索文件名...',
     'search-user-name': '搜索用户名字...',
     free: '免费',
     'per-month': 'AUD {num} / 月',

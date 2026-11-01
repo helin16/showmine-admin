@@ -61,7 +61,7 @@ const MediaListPage = () => {
             <Card>
               <Search
                 className={'search-box'}
-                placeholder={translate('search-article-title')}
+                placeholder={translate('search-file-name')}
                 allowClear={true}
                 onSearch={search}
               />

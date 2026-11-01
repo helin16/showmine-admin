@@ -147,6 +147,15 @@ describe('ArticlePublishBtn', () => {
     expect(within(dialog()).queryByRole('table')).not.toBeInTheDocument()
   })
 
+  test('does not publish when the channels failed to load', async () => {
+    channels.getAll.mockRejectedValue(new Error('channels down'))
+    renderWithProviders(<ArticlePublishBtn article={article} />, { state: signedIn })
+    open()
+    await within(dialog()).findByRole('alert')
+    confirm()
+    expect(articles.update).not.toHaveBeenCalled()
+  })
+
   test('does not publish without a signed-in user', async () => {
     renderWithProviders(<ArticlePublishBtn article={article} />, { state: { auth: { company: signedIn.auth.company } } })
     open()

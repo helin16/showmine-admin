@@ -128,7 +128,7 @@ const LanguageEN = {
     'hold-content': 'How long we will hold your published content.',
     'channel-connect': 'Total number of channels you can connect with',
 
-    'search-article-title': 'search article title...',
+    'search-file-name': 'search file name...',
     'search-user-name': 'search user by name...',
     free: 'free',
     'per-month': 'AUD {num} / Month',

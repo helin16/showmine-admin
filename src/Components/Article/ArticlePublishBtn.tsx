@@ -202,7 +202,7 @@ const ArticlePublishBtn = ({ article, children, onPublished, ...props }: iArticl
             type: 'primary',
             icon: <Icons.CloudUploadOutlined />,
             loading: state.saving === true,
-            disabled: state.channelLoading === true,
+            disabled: state.channelLoading === true || !!state.channelLoadingErr,
           }}
           onCancel={() => {
             showOrHideConfirmDiv(false)
