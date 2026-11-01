@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { useEffect } from 'react'
+import { lazy, useEffect } from 'react'
 import { RootState } from '../../Redux/makeReduxStore'
 import AuthService from '../../Services/AuthService'
 import {
@@ -15,13 +15,15 @@ import LocalStorageService from '../../Services/LocalStorageService';
 import {changeLocale} from '../../Redux/reduxers/app.slice';
 import Locale from '../Form/Locale';
 
+const NoCompanyNotice = lazy(() => import('../Company/NoCompanyNotice'))
+
 /**
  *
  * @param props
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ProtectedRoute = ({ children }: any) => {
-  const { app: appState, auth: { user, isAuthenticating } } = useSelector((s: RootState) => s);
+const ProtectedRoute = ({ children, allowNoCompany = false }: any) => {
+  const { app: appState, auth: { user, company, isAuthenticating } } = useSelector((s: RootState) => s);
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { pathname, search } = useLocation()
@@ -83,6 +85,11 @@ const ProtectedRoute = ({ children }: any) => {
 
   if (isAuthenticating === true || !user) {
     return <AppInit />
+  }
+
+  // Here and not in BackendPage: pages fetch as they mount, and company APIs fail with no company.
+  if (allowNoCompany !== true && user.isSuperAdmin !== true && `${company?.id || ''}`.trim() === '') {
+    return <NoCompanyNotice />
   }
 
   return children

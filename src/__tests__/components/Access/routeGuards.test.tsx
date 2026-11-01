@@ -1,35 +1,42 @@
-import React, { useEffect } from 'react'
+import React, { Suspense, useEffect } from 'react'
 import { act, fireEvent, screen, waitFor } from '@testing-library/react'
 import { Route, Routes, useLocation } from 'react-router-dom'
 import { vi } from 'vitest'
+import CompanyService from '../../../Services/CompanyService'
 import { apiError, deferred, stubMatchMedia } from './domHelpers'
 import { renderWithProviders } from '../../testUtils'
 import ProtectedRoute from '../../../Components/Route/ProtectedRoute'
 import CompanyAdminRoute from '../../../Components/Route/CompanyAdminRoute'
 import SuperAdminRoute from '../../../Components/Route/SuperAdminRoute'
 import AuthService from '../../../Services/AuthService'
-import LocalStorageService from '../../../Services/LocalStorageService'
+import LocalStorageService, { AUTO_LOGIN_DONE } from '../../../Services/LocalStorageService'
 import Locale from '../../../Components/Form/Locale'
-import { ARTICLE_LIST_URL, BACK_END_URL, LOGIN_URL } from '../../../UrlMap'
+import { messages } from '../../../i18n/messages'
+import { ARTICLE_LIST_URL, BACK_END_URL, LOGIN_URL, MY_PROFILE_URL } from '../../../UrlMap'
 import { ROLE_ADMIN, ROLE_NON_ADMIN } from '../../../Types/Company/ICompanyUser'
 
 vi.mock('../../../Services/AuthService', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../Services/AuthService')>()
-  return { default: { ...actual.default, getMe: vi.fn() } }
+  return { default: { ...actual.default, getMe: vi.fn(), logout: vi.fn() } }
 })
+vi.mock('../../../Services/CompanyService', () => ({ default: { getAll: vi.fn() } }))
 
 const acme = { id: 'co-1', name: 'Acme' }
 const globex = { id: 'co-2', name: 'Globex' }
 const me = { id: 'u-1', languageCode: 'en' }
-const session = (overrides = {}, companies: object[] = []) =>
+const member = { Company: acme }
+const session = (overrides = {}, companies: object[] = [member]) =>
   ({ user: { ...me, ...overrides }, companies }) as never
+const NO_COMPANY = messages[Locale.enUS.locale]['no-company-notice']
 
 const renderProtected = (children: React.ReactNode = <div>secret</div>, state = {}) =>
   renderWithProviders(
-    <Routes>
-      <Route path={LOGIN_URL} element={<div>login page</div>} />
-      <Route path='*' element={<ProtectedRoute>{children}</ProtectedRoute>} />
-    </Routes>,
+    <Suspense fallback='loading'>
+      <Routes>
+        <Route path={LOGIN_URL} element={<div>login page</div>} />
+        <Route path='*' element={<ProtectedRoute>{children}</ProtectedRoute>} />
+      </Routes>
+    </Suspense>,
     { route: BACK_END_URL, state },
   )
 
@@ -39,7 +46,7 @@ beforeAll(() => stubMatchMedia())
 
 describe('ProtectedRoute', () => {
   test('allows a loaded user straight through without fetching', () => {
-    renderProtected(undefined, { auth: { user: me } })
+    renderProtected(undefined, { auth: { user: me, company: acme } })
     expect(screen.getByText('secret')).toBeInTheDocument()
     expect(AuthService.getMe).not.toHaveBeenCalled()
   })
@@ -158,11 +165,110 @@ describe('ProtectedRoute', () => {
 
     test('stores an empty company id for a user with no company', async () => {
       LocalStorageService.setCompanyId('previous')
-      vi.mocked(AuthService.getMe).mockResolvedValue(session())
+      vi.mocked(AuthService.getMe).mockResolvedValue(session({}, []))
       const { store } = renderProtected()
-      await screen.findByText('secret')
+      await screen.findByText(NO_COMPANY)
       expect(store.getState().auth.company).toBeUndefined()
       expect(LocalStorageService.getCompanyId()).toBe('')
+    })
+  })
+
+  describe('a user with no company', () => {
+    const allowed = (state = {}) =>
+      renderWithProviders(
+        <Suspense fallback='loading'>
+          <ProtectedRoute allowNoCompany>secret</ProtectedRoute>
+        </Suspense>,
+        { state },
+      )
+
+    test('sees the notice instead of the page, and the page never mounts', async () => {
+      const mounted = vi.fn()
+      const Child = () => {
+        useEffect(() => mounted(), [])
+        return <div>secret</div>
+      }
+      vi.mocked(AuthService.getMe).mockResolvedValue(session({}, []))
+      renderProtected(<Child />)
+      expect(await screen.findByText(NO_COMPANY)).toBeInTheDocument()
+      expect(mounted).not.toHaveBeenCalled()
+      expect(CompanyService.getAll).not.toHaveBeenCalled()
+    })
+
+    test('does not see it before the session has loaded', async () => {
+      const pending = deferred<never>()
+      vi.mocked(AuthService.getMe).mockReturnValue(pending.promise)
+      renderProtected()
+      await screen.findByText('Fetching your account details...')
+      expect(screen.queryByText(NO_COMPANY)).not.toBeInTheDocument()
+      await act(async () => pending.resolve(session({}, [])))
+      expect(await screen.findByText(NO_COMPANY)).toBeInTheDocument()
+    })
+
+    test('a user with a company never sees it, from the first paint on', async () => {
+      const pending = deferred<never>()
+      vi.mocked(AuthService.getMe).mockReturnValue(pending.promise)
+      renderProtected()
+      await screen.findByText('Fetching your account details...')
+      await act(async () => pending.resolve(session()))
+      expect(await screen.findByText('secret')).toBeInTheDocument()
+      expect(screen.queryByText(NO_COMPANY)).not.toBeInTheDocument()
+    })
+
+    test('a last visited company counts as a company', async () => {
+      vi.mocked(AuthService.getMe).mockResolvedValue(session({ LastVisitCompany: acme }, []))
+      renderProtected()
+      expect(await screen.findByText('secret')).toBeInTheDocument()
+    })
+
+    test('a super admin with no company is not affected', async () => {
+      vi.mocked(AuthService.getMe).mockResolvedValue(session({ isSuperAdmin: true }, []))
+      renderProtected()
+      expect(await screen.findByText('secret')).toBeInTheDocument()
+      expect(screen.queryByText(NO_COMPANY)).not.toBeInTheDocument()
+    })
+
+    test('can still reach a page that allows it', async () => {
+      allowed({ auth: { user: me } })
+      expect(await screen.findByText('secret')).toBeInTheDocument()
+      expect(screen.queryByText(NO_COMPANY)).not.toBeInTheDocument()
+    })
+
+    test('allowing it does not skip loading the session', async () => {
+      vi.mocked(AuthService.getMe).mockReturnValue(new Promise(() => undefined))
+      allowed()
+      expect(await screen.findByText('Fetching your account details...')).toBeInTheDocument()
+      expect(screen.queryByText('secret')).not.toBeInTheDocument()
+    })
+
+    test('can open the profile from the notice', async () => {
+      renderProtected(undefined, { auth: { user: me } })
+      expect(await screen.findByRole('link', { name: 'My Profile' })).toHaveAttribute('href', MY_PROFILE_URL)
+    })
+
+    test('can sign out from the notice, without the automatic WeChat sign-in', async () => {
+      AuthService.setLocalAuthToken('tok')
+      vi.mocked(AuthService.logout).mockResolvedValue({} as never)
+      vi.mocked(AuthService.getMe).mockReturnValue(new Promise(() => undefined))
+      const { store } = renderProtected(undefined, { auth: { user: me } })
+      fireEvent.click(await screen.findByRole('button', { name: /Sign out/ }))
+      fireEvent.click(await screen.findByRole('button', { name: /Yes/ }))
+      expect(await screen.findByText('login page')).toBeInTheDocument()
+      expect(AuthService.logout).toHaveBeenCalled()
+      expect(AuthService.getLocalAuthToken()).toBeNull()
+      expect(store.getState().auth.user).toBeUndefined()
+      expect(LocalStorageService.getAutoLoginMark()).toBe(AUTO_LOGIN_DONE)
+    })
+
+    test('the notice says what the owner decided', () => {
+      expect(NO_COMPANY).toBe('Your account isn\'t linked to a company yet. Please ask your company admin to add you.')
+    })
+
+    test('the notice exists in both languages', () => {
+      ;['no-company-notice', 'sign-out', 'my-profile'].forEach((id) => {
+        expect(messages[Locale.enUS.locale][id]).toBeTruthy()
+        expect(messages[Locale.zhCN.locale][id]).toMatch(/[\u4e00-\u9fff]/)
+      })
     })
   })
 })

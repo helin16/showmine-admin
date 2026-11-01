@@ -91,6 +91,39 @@ describe('Router', () => {
     expect(AuthService.getMe).not.toHaveBeenCalled()
   })
 
+  describe('a signed-in user with no company', () => {
+    const NO_COMPANY = messages.en['no-company-notice']
+    const stranger = { auth: { user: { id: 'u-4' } } }
+
+    test.each([
+      [BACK_END_URL],
+      [ARTICLE_LIST_URL],
+      [`${ARTICLE_LIST_URL}/a-1`],
+      [COMMENTS_LIST_URL],
+      [MEDIA_LIST_URL],
+      [WIZARD_URL],
+      [COMPANY_ADMIN_URL],
+      [COMPANY_CHANNEL_NEW_URL],
+      [COMPANY_CHANNELS_URL],
+      [COMPANY_USERS_URL],
+      [COMPANY_LIST_URL],
+    ])('sees the notice and no page at %s', async (path) => {
+      renderAt(path, stranger)
+      expect(await screen.findByText(NO_COMPANY)).toBeInTheDocument()
+      expect(screen.queryByText(/^page:/)).not.toBeInTheDocument()
+    })
+
+    test.each([[MY_PROFILE_URL], [`${MY_PROFILE_URL}/`]])('can still reach %s', async (path) => {
+      renderAt(path, stranger)
+      expect(await screen.findByText('page: profile')).toBeInTheDocument()
+    })
+
+    test('a super admin still reaches the pages', async () => {
+      renderAt(MEDIA_LIST_URL, { auth: { user: { id: 'u-1', isSuperAdmin: true } } })
+      expect(await screen.findByText('page: media')).toBeInTheDocument()
+    })
+  })
+
   test('unknown paths get the 404 page', () => {
     renderAt('/no/such/page')
     expect(screen.getByText('404')).toBeInTheDocument()

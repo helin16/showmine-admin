@@ -66,7 +66,7 @@ const Router = () => {
                 <Route
                   path={MY_PROFILE_URL}
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute allowNoCompany>
                       <MyProfilePage />
                     </ProtectedRoute>
                   }

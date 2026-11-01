@@ -13,7 +13,7 @@ import {FormattedMessage, useIntl} from 'react-intl';
  * logout btn
  * @constructor
  */
-const LogoutBtn = () => {
+const LogoutBtn = ({ children }: { children?: React.ReactNode }) => {
   const [isConfirming, setIsConfirming] = useState(false)
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -54,7 +54,7 @@ const LogoutBtn = () => {
    */
   return (
     <>
-      <Button type={'text'} icon={<Icons.LogoutOutlined />} onClick={() => setIsConfirming(true)}></Button>
+      <Button type={'text'} icon={<Icons.LogoutOutlined />} onClick={() => setIsConfirming(true)}>{children}</Button>
       {getPopup()}
     </>
   )
