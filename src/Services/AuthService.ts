@@ -21,12 +21,10 @@ const login = async (email: string, password: string) => {
   return AppService.post(endPoint, { email, password }).then((resp) => resp.data)
 }
 
-export type iPendingCompany = { id: string; name: string }
-
 type iMeData = {
   user: IUser,
   companies: ICompanyUser[];
-  pendingCompanies?: iPendingCompany[];
+  pendingCompanies?: { id: string; name: string }[];
 }
 
 const getMe = async (config: object | undefined = undefined): Promise<iMeData> => {

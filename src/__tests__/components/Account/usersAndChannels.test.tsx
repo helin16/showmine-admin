@@ -103,7 +103,7 @@ describe.each([
 
 describe('CompanyUserList', () => {
   const zed = { id: 'cu-1', userId: 'u-1', isPending: false, role: ROLE_ADMIN, User: { nickName: 'Zed' } }
-  const amy = { id: 'cu-2', userId: 'u-2', isPending: true, role: ROLE_NON_ADMIN, User: { nickName: 'Amy' } }
+  const amy = { id: 'cu-2', userId: 'u-2', isPending: false, role: ROLE_NON_ADMIN, User: { nickName: 'Amy' } }
   const state = { auth: { user: { id: 'u-1' } } }
   const load = (data: object[] = [zed, amy]) =>
     vi.mocked(CompanyUserService.getAll).mockResolvedValue({ data } as never)
@@ -134,7 +134,6 @@ describe('CompanyUserList', () => {
     renderWithProviders(<CompanyUserList />, { state })
     const mine = await row('Zed')
     expect(within(mine).getByRole('switch')).toBeDisabled()
-    expect(within(mine).queryByRole('button', { name: /Approve/ })).not.toBeInTheDocument()
     expect(within(mine).getByText('delete').closest('button')).toHaveStyle({ visibility: 'hidden' })
   })
 
@@ -142,17 +141,6 @@ describe('CompanyUserList', () => {
     load()
     renderWithProviders(<CompanyUserList />)
     expect(within(await row('Amy')).getByRole('switch')).toBeDisabled()
-  })
-
-  test('approves a pending user and reloads', async () => {
-    load()
-    vi.mocked(CompanyUserService.update).mockResolvedValue({} as never)
-    renderWithProviders(<CompanyUserList />, { state })
-    fireEvent.click(within(await row('Amy')).getByRole('button', { name: /Approve/ }))
-    await confirmPopup()
-    expect(CompanyUserService.update).toHaveBeenCalledExactlyOnceWith('cu-2', { isPending: false })
-    await waitFor(() => expect(message.success).toHaveBeenCalledWith('User (Amy) updated.'))
-    await waitFor(() => expect(CompanyUserService.getAll).toHaveBeenCalledTimes(2))
   })
 
   test.each([

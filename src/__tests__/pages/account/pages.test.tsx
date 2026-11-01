@@ -45,7 +45,9 @@ vi.mock('../../../Services/ChannelService', () => ({ default: { getAll: vi.fn() 
 vi.mock('../../../Services/CompanyService', () => ({
   default: { getAll: vi.fn(), getItemById: vi.fn(), update: vi.fn(), deactivate: vi.fn() },
 }))
-vi.mock('../../../Services/CompanyUserService', () => ({ default: { getAll: vi.fn() } }))
+vi.mock('../../../Services/CompanyUserService', () => ({
+  default: { getAll: vi.fn(), getPending: vi.fn(), approve: vi.fn() },
+}))
 vi.mock('../../../Services/WeChatService', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../Services/WeChatService')>()
   return { default: { ...actual.default, getLoginQrCodeUrl: vi.fn(), getUserFromQrcode: vi.fn() } }
@@ -157,15 +159,28 @@ test('CompanyListPage lists the companies for a super admin', async () => {
 describe('CompanyUsersPage', () => {
   test('lists the users of the company', async () => {
     vi.mocked(CompanyUserService.getAll).mockResolvedValue({ data: [{ id: 'cu-1', User: { nickName: 'Amy' } }] } as never)
+    vi.mocked(CompanyUserService.getPending).mockResolvedValue([])
     const { store } = renderWithProviders(<CompanyUsersPage />, { state: { auth: { company: acme } } })
     expect(await screen.findByText('Amy', { selector: 'h4' })).toBeInTheDocument()
     expect(screen.getAllByText('Users').length).toBeGreaterThan(0)
     expect(store.getState().backendPage.selectedMenuKey).toBe(MENU_KEY_COMPANY_USERS)
+    expect(screen.getByRole('button', { name: /Send invite/ })).toBeInTheDocument()
+    expect(await screen.findByText('Nobody is waiting for approval.')).toBeInTheDocument()
+  })
+
+  test('an approval reloads the member list', async () => {
+    vi.mocked(CompanyUserService.getAll).mockResolvedValue({ data: [] } as never)
+    vi.mocked(CompanyUserService.getPending).mockResolvedValue([{ id: 'cu-2', User: { nickName: 'Bo' } }] as never)
+    vi.mocked(CompanyUserService.approve).mockResolvedValue({ success: true })
+    renderWithProviders(<CompanyUsersPage />, { state: { auth: { company: acme } } })
+    fireEvent.click(await screen.findByRole('button', { name: /Approve/ }))
+    await waitFor(() => expect(CompanyUserService.getAll).toHaveBeenCalledTimes(2))
   })
 
   test('does not load users without a company', () => {
     renderWithProviders(<CompanyUsersPage />)
     expect(CompanyUserService.getAll).not.toHaveBeenCalled()
+    expect(CompanyUserService.getPending).not.toHaveBeenCalled()
   })
 })
 

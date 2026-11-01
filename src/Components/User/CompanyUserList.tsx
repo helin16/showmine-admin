@@ -116,24 +116,6 @@ const CompanyUserList = ({ searchKeyWord }: iCompanyUserList) => {
         <ListItem
           actions={[
             (
-              (isCurrentUser(companyUser) || companyUser.isPending === false) ? null : (
-                <PopConfirm
-                  key={'approve-btn'}
-                  title={<div><div>Are you sure approve</div><h4>{companyUser.User?.nickName}</h4></div>}
-                  onConfirm={() => {
-                    updateCompanyUser(companyUser, {isPending: false});
-                  }}
-                  okText={translate('yes')}
-                  cancelText={translate('no')}
-                >
-                  <Button type="link">
-                    <Icons.DeleteOutlined/>
-                    Approve
-                  </Button>
-                </PopConfirm>
-              )
-            ),
-            (
               <Switch
                 key={'admin-switch'}
                 checkedChildren={translate('is-admin')}
