@@ -255,7 +255,7 @@ describe('WizardPage', () => {
 
     next()
     expect(CompanyService.update).toHaveBeenCalledExactlyOnceWith('co-1', {
-      config: { theme: 'dark', has_been_setup: true },
+      config: { theme: 'dark', onBoard: { has_been_setup: true } },
     })
     await waitFor(() => expect(step(1)).toHaveClass('ant-steps-item-active'))
 
@@ -289,6 +289,32 @@ describe('WizardPage', () => {
     const link = await screen.findByRole('button', { name: /New Article/ })
     expect(link.closest('a')).toHaveAttribute('href', `${ARTICLE_LIST_URL}/new`)
     expect(screen.queryByText('article list')).not.toBeInTheDocument()
+  })
+
+  describe('company settings', () => {
+    const admin = {
+      auth: { company: acme, companyUsers: [{ companyId: 'co-1', isActive: true, isPending: false, role: 'ADMIN' }] },
+    }
+
+    test('are for company admins, who save through the live editor', async () => {
+      articles([])
+      const { store } = renderWithProviders(<WizardPage />, { state: admin as never })
+      fireEvent.click(await screen.findByRole('button', { name: 'editing Acme' }))
+      expect(store.getState().auth.company).toEqual({ id: 'co-1', name: 'Saved Co' })
+    })
+
+    test('and channels stay out of reach for other members', async () => {
+      articles([])
+      vi.mocked(CompanyService.update).mockResolvedValue(acme as never)
+      renderWithProviders(<WizardPage />, { state })
+      await waitFor(() => expect(ArticleService.getAll).toHaveBeenCalled())
+      expect(screen.queryByRole('button', { name: 'editing Acme' })).not.toBeInTheDocument()
+      expect(screen.getByText('403')).toBeInTheDocument()
+      next()
+      await waitFor(() => expect(step(1)).toHaveClass('ant-steps-item-active'))
+      expect(screen.getByText('403')).toBeInTheDocument()
+      expect(ChannelService.getAll).not.toHaveBeenCalled()
+    })
   })
 
   test('steps forward without saving when there is no company', async () => {

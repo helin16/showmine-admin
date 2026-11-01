@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 import { Link } from 'react-router-dom'
 import { RootState } from '../../Redux/makeReduxStore'
@@ -10,7 +10,9 @@ import ArticleService from '../../Services/ArticleService'
 import CompanyService from '../../Services/CompanyService'
 import ICompany from '../../Types/Company/ICompany'
 import BackendPageContentTitle from '../../Layouts/BackendPageContentTitle'
-import CompanyBasicInfoEditor from '../../Components/Company/CompanyBasicInfoEditor'
+import CompanyEditor from '../../Components/Company/CompanyEditor'
+import CompanyAdminRoute from '../../Components/Route/CompanyAdminRoute'
+import { changeCompany } from '../../Redux/reduxers/auth.slice'
 import Icons from '../../Components/Icons'
 import ChannelList from '../../Components/Channel/ChannelList'
 import BackendPage from '../../Layouts/BackendPage'
@@ -38,6 +40,7 @@ const WizardPage = () => {
   const [state, setState] = React.useState(initState)
   const [current, setCurrent] = React.useState(0)
   const { company } = useSelector((s: RootState) => s.auth)
+  const dispatch = useDispatch()
 
   useEffect(() => {
     if (!company || !company.id) return
@@ -62,7 +65,14 @@ const WizardPage = () => {
       content: (
         <>
           <BackendPageContentTitle title={translate('company')} />
-          {state.company ? <CompanyBasicInfoEditor company={state.company} /> : null}
+          {state.company ? (
+            <CompanyAdminRoute>
+              <CompanyEditor
+                company={state.company}
+                onSaved={(newCompany: ICompany) => dispatch(changeCompany({ company: newCompany }))}
+              />
+            </CompanyAdminRoute>
+          ) : null}
         </>
       ),
       icon: <Icons.SettingOutlined />,
@@ -76,7 +86,11 @@ const WizardPage = () => {
             // description='Channel setting has been completed, now you can try add new article'
            
           />
-          {state.company ? <ChannelList /> : null}
+          {state.company ? (
+            <CompanyAdminRoute>
+              <ChannelList />
+            </CompanyAdminRoute>
+          ) : null}
         </>
       ),
       icon: <Icons.ApartmentOutlined rotate={270} />,
@@ -113,8 +127,11 @@ const WizardPage = () => {
       CompanyService.update(company.id, {
         config: {
           ...(company.config || {}),
-          // eslint-disable-next-line camelcase
-          has_been_setup: true,
+          onBoard: {
+            ...(company.config?.onBoard || {}),
+            // eslint-disable-next-line camelcase
+            has_been_setup: true,
+          },
         },
       }).then(() => {
         setCurrent(current + 1);

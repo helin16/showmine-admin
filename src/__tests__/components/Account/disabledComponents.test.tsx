@@ -1,7 +1,6 @@
 import React from 'react'
 import { renderWithProviders } from '../../testUtils'
 import RetrievePasswordForm from '../../../Components/Auth/RetrievePasswordForm'
-import CompanyBasicInfoEditor from '../../../Components/Company/CompanyBasicInfoEditor'
 import CompanyUserInviteBtn from '../../../Components/User/CompanyUserInviteBtn'
 import RedirectChannelEditor from '../../../Components/Channel/Wizard/RedirectChannelEditor'
 import WordPressChannelEditor from '../../../Components/Channel/Wizard/WordPressChannelEditor'
@@ -12,7 +11,6 @@ const company = { id: 'co-1', name: 'Acme' } as never
 // These features are commented out in the source: pin that they stay out of the UI until they are restored.
 test.each([
   ['RetrievePasswordForm', <RetrievePasswordForm key='0' />],
-  ['CompanyBasicInfoEditor', <CompanyBasicInfoEditor key='0' company={company} />],
   ['CompanyUserInviteBtn', <CompanyUserInviteBtn key='0' company={company} />],
   ['RedirectChannelEditor', <RedirectChannelEditor key='0' channel={channel} />],
 ])('%s is disabled and renders nothing', (_name, ui) => {
