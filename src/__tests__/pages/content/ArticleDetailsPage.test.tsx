@@ -24,7 +24,12 @@ vi.mock('../../../Layouts/BackendPage', () => ({
 }))
 vi.mock('../../../Components/Article/NewArticleGuide', () => ({ default: () => <div>new article guide</div> }))
 vi.mock('../../../Components/Comments/CommentsList', () => ({
-  default: ({ itemId }: { itemId: string }) => <div>comments for {itemId}</div>,
+  default: ({ itemId, commentId }: { itemId: string; commentId?: string }) => (
+    <div>
+      comments for {itemId}
+      {commentId ? ` at ${commentId}` : ''}
+    </div>
+  ),
 }))
 type Changed = { onUpdated?: (a: IArticle) => void; onPublished?: (a: IArticle) => void; onChanged?: (a: IArticle) => void }
 vi.mock('../../../Components/Article/ArticleEditor', () => ({
@@ -54,6 +59,12 @@ const render = (route = '/b/articles/art-1', state: object = signedIn) =>
   )
 
 describe('ArticleDetailsPage', () => {
+  test('passes the comment in the address on to the list', async () => {
+    service.getItemById.mockResolvedValue(makeArticle())
+    render('/b/articles/art-1?company=co-1&comment=c-1')
+    expect(await screen.findByText('comments for art-1 at c-1')).toBeInTheDocument()
+  })
+
   test('a new article shows the guide, and fetches nothing', async () => {
     render('/b/articles/new')
     expect(await screen.findByText('new article guide')).toBeInTheDocument()

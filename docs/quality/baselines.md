@@ -24,6 +24,7 @@ Sign-in first-load JS is the sum of Vite's own gzip figure for every script and 
 | Session expiry and the 413 and 429 messages in `AppService` | 303.5 kB |
 | Company invites: pages on demand, messages and the no-company notice's session field in first load | 304.7 kB |
 | Comments: toggle and hide and reply controls on demand, messages in first load | 301.7 kB |
+| Links to a comment: company choice in first load, scrolling on demand | 302.1 kB |
 
 Measured and not changed:
 

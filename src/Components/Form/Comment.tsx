@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import styled, { keyframes } from 'styled-components'
 
 type iComment = {
   author: any
@@ -7,12 +7,27 @@ type iComment = {
   content: any
   children?: any
   datetime: any
+  id?: string
+  isHighlighted?: boolean
 }
+
+const fadeHighlight = keyframes`
+  from {
+    background-color: #fff3bf;
+  }
+  to {
+    background-color: transparent;
+  }
+`
 
 const Wrapper = styled.div`
   position: relative;
   background-color: inherit;
   width: 100%;
+
+  &.comment-highlight {
+    animation: ${fadeHighlight} 3s ease-out;
+  }
 
   .ant-comment-inner {
     display: flex;
@@ -65,9 +80,9 @@ const Wrapper = styled.div`
     }
   }
 `
-const Comment = ({ author, datetime, actions, avatar, content, children }: iComment) => {
+const Comment = ({ author, datetime, actions, avatar, content, children, id, isHighlighted }: iComment) => {
   return (
-    <Wrapper className={'ant-comment'}>
+    <Wrapper id={id} className={`ant-comment${isHighlighted === true ? ' comment-highlight' : ''}`}>
       <div className={'ant-comment-inner'}>
         <div className={'ant-comment-avatar'}>{avatar}</div>
         <div className={'ant-comment-content'}>

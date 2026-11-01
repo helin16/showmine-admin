@@ -16,7 +16,7 @@ import ArticlePublishBtn from '../../Components/Article/ArticlePublishBtn'
 import CommentsList from '../../Components/Comments/CommentsList'
 import IArticle from '../../Types/Article/IArticle'
 import Card from '../../Components/Form/Card'
-import {useNavigate, useParams} from 'react-router-dom'
+import {useNavigate, useParams, useSearchParams} from 'react-router-dom'
 import Typography from '../../Components/Form/Typography'
 import Space from '../../Components/Form/Space'
 import Icons from '../../Components/Icons'
@@ -42,6 +42,7 @@ const ArticleDetailsPage = () => {
   const { company } = useSelector((s: RootState) => s.auth)
   const [state, setState] = useState(initialState)
   const { id } = useParams();
+  const [searchParams] = useSearchParams()
   const intl = useIntl()
   const articleId = `${id || ''}`.trim()
   const isNewArticle = articleId === '' || articleId.toLowerCase() === 'new'
@@ -123,7 +124,7 @@ const ArticleDetailsPage = () => {
     }
     return (
       <Card>
-        <CommentsList itemId={articleId} />
+        <CommentsList itemId={articleId} commentId={searchParams.get('comment') || undefined} />
       </Card>
     )
   }

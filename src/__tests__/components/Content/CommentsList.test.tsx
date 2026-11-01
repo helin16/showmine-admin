@@ -291,4 +291,63 @@ describe('CommentsList', () => {
     await screen.findByText('Other article')
     expect(screen.queryByText('Nice post')).not.toBeInTheDocument()
   })
+
+  describe('opening a link to a comment', () => {
+    let scrollIntoView: ReturnType<typeof vi.fn>
+
+    beforeEach(() => {
+      scrollIntoView = vi.fn()
+      Element.prototype.scrollIntoView = scrollIntoView as never
+    })
+
+    const open = async (rows: IComment[], commentId?: string) => {
+      service.getAll.mockResolvedValue(listOf(rows))
+      const view = renderWithProviders(<CommentsList itemId="art-1" commentId={commentId} />)
+      await screen.findByText('Nice post')
+      return view
+    }
+
+    test('scrolls to the comment and highlights it, and only it', async () => {
+      const { container } = await open([makeComment(), makeComment({ id: 'c2', text: 'Other' })], 'c2')
+
+      const target = container.querySelector('#comment-c2')
+      expect(target).toHaveTextContent('Other')
+      expect(target).toHaveClass('comment-highlight')
+      expect(container.querySelector('#comment-c1')).not.toHaveClass('comment-highlight')
+      expect(scrollIntoView).toHaveBeenCalledTimes(1)
+      expect(scrollIntoView.mock.contexts[0]).toBe(target)
+    })
+
+    test('scrolls once more when the editor above has grown', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true })
+      await open([makeComment()], 'c1')
+      vi.advanceTimersByTime(2000)
+      expect(scrollIntoView).toHaveBeenCalledTimes(2)
+      vi.useRealTimers()
+    })
+
+    test('leaves the list as it is when the comment is not on the page', async () => {
+      const { container } = await open([makeComment()], 'c9')
+      expect(scrollIntoView).not.toHaveBeenCalled()
+      expect(container.querySelector('.comment-highlight')).not.toBeInTheDocument()
+    })
+
+    test('does nothing without a comment in the link', async () => {
+      await open([makeComment()])
+      expect(scrollIntoView).not.toHaveBeenCalled()
+    })
+
+    test('hiding the comment afterwards does not scroll again', async () => {
+      service.hide.mockResolvedValue(makeComment({ isHidden: true }))
+      await open([makeComment()], 'c1')
+      fireEvent.click(screen.getByRole('button', { name: /Hide/ }))
+      await screen.findByText('Hidden from readers')
+      expect(scrollIntoView).toHaveBeenCalledTimes(1)
+    })
+
+    test('the newest comes first, so a new comment is on the first page', async () => {
+      await open([makeComment()], 'c1')
+      expect(service.getAll.mock.lastCall?.[0]).toMatchObject({ sort: 'createdAt:DESC', currentPage: 1 })
+    })
+  })
 })

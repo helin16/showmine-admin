@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Input } from 'antd'
 import { Link } from 'react-router-dom'
 import moment from 'moment'
@@ -22,6 +22,7 @@ import Tag from '../Form/Tag'
 import MathHelper from '../../Helpers/MathHelper'
 
 const MAX_REPLY_LENGTH = 1000
+const SCROLL_AGAIN_MS = 1500
 
 const CommentDiv = styled.div`
   white-space: pre-wrap;
@@ -50,9 +51,12 @@ const getReplies = (comment: IComment) =>
     .filter((reply) => reply.isActive !== false)
     .sort((a, b) => moment(a.createdAt).diff(moment(b.createdAt)))
 
-const CommentsListContent = ({ itemId }: { itemId?: string }) => {
+type iCommentsList = { itemId?: string; commentId?: string }
+
+const CommentsListContent = ({ itemId, commentId }: iCommentsList) => {
   const currentItemId = `${itemId || ''}`.trim()
   const [state, setState] = useState(initState)
+  const hasScrolled = useRef(false)
 
   useEffect(() => {
     setState((s) => ({
@@ -90,6 +94,18 @@ const CommentsListContent = ({ itemId }: { itemId?: string }) => {
       isCancelled = true
     }
   }, [currentItemId, state.pageNo])
+
+  // Not there, as on a later page, means the list stays as it is.
+  useEffect(() => {
+    const element = commentId ? document.getElementById(`comment-${commentId}`) : null
+    if (!element || hasScrolled.current) return
+    hasScrolled.current = true
+    element.scrollIntoView({ block: 'center' })
+    // ponytail: the article editor above loads later and pushes this down. One more try covers it; a user who scrolled
+    // in that moment is pulled back. Watch the layout if that annoys anyone.
+    const timer = setTimeout(() => element.scrollIntoView({ block: 'center' }), SCROLL_AGAIN_MS)
+    return () => clearTimeout(timer)
+  }, [commentId, state.commentsList])
 
   // Replies sit inside their comment, so one change can be at either level.
   const updateRow = (id: string | undefined, change: (row: IComment) => IComment) => {
@@ -145,6 +161,8 @@ const CommentsListContent = ({ itemId }: { itemId?: string }) => {
     getReplies(comment).map((reply) => (
       <Comment
         key={reply.id}
+        id={`comment-${reply.id}`}
+        isHighlighted={reply.id === commentId}
         author={reply.CreatedBy?.nickName || ''}
         avatar={<UserAvatar user={reply.CreatedBy} />}
         actions={getHideBtn(reply)}
@@ -176,6 +194,8 @@ const CommentsListContent = ({ itemId }: { itemId?: string }) => {
           return (
             <ListItem key={comment.id}>
               <Comment
+                id={`comment-${comment.id}`}
+                isHighlighted={comment.id === commentId}
                 author={comment.CreatedBy?.nickName || ''}
                 avatar={<UserAvatar user={comment.CreatedBy} />}
                 actions={
@@ -250,6 +270,8 @@ const CommentsListContent = ({ itemId }: { itemId?: string }) => {
 }
 
 // A new article is a new list, so the key resets the page and the results.
-const CommentsList = ({ itemId }: { itemId?: string }) => <CommentsListContent key={itemId} itemId={itemId} />
+const CommentsList = ({ itemId, commentId }: iCommentsList) => (
+  <CommentsListContent key={itemId} itemId={itemId} commentId={commentId} />
+)
 
 export default CommentsList
