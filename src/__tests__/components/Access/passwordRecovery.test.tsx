@@ -153,6 +153,8 @@ describe('reset password', () => {
 
   test.each([
     ['short', 'seven77', 'seven77', 'Password must be at least 8 characters.'],
+    ['space-padded', '  seven77  ', '  seven77  ', 'Password must be at least 8 characters.'],
+    ['spaces-only', '          ', '          ', 'Password must be at least 8 characters.'],
     ['mismatched', 'long-enough', 'long-enough-2', 'Confirmed password is different'],
   ])('refuses a %s password without calling the API', async (_name, password, confirm, error) => {
     renderPage()

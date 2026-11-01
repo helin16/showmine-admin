@@ -76,7 +76,8 @@ const ResetPasswordForm = () => {
       <FormItem
         label={newPassword}
         name='password'
-        rules={[required, { min: MIN_PASSWORD_LENGTH, message: required.message }]}
+        // Trimmed, because the API trims before it checks the length.
+        rules={[{ ...required, min: MIN_PASSWORD_LENGTH, transform: (value) => `${value || ''}`.trim() }]}
       >
         <InputPassword placeholder={newPassword} prefix={<LockOutlined />} autoComplete='new-password' />
       </FormItem>
