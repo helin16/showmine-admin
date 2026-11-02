@@ -131,11 +131,18 @@ const CompanyList = () => {
     </div>
   )
 
+  const getPlanNote = (comp: ICompany) => {
+    if (comp.adminConfig?.complimentary === true) {
+      return <small>{translate('plan-complimentary')}</small>
+    }
+    return comp.paidTo ? <small>{translate('plan-paid-to', { date: moment(comp.paidTo).format('ll') })}</small> : null
+  }
+
   // Companies from before plans have none, and no limits.
   const getPlanDiv = (comp: ICompany) => (
     <>
       <div>{translate(`plan-${comp.adminConfig?.plan || 'none'}`)}</div>
-      {comp.adminConfig?.complimentary === true ? <small>{translate('plan-complimentary')}</small> : null}
+      {getPlanNote(comp)}
     </>
   )
 
@@ -200,16 +207,16 @@ const CompanyList = () => {
               render: getNameLink,
             },
             {
-              title: translate('contacts'),
-              key: 'contacts',
-              width: 160,
-              render: getOptionBtns,
-            },
-            {
               title: translate('plan'),
               key: 'plan',
               width: 120,
               render: getPlanDiv,
+            },
+            {
+              title: translate('contacts'),
+              key: 'contacts',
+              width: 160,
+              render: getOptionBtns,
             },
             {
               title: '',

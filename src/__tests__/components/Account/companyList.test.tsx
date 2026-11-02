@@ -122,6 +122,26 @@ describe('rows', () => {
     expect(await screen.findByText(plan)).toBeInTheDocument()
   })
 
+  test('shows when a plan renews or ends, and that a complimentary one never does', async () => {
+    services.getAll.mockResolvedValue(
+      listOf([
+        { ...acme, adminConfig: { plan: 'starter' }, paidTo: '2030-05-06T12:00:00.000Z' },
+        { ...globex, adminConfig: { plan: 'unlimited', complimentary: true } },
+      ]),
+    )
+    renderList()
+    expect(await screen.findByText(/Renews or ends May 6, 2030/)).toBeInTheDocument()
+    expect(screen.getByText('Complimentary, never expires')).toBeInTheDocument()
+  })
+
+  test('puts the plan before the contacts', async () => {
+    services.getAll.mockResolvedValue(listOf([acme]))
+    renderList()
+    await screen.findByText('Acme')
+    const headers = screen.getAllByRole('columnheader').map((header) => header.textContent)
+    expect(headers.indexOf('Plan')).toBe(headers.indexOf('Contacts') - 1)
+  })
+
   test('shows the JSON of a company in a modal, until it is closed', async () => {
     services.getAll.mockResolvedValue(listOf([globex]))
     renderList()
