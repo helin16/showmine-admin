@@ -9,6 +9,7 @@ import {
   BACK_END_URL,
   COMMENTS_LIST_URL,
   COMPANY_ADMIN_URL,
+  COMPANY_BILLING_URL,
   COMPANY_CHANNEL_NEW_URL,
   COMPANY_CHANNELS_URL,
   COMPANY_LIST_URL,
@@ -41,6 +42,7 @@ const MediaListPage = lazy(() => import('./Pages/Media/MediaListPage'))
 const CommentsListPage = lazy(() => import('./Pages/Comments/CommentsListPage'))
 const MyProfilePage = lazy(() => import('./Pages/User/MyProfilePage'))
 const CompanyEditPage = lazy(() => import('./Pages/Company/CompanyEditPage'))
+const CompanyBillingPage = lazy(() => import('./Pages/Company/CompanyBillingPage'))
 const CompanyUsersPage = lazy(() => import('./Pages/Company/CompanyUsersPage'))
 const CompanyListPage = lazy(() => import('./Pages/Company/CompanyListPage'))
 const CompanyChannelsPage = lazy(() => import('./Pages/Channel/ChannelsPage'))
@@ -138,6 +140,16 @@ const Router = () => {
                     <ProtectedRoute>
                       <CompanyAdminRoute>
                         <CompanyEditPage />
+                      </CompanyAdminRoute>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path={COMPANY_BILLING_URL}
+                  element={
+                    <ProtectedRoute>
+                      <CompanyAdminRoute>
+                        <CompanyBillingPage />
                       </CompanyAdminRoute>
                     </ProtectedRoute>
                   }

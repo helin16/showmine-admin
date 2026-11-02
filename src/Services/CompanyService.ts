@@ -23,7 +23,17 @@ const deactivate = async (id: string, params?: iConfigParams, config?: iConfigPa
   return AppService.delete(`${endPoint}/${id}`, params, config).then((resp) => resp.data)
 }
 
+const startCheckout = async (plan: string): Promise<{ url: string }> => {
+  return AppService.post('/billing/checkout', { plan }).then((resp) => resp.data)
+}
+
+const openBillingPortal = async (): Promise<{ url: string }> => {
+  return AppService.post('/billing/portal', {}).then((resp) => resp.data)
+}
+
 const CompanyService = {
+  startCheckout,
+  openBillingPortal,
   getAll,
   getItemById,
   create,

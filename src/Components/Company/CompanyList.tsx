@@ -132,7 +132,12 @@ const CompanyList = () => {
   )
 
   // Companies from before plans have none, and no limits.
-  const getPlanDiv = (comp: ICompany) => translate(`plan-${comp.adminConfig?.plan || 'none'}`)
+  const getPlanDiv = (comp: ICompany) => (
+    <>
+      <div>{translate(`plan-${comp.adminConfig?.plan || 'none'}`)}</div>
+      {comp.adminConfig?.complimentary === true ? <small>{translate('plan-complimentary')}</small> : null}
+    </>
+  )
 
   // The company id header comes from this tab's storage, and everything already loaded belongs to the old company.
   const switchCompany = (comp: ICompany) => {

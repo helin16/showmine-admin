@@ -15,6 +15,7 @@ export const COMPANY_ADMIN_URL = `${BACK_END_URL}company/`
 export const COMPANY_CHANNELS_URL = `${COMPANY_ADMIN_URL}channels`
 export const COMPANY_CHANNEL_NEW_URL = `${COMPANY_ADMIN_URL}channel/new`
 export const COMPANY_USERS_URL = `${COMPANY_ADMIN_URL}users`
+export const COMPANY_BILLING_URL = `${COMPANY_ADMIN_URL}billing`
 export const MY_PROFILE_URL = `${BACK_END_URL}profile`
 
 export const AUTH_URL_USER_CONFIRM = '/a/user-confirm/:companyId'

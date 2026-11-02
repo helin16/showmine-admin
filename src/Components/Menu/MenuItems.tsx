@@ -2,6 +2,7 @@ import React from 'react'
 import {
   FileOutlined,
   CommentOutlined,
+  CreditCardOutlined,
   DashboardOutlined,
   PictureOutlined,
   SettingOutlined,
@@ -17,6 +18,7 @@ import {
   COMMENTS_LIST_URL,
   MEDIA_LIST_URL,
   COMPANY_ADMIN_URL,
+  COMPANY_BILLING_URL,
   COMPANY_USERS_URL,
   COMPANY_CHANNELS_URL,
   COMPANY_LIST_URL,
@@ -27,6 +29,7 @@ export const MENU_KEY_ARTICLES = 'articles'
 export const MENU_KEY_COMMENTS = 'comments'
 export const MENU_KEY_MEDIA = 'media'
 export const MENU_KEY_COMPANY_ADMIN = 'company-admin'
+export const MENU_KEY_COMPANY_BILLING = 'company-billing'
 export const MENU_KEY_COMPANY_CHANNELS = 'company-channels'
 export const MENU_KEY_COMPANY_USERS = 'company-users'
 export const MENU_ACCESS_LEVEL_COMPANY_ADMIN = 'access-company-admin'
@@ -74,6 +77,12 @@ const MenuItems = [
         name: <FormattedMessage id='company_info' />,
         url: COMPANY_ADMIN_URL,
         icon: <SettingOutlined />,
+      },
+      {
+        key: MENU_KEY_COMPANY_BILLING,
+        name: <FormattedMessage id='billing' />,
+        url: COMPANY_BILLING_URL,
+        icon: <CreditCardOutlined />,
       },
       {
         key: MENU_KEY_COMPANY_CHANNELS,
