@@ -215,6 +215,18 @@ describe('CommentsList', () => {
     expect(document.querySelector('.ant-modal')?.className).toMatch(/leave/)
   })
 
+  test('a new reply shows who wrote it, as the API sends only the bare row', async () => {
+    service.getAll.mockResolvedValue(listOf([makeComment({ id: 'c1' })]))
+    service.reply.mockResolvedValue({ ...makeComment({ id: 'r1', text: 'Thanks', replyToId: 'c1' }), CreatedBy: undefined })
+    renderWithProviders(<CommentsList />, { state: { auth: { user: { nickName: 'Staff Sam' } } } })
+    await screen.findAllByRole('button', { name: /reply/i })
+    fireEvent.click(screen.getAllByRole('button', { name: /reply/i })[0])
+    const dialog = await screen.findByRole('dialog')
+    fireEvent.change(within(dialog).getByRole('textbox', { name: 'Your reply' }), { target: { value: 'Thanks' } })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Send reply' }))
+    expect(await screen.findAllByText('Staff Sam')).not.toHaveLength(0)
+  })
+
   test('sends no empty reply', async () => {
     service.getAll.mockResolvedValue(listOf([makeComment()]))
     renderWithProviders(<CommentsList />)

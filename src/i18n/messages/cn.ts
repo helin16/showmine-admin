@@ -334,7 +334,7 @@ const LanguageCN = {
     'billing-manage': '更改计划或取消',
     'billing-manage-help': '您的订阅由 Stripe 管理，可在那里更改计划、更新银行卡、查看发票或取消订阅。',
     'billing-monthly': '每月',
-    'billing-processing': '付款已收到，您的计划会在一分钟内更新。',
+    'billing-processing': 'Stripe 正在确认您的更改，计划会在一分钟内更新。',
     'billing-complimentary': '您公司的计划为免费赠送，无需付费。',
     'plan-complimentary': '免费赠送',
     'billing-no-plan': '您的公司没有计划限制，无需在此付费。',

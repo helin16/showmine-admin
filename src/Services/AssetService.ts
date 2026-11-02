@@ -27,6 +27,12 @@ const getTotalSize = async (params?: iConfigParams, config?: iConfigParams): Pro
   return AppService.get(`${endPoint}/totalSize`, params, config).then((resp) => resp.data)
 }
 
+export type iAssetArticles = Record<string, { id: string; title: string }[]>
+
+const getArticles = async (ids: string[]): Promise<iAssetArticles> => {
+  return AppService.get(`${endPoint}/articles`, { ids: ids.join(',') }).then((resp) => resp.data)
+}
+
 const getUploadAssetUrl = () => {
   return `${process.env.REACT_APP_REST_END_POINT || ''}${endPoint}/upload`;
 }
@@ -51,6 +57,7 @@ const AssetService = {
   update,
   deactivate,
   getTotalSize,
+  getArticles,
   getUploadAssetUrl,
   formatFileSize,
 }

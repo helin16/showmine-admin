@@ -1,5 +1,5 @@
 import React from 'react'
-import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor } from '@testing-library/react'
 import { vi } from 'vitest'
 import { apiError, stubMatchMedia } from '../Access/domHelpers'
 import { renderWithProviders } from '../../testUtils'
@@ -44,10 +44,56 @@ test('Free shows its plan as current, and sends a paid choice to Stripe', async 
 
 test('a paying company changes plan on the portal', async () => {
   vi.mocked(CompanyService.openBillingPortal).mockResolvedValue({ url: 'https://stripe.test/p' })
-  renderBilling({ plan: 'starter', stripeSubscriptionId: 'sub_1' })
+  renderBilling({ plan: 'starter', stripeSubscriptionId: 'sub_1', stripeCustomerId: 'cus_1' })
   expect(screen.queryByRole('button', { name: 'Choose this plan' })).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Change plan or cancel' }))
   await waitFor(() => expect(assign).toHaveBeenCalledWith('https://stripe.test/p'))
+})
+
+test('a company that has cancelled can still reach the portal', () => {
+  renderBilling({ plan: 'free', stripeCustomerId: 'cus_1' })
+  expect(screen.getByRole('button', { name: 'Change plan or cancel' })).toBeInTheDocument()
+  expect(screen.getAllByRole('button', { name: 'Choose this plan' })).toHaveLength(2)
+})
+
+describe('back from Stripe', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    window.location.search = '?checkout=done'
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+    window.location.search = ''
+  })
+
+  test('keeps checking for the webhook, with no way to pay twice', async () => {
+    renderBilling({ plan: 'free' })
+    expect(screen.getByText(/Stripe is confirming/)).toBeInTheDocument()
+    screen.getAllByRole('button', { name: 'Choose this plan' }).forEach((button) => expect(button).toBeDisabled())
+    await act(() => vi.advanceTimersByTimeAsync(5000))
+    expect(CompanyService.getItemById).toHaveBeenCalledTimes(2)
+  })
+
+  test('stops after a minute, and lets the person carry on', async () => {
+    renderBilling({ plan: 'free' })
+    await act(() => vi.advanceTimersByTimeAsync(60000))
+    const calls = vi.mocked(CompanyService.getItemById).mock.calls.length
+    expect(screen.queryByText(/Stripe is confirming/)).not.toBeInTheDocument()
+    await act(() => vi.advanceTimersByTimeAsync(20000))
+    expect(CompanyService.getItemById).toHaveBeenCalledTimes(calls)
+    expect(screen.getAllByRole('button', { name: 'Choose this plan' })[0]).toBeEnabled()
+  })
+})
+
+test('a button comes back when the browser restores the page', async () => {
+  vi.mocked(CompanyService.startCheckout).mockResolvedValue({ url: 'https://stripe.test/s' })
+  renderBilling({ plan: 'free' })
+  fireEvent.click(screen.getAllByRole('button', { name: 'Choose this plan' })[0])
+  await waitFor(() => expect(assign).toHaveBeenCalled())
+  act(() => {
+    window.dispatchEvent(Object.assign(new Event('pageshow'), { persisted: true }))
+  })
+  screen.getAllByRole('button', { name: 'Choose this plan' }).forEach((button) => expect(button).toBeEnabled())
 })
 
 test('a complimentary plan has nothing to pay', () => {

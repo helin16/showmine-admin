@@ -12,7 +12,7 @@ import { FIXED_DATE, deferred, httpError, listOf } from '../Article/fixtures'
 vi.mock('../../../Services/AssetService', async (importOriginal) => {
   const actual = await importOriginal<{ default: { formatFileSize: unknown } }>()
   return {
-    default: { getAll: vi.fn(), getTotalSize: vi.fn(), deactivate: vi.fn(), formatFileSize: actual.default.formatFileSize },
+    default: { getAll: vi.fn(), getArticles: vi.fn(), getTotalSize: vi.fn(), deactivate: vi.fn(), formatFileSize: actual.default.formatFileSize },
   }
 })
 vi.mock('../../../Components/Form/message', async (importOriginal) => ({
@@ -32,6 +32,18 @@ const asset = {
 const other = { ...asset, id: 'as-2', comments: 'Another' } as IAsset
 
 describe('MediaList', () => {
+  beforeEach(() => service.getArticles.mockResolvedValue({}))
+
+  test('links to the articles using a file, above its type', async () => {
+    service.getAll.mockResolvedValue(listOf([{ id: 'as-9', type: 'ITEM_COVER' } as IAsset]))
+    service.getArticles.mockResolvedValue({ 'as-9': [{ id: 'it-1', title: 'My article' }] })
+    renderWithProviders(<MediaList />)
+    const link = await screen.findByRole('link', { name: 'My article' })
+    expect(link).toHaveAttribute('href', '/b/articles/it-1')
+    expect(link.compareDocumentPosition(screen.getByText('type: ITEM_COVER'))).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
+    expect(service.getArticles).toHaveBeenCalledWith(['as-9'])
+  })
+
   const removeFirst = async () => {
     fireEvent.click(screen.getAllByRole('button', { name: /delete/i })[0])
     fireEvent.click(await screen.findByRole('button', { name: 'Yes' }))

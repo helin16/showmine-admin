@@ -335,7 +335,7 @@ const LanguageEN = {
     'billing-manage': 'Change plan or cancel',
     'billing-manage-help': 'Your subscription is managed by Stripe, where you can change plan, update your card, see invoices or cancel.',
     'billing-monthly': 'per month',
-    'billing-processing': 'Payment received. Your plan updates within a minute.',
+    'billing-processing': 'Stripe is confirming your change. Your plan updates within a minute.',
     'billing-complimentary': "Your company's plan is complimentary, so there is nothing to pay.",
     'plan-complimentary': 'Complimentary',
     'billing-no-plan': 'Your company has no plan limits, so there is nothing to pay here.',

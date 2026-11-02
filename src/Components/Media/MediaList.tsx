@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import moment from 'moment'
 import styled from 'styled-components'
-import AssetService from '../../Services/AssetService'
+import AssetService, { iAssetArticles } from '../../Services/AssetService'
 import LoadMoreBtn from '../Form/LoadMoreBtn'
 import message from '../Form/message'
 import List, { ListItem, ListItemMeta } from '../Form/List'
@@ -14,6 +14,7 @@ import IAsset from '../../Types/Asset/IAsset'
 import MathHelper from '../../Helpers/MathHelper';
 import {APP_WIDTHS} from '../../Constants';
 import {OP_LIKE, OP_OR} from '../../Helpers/ServiceHelper';
+import { ARTICLE_DETAILS_URL, getUrl } from '../../UrlMap';
 import Utils from '../../Services/Utils'
 
 export const MediaListWrapper = styled.div`
@@ -53,6 +54,7 @@ const MediaListContent = ({ keyword }: iMediaList) => {
   const [isSaving, setIsSaving] = useState(false);
   const [pageNo, setPageNo] = useState(1);
   const [assetList, setAssetList] = useState<IResList<IAsset> | null>(null);
+  const [articles, setArticles] = useState<iAssetArticles>({});
   /**
    * when keyword changed
    */
@@ -73,6 +75,11 @@ const MediaListContent = ({ keyword }: iMediaList) => {
       setAssetList({
         ...res,
         data: pageNo === 1 ? res.data : [...(assetList?.data || []), ...res.data]
+      });
+      // The list works without these, so they load after it.
+      return AssetService.getArticles(res.data.map(({ id }) => `${id}`)).then((found) => {
+        if (isCanceled) return;
+        setArticles((known) => ({ ...known, ...found }));
       });
     }).catch(err => {
       if (isCanceled) return;
@@ -156,6 +163,13 @@ const MediaListContent = ({ keyword }: iMediaList) => {
                 }
                 description={
                   <div className={'description'}>
+                    {(articles[`${asset.id}`] || []).map(({ id, title }) => (
+                      <div key={id}>
+                        <Button type='link' className='article-title-link' href={getUrl(ARTICLE_DETAILS_URL, ':id', id)}>
+                          <span>{title}</span>
+                        </Button>
+                      </div>
+                    ))}
                     <div>type: {asset.type}</div>
                     <div>size: {fileSize}</div>
                   </div>

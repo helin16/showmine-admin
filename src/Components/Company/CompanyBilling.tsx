@@ -15,6 +15,10 @@ import Row from '../Form/Row'
 import Tag from '../Form/Tag'
 import Typography from '../Form/Typography'
 
+// Long enough for Stripe's webhook, which can land after the person does.
+const CHECK_EVERY_MS = 5000
+const MAX_CHECKS = 12
+
 // What the marketing site sells. The API holds the limits, and Stripe the prices it actually charges.
 const PLANS = [
   { id: 'free', price: 0, maxUsers: 1, storageGb: 2 },
@@ -28,7 +32,7 @@ const CompanyBilling = () => {
   const intl = useIntl()
   const [redirecting, setRedirecting] = useState('')
   // Read straight from the address and only once, as the effect below removes it.
-  const [isBackFromCheckout] = useState(() => new URLSearchParams(window.location.search).has('checkout'))
+  const [isWaiting, setIsWaiting] = useState(() => new URLSearchParams(window.location.search).has('checkout'))
   const companyId = company?.id
 
   // The company in the store is from sign-in, and a plan changes while the person is away at Stripe.
@@ -36,16 +40,39 @@ const CompanyBilling = () => {
     window.history.replaceState(window.history.state, '', window.location.pathname)
     if (!companyId) return
     let isCancelled = false
-    CompanyService.getItemById(companyId)
-      .then((res) => {
-        if (isCancelled === true) return
-        dispatch(changeCompany({ company: res }))
-      })
-      .catch((err) => message.error(Utils.getErrorMessage(err)))
+    const refresh = () =>
+      CompanyService.getItemById(companyId)
+        .then((res) => {
+          if (isCancelled === true) return
+          dispatch(changeCompany({ company: res }))
+        })
+        .catch((err) => message.error(Utils.getErrorMessage(err)))
+    refresh()
+    let checks = 0
+    const timer = isWaiting
+      ? setInterval(() => {
+          checks += 1
+          refresh()
+          if (checks >= MAX_CHECKS) {
+            clearInterval(timer)
+            setIsWaiting(false)
+          }
+        }, CHECK_EVERY_MS)
+      : undefined
     return () => {
       isCancelled = true
+      clearInterval(timer)
     }
-  }, [companyId, dispatch])
+  }, [companyId, dispatch]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Back from Stripe can restore this page as it was, with its button still spinning.
+  useEffect(() => {
+    const onPageShow = ({ persisted }: PageTransitionEvent) => {
+      if (persisted) setRedirecting('')
+    }
+    window.addEventListener('pageshow', onPageShow)
+    return () => window.removeEventListener('pageshow', onPageShow)
+  }, [])
 
   const goTo = (key: string, request: Promise<{ url: string }>) => {
     setRedirecting(key)
@@ -63,6 +90,7 @@ const CompanyBilling = () => {
   }
   const isComplimentary = company?.adminConfig?.complimentary === true
   const hasSubscription = Boolean(company?.adminConfig?.stripeSubscriptionId)
+  const hasCustomer = Boolean(company?.adminConfig?.stripeCustomerId)
 
   const getAction = (planId: string) => {
     if (planId === currentPlan) {
@@ -75,7 +103,8 @@ const CompanyBilling = () => {
         type='primary'
         block
         loading={redirecting === planId}
-        disabled={redirecting !== ''}
+        // A payment still on its way must not be paid again.
+        disabled={redirecting !== '' || isWaiting === true}
         onClick={() => goTo(planId, CompanyService.startCheckout(planId))}
       >
         <FormattedMessage id='billing-choose' />
@@ -88,9 +117,7 @@ const CompanyBilling = () => {
       {isComplimentary === true ? (
         <Alert type='info' message={intl.formatMessage({ id: 'billing-complimentary' })} />
       ) : null}
-      {isBackFromCheckout === true && !hasSubscription ? (
-        <Alert type='success' message={intl.formatMessage({ id: 'billing-processing' })} />
-      ) : null}
+      {isWaiting === true ? <Alert type='info' message={intl.formatMessage({ id: 'billing-processing' })} /> : null}
       <Row gutter={listGutter}>
         {PLANS.map((plan) => (
           <Col key={plan.id} xs={{ span: 24 }} md={{ span: 8 }}>
@@ -115,7 +142,7 @@ const CompanyBilling = () => {
           </Col>
         ))}
       </Row>
-      {hasSubscription === true ? (
+      {hasCustomer === true ? (
         <Card>
           <Typography.Paragraph><FormattedMessage id='billing-manage-help' /></Typography.Paragraph>
           <Button

@@ -18,8 +18,9 @@ import Utils from '../../Services/Utils'
 
 type iCompanyUserList = {
   searchKeyWord?: string
+  onRemoved?: () => void
 }
-const CompanyUserList = ({ searchKeyWord }: iCompanyUserList) => {
+const CompanyUserList = ({ searchKeyWord, onRemoved }: iCompanyUserList) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [count, setCount] = useState(0);
@@ -68,6 +69,7 @@ const CompanyUserList = ({ searchKeyWord }: iCompanyUserList) => {
     CompanyUserService.deactivate(companyUserId)
       .then((res) => {
         message.success(translate('user-removed', { text: companyUser.User?.nickName }));
+        onRemoved?.();
       })
       .catch((err) => {
         message.error(translate('error-remove', {

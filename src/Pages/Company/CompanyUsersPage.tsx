@@ -17,11 +17,19 @@ const initialState: iState = {}
 const CompanyUsersPage = () => {
   const [state] = useState(initialState)
   const [approvals, setApprovals] = useState(0)
+  // A new key counts the users again, so the invite form follows the plan.
+  const [removals, setRemovals] = useState(0)
   const { company } = useSelector((s: RootState) => s.auth);
 
   const getListDiv = () => {
     if (!company) return null
-    return <CompanyUserList key={approvals} searchKeyWord={state.searchTxt} />
+    return (
+      <CompanyUserList
+        key={approvals}
+        searchKeyWord={state.searchTxt}
+        onRemoved={() => setRemovals((count) => count + 1)}
+      />
+    )
   }
 
   return (
@@ -32,7 +40,7 @@ const CompanyUsersPage = () => {
       {!company ? null : (
         <>
           <Card>
-            <CompanyUserInvitePanel />
+            <CompanyUserInvitePanel key={`${approvals}-${removals}`} />
           </Card>
           <CompanyUserPendingList onChanged={() => setApprovals((count) => count + 1)} />
         </>

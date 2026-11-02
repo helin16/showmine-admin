@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Input } from 'antd'
+import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import moment from 'moment'
 import styled from 'styled-components'
+import { RootState } from '../../Redux/makeReduxStore'
 import CommentService from '../../Services/CommentService'
 import { ARTICLE_DETAILS_URL, getUrl } from '../../UrlMap'
 import Utils from '../../Services/Utils'
@@ -56,6 +58,7 @@ type iCommentsList = { itemId?: string; commentId?: string }
 const CommentsListContent = ({ itemId, commentId }: iCommentsList) => {
   const currentItemId = `${itemId || ''}`.trim()
   const [state, setState] = useState(initState)
+  const { user } = useSelector((s: RootState) => s.auth)
   const hasScrolled = useRef(false)
 
   useEffect(() => {
@@ -137,7 +140,8 @@ const CommentsListContent = ({ itemId, commentId }: iCommentsList) => {
     setState((s) => ({ ...s, isSaving: true }))
     CommentService.reply(`${replyTo.id}`, text)
       .then((reply) => {
-        updateRow(replyTo.id, (row) => ({ ...row, Replys: [...(row.Replys || []), reply] }))
+        // The API answers with the bare row, and this person wrote it.
+        updateRow(replyTo.id, (row) => ({ ...row, Replys: [...(row.Replys || []), { ...reply, CreatedBy: user ?? undefined }] }))
         message.success(translate('comment-reply-sent'))
         closeReply()
       })
