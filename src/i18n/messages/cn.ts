@@ -341,6 +341,7 @@ const LanguageCN = {
     'billing-users': '{count} 个用户',
     'billing-unlimited-users': '不限用户数',
     'billing-storage': '{size} GB 存储空间',
+    'billing-unlimited-storage': '不限存储空间',
     'billing-unlimited-articles': '不限文章数',
     'billing-unlimited-channels': '不限渠道数，默认包含微信',
     'plan-free': '免费版',

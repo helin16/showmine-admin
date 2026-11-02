@@ -42,6 +42,14 @@ test('Free shows its plan as current, and sends a paid choice to Stripe', async 
   expect(CompanyService.startCheckout).toHaveBeenCalledWith('starter')
 })
 
+test('shows the prices in Australian dollars, and Unlimited with no storage limit', () => {
+  renderBilling({ plan: 'free' })
+  expect(screen.getByText(/A\$49/)).toBeInTheDocument()
+  expect(screen.getByText(/A\$129/)).toBeInTheDocument()
+  expect(screen.getByText('Unlimited storage')).toBeInTheDocument()
+  expect(screen.queryByText('50 GB storage', { exact: false })).toBeInTheDocument()
+})
+
 test('a paying company changes plan on the portal', async () => {
   vi.mocked(CompanyService.openBillingPortal).mockResolvedValue({ url: 'https://stripe.test/p' })
   renderBilling({ plan: 'starter', stripeSubscriptionId: 'sub_1', stripeCustomerId: 'cus_1' })

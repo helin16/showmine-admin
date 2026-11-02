@@ -342,6 +342,7 @@ const LanguageEN = {
     'billing-users': '{count, plural, one {# user} other {# users}}',
     'billing-unlimited-users': 'Unlimited users',
     'billing-storage': '{size} GB storage',
+    'billing-unlimited-storage': 'Unlimited storage',
     'billing-unlimited-articles': 'Unlimited articles',
     'billing-unlimited-channels': 'Unlimited channels, WeChat included',
     'plan-free': 'Free',

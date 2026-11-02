@@ -23,7 +23,7 @@ const MAX_CHECKS = 12
 const PLANS = [
   { id: 'free', price: 0, maxUsers: 1, storageGb: 2 },
   { id: 'starter', price: 49, maxUsers: 10, storageGb: 50 },
-  { id: 'unlimited', price: 129, maxUsers: null, storageGb: 50 },
+  { id: 'unlimited', price: 129, maxUsers: null, storageGb: null },
 ]
 
 const CompanyBilling = () => {
@@ -123,7 +123,7 @@ const CompanyBilling = () => {
           <Col key={plan.id} xs={{ span: 24 }} md={{ span: 8 }}>
             <Card title={<FormattedMessage id={`plan-${plan.id}`} />}>
               <h2>
-                ${plan.price} <small><FormattedMessage id='billing-monthly' /></small>
+                A${plan.price} <small><FormattedMessage id='billing-monthly' /></small>
               </h2>
               <ul>
                 <li>
@@ -134,7 +134,13 @@ const CompanyBilling = () => {
                   )}
                 </li>
                 <li><FormattedMessage id='billing-unlimited-articles' /></li>
-                <li><FormattedMessage id='billing-storage' values={{ size: plan.storageGb }} /></li>
+                <li>
+                  {plan.storageGb === null ? (
+                    <FormattedMessage id='billing-unlimited-storage' />
+                  ) : (
+                    <FormattedMessage id='billing-storage' values={{ size: plan.storageGb }} />
+                  )}
+                </li>
                 <li><FormattedMessage id='billing-unlimited-channels' /></li>
               </ul>
               {getAction(plan.id)}
