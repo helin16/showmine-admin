@@ -23,6 +23,7 @@ describe('CompanyUserInvitePanel', () => {
     vi.mocked(CompanyUserService.getAll).mockResolvedValue({ total: 1 } as never)
     renderWithProviders(<CompanyUserInvitePanel />, { state: { auth: { company: { maxUsers: 1 } } } })
     expect(await screen.findByText(/Your plan allows 1 user\./)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Upgrade your plan' })).toHaveAttribute('href', '/b/company/billing')
     expect(screen.queryByRole('button', { name: /Send invite/ })).not.toBeInTheDocument()
   })
 

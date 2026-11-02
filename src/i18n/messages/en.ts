@@ -262,7 +262,7 @@ const LanguageEN = {
     'no-company-notice': "Your account isn't linked to a company yet. Please ask your company admin to add you.",
     'no-company-pending': 'Your request to join {names} is waiting for an admin to approve it.',
     'invite-people': 'Invite people',
-    'invite-plan-full': 'Your plan allows {max, plural, one {# user} other {# users}}. Upgrade your plan to invite more people.',
+    'invite-plan-full': 'Your plan allows {max, plural, one {# user} other {# users}}. <link>Upgrade your plan</link> to invite more people.',
     'invite-send': 'Send invite',
     'invite-sent': 'If {email} is not in this company yet, an invite is on its way.',
     'invite-qr-show': 'Show WeChat QR code',

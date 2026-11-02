@@ -3,9 +3,11 @@ import { MailOutlined, SendOutlined, WechatOutlined } from '@ant-design/icons'
 import { QRCodeCanvas } from 'qrcode.react'
 import { FormattedMessage, useIntl } from 'react-intl'
 import { useSelector } from 'react-redux'
+import { Link } from 'react-router-dom'
 import { RootState } from '../../Redux/makeReduxStore'
 import CompanyUserService from '../../Services/CompanyUserService'
 import Utils from '../../Services/Utils'
+import { COMPANY_BILLING_URL } from '../../UrlMap'
 import Alert from '../Form/Alert'
 import Button from '../Form/Button'
 import Form from '../Form/Form'
@@ -60,7 +62,17 @@ const CompanyUserInvitePanel = () => {
   }
 
   if (isFull === true) {
-    return <Alert type='info' message={intl.formatMessage({ id: 'invite-plan-full' }, { max: maxUsers })} />
+    return (
+      <Alert
+        type='info'
+        message={
+          <FormattedMessage
+            id='invite-plan-full'
+            values={{ max: maxUsers, link: (text) => <Link to={COMPANY_BILLING_URL}>{text}</Link> }}
+          />
+        }
+      />
+    )
   }
 
   const emailLabel = intl.formatMessage({ id: 'email' })
