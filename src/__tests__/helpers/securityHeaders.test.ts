@@ -4,13 +4,13 @@ import { resolve } from 'node:path'
 const { headers } = JSON.parse(readFileSync(resolve(process.cwd(), 'vercel.json'), 'utf8'))
 const everyPage = headers.find(({ source }: { source: string }) => source === '/(.*)').headers
 const value = (name: string) => everyPage.find(({ key }: { key: string }) => key === name)?.value
-const policy = () => value('Content-Security-Policy-Report-Only') as string
+const policy = () => value('Content-Security-Policy') as string
 const directive = (name: string) => policy().split('; ').find((part) => part.startsWith(`${name} `))
 
 describe('security headers', () => {
-  test('the content policy only reports for now', () => {
+  test('the content policy is enforced', () => {
     expect(policy()).toBeTruthy()
-    expect(value('Content-Security-Policy')).toBeUndefined()
+    expect(value('Content-Security-Policy-Report-Only')).toBeUndefined()
   })
 
   test('allows what the app loads', () => {
@@ -18,7 +18,8 @@ describe('security headers', () => {
     expect(directive('script-src')).toContain('https://js.stripe.com')
     expect(directive('script-src')).toContain('https://res.wx.qq.com')
     expect(directive('style-src')).toContain('\'unsafe-inline\'')
-    expect(directive('frame-src')).toContain('https://js.stripe.com')
+    // Articles being edited can embed frames from anywhere, as they can in the reader.
+    expect(directive('frame-src')).toBe('frame-src \'self\' https:')
   })
 
   test('scripts stay locked down', () => {
