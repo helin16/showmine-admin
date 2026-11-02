@@ -23,7 +23,7 @@ const deactivate = async (id: string, params?: iConfigParams, config?: iConfigPa
   return AppService.delete(`${endPoint}/${id}`, params, config).then((resp) => resp.data)
 }
 
-const getTotalSize = async (params?: iConfigParams, config?: iConfigParams): Promise<{ totalSize: number }> => {
+const getTotalSize = async (params?: iConfigParams, config?: iConfigParams): Promise<{ totalSize: number; maxSize?: number | null }> => {
   return AppService.get(`${endPoint}/totalSize`, params, config).then((resp) => resp.data)
 }
 

@@ -65,7 +65,22 @@ const joinInvite = async (token: string): Promise<{ status: 'pending' | 'member'
   return AppService.post(`${endPoint}/invite/join`, { token }).then((res) => res.data)
 }
 
+const signUp = async (email: string) => {
+  return AppService.post(`${endPoint}/sign-up`, { email }).then((res) => res.data)
+}
+
+const checkSignUp = async (token: string): Promise<{ email: string }> => {
+  return AppService.post(`${endPoint}/sign-up/check`, { token }).then((res) => res.data)
+}
+
+const completeSignUp = async (token: string, details: iNewPerson & { companyName: string }): Promise<{ token: string }> => {
+  return AppService.post(`${endPoint}/sign-up/complete`, { token, ...details }).then((res) => res.data)
+}
+
 const AuthService = {
+  signUp,
+  checkSignUp,
+  completeSignUp,
   checkInvite,
   acceptInvite,
   joinInvite,

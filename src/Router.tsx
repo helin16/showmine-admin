@@ -20,6 +20,7 @@ import {
   MY_PROFILE_URL,
   RESET_PASSWORD_URL,
   CONFIRM_EMAIL_URL,
+  SIGN_UP_URL,
   WIZARD_URL,
 } from './UrlMap'
 import ProtectedRoute from './Components/Route/ProtectedRoute'
@@ -34,6 +35,7 @@ const ForgotPasswordPage = lazy(() => import('./Pages/Auth/ForgotPasswordPage'))
 const ResetPasswordPage = lazy(() => import('./Pages/Auth/ResetPasswordPage'))
 const ConfirmEmailPage = lazy(() => import('./Pages/Auth/ConfirmEmailPage'))
 const InvitePage = lazy(() => import('./Pages/Auth/InvitePage'))
+const SignUpPage = lazy(() => import('./Pages/Auth/SignUpPage'))
 const DashBoardPage = lazy(() => import('./Pages/Dashboard/DashBoardPage'))
 const MediaListPage = lazy(() => import('./Pages/Media/MediaListPage'))
 const CommentsListPage = lazy(() => import('./Pages/Comments/CommentsListPage'))
@@ -68,6 +70,7 @@ const Router = () => {
                 <Route path={RESET_PASSWORD_URL} element={<ResetPasswordPage />} />
                 <Route path={CONFIRM_EMAIL_URL} element={<ConfirmEmailPage />} />
                 <Route path={INVITE_URL} element={<InvitePage />} />
+                <Route path={SIGN_UP_URL} element={<SignUpPage />} />
 
                 <Route
                   path={MY_PROFILE_URL}

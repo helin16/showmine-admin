@@ -11,6 +11,7 @@ import { useSelector } from 'react-redux'
 import { RootState } from '../../Redux/makeReduxStore'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { weChatBtnStyle } from '../../Constants'
+import { SIGN_UP_URL } from '../../UrlMap'
 import AuthService from '../../Services/AuthService'
 import LocalStorageService from '../../Services/LocalStorageService'
 import WeChatService from '../../Services/WeChatService'
@@ -143,6 +144,9 @@ const LoginPage = () => {
           ) : null}
           <FormInputWrapper>{getLogForm()}</FormInputWrapper>
           <FormInputWrapper>{getLoginMethodDiv()}</FormInputWrapper>
+          <Button type='link' block href={SIGN_UP_URL}>
+            {translate('sign-up-link')}
+          </Button>
         </>
       </PageBox>
     </AuthPage>

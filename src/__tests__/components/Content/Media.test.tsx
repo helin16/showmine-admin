@@ -180,6 +180,14 @@ describe('CompanyMediaUsage', () => {
     expect(service.getTotalSize).toHaveBeenCalledTimes(1)
   })
 
+  test('shows the plan\'s limit', async () => {
+    service.getTotalSize.mockResolvedValue({ totalSize: 0, maxSize: 2147483648 })
+    renderWithProviders(<CompanyMediaUsage />)
+
+    expect(await screen.findByText(/2 GB/)).toBeInTheDocument()
+    expect(screen.queryByText(/unlimited/i)).not.toBeInTheDocument()
+  })
+
   test('spins while loading', async () => {
     const request = deferred<{ totalSize: number }>()
     service.getTotalSize.mockReturnValue(request.promise)

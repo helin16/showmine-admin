@@ -27,6 +27,7 @@ const CompanyMediaUsage = () => {
         setState({
           ...state,
           realValue: resp.totalSize,
+          maxValue: resp.maxSize ?? -1,
         });
       })
       .catch(err => {
