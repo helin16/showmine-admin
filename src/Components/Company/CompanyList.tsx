@@ -17,17 +17,12 @@ import Icons from '../Icons'
 import Card from '../Form/Card'
 import Table from '../Form/Table'
 import Modal from '../Form/Modal'
-import Steps from '../Form/Steps'
 import Alert from '../Form/Alert'
 import AuthService from '../../Services/AuthService'
 import Utils from '../../Services/Utils'
 import translate from '../../i18n/translate'
 
 const CompanyListWrapper = styled.div`
-  .ant-steps-item-title {
-    font-size: 10px !important;
-    white-space: nowrap;
-  }
   .company-name-link {
     padding: 0px;
     height: auto;
@@ -36,17 +31,6 @@ const CompanyListWrapper = styled.div`
     white-space: initial;
     text-align: left;
     font-size: 14px;
-  }
-  .ant-steps-title-vertical .ant-steps-item-section {
-    width: 50px !important;
-  }
-  .ant-steps-dot .ant-steps-item-icon,
-  .ant-steps-dot.ant-steps-small .ant-steps-item-icon {
-    margin-inline-start: 20px !important;
-  }
-  .ant-steps-dot .ant-steps-item-rail,
-  .ant-steps-dot.ant-steps-small .ant-steps-item-rail {
-    margin-inline-start: 24px !important;
   }
 `
 
@@ -147,37 +131,8 @@ const CompanyList = () => {
     </div>
   )
 
-  const getStatusDiv = (comp: ICompany) => {
-    const onBoard = comp.config?.onBoard
-    if (onBoard?.has_been_setup !== true) {
-      return <span>{translate('not-on-boarded')}</span>
-    }
-
-    let currentStep = 0
-    if (onBoard.has_set_channel === true) {
-      currentStep = 1
-      if (onBoard.has_set_article === true) {
-        currentStep = 2
-      }
-    }
-    if (onBoard.has_done_wizard === true) {
-      currentStep = 3
-    }
-
-    return (
-      <Steps
-        type={'dot'}
-        current={currentStep}
-        size={'small'}
-        items={[
-          { title: translate('company-step-started') },
-          { title: translate('channels') },
-          { title: translate('news_article') },
-          { title: translate('done') },
-        ]}
-      />
-    )
-  }
+  // Companies from before plans have none, and no limits.
+  const getPlanDiv = (comp: ICompany) => translate(`plan-${comp.adminConfig?.plan || 'none'}`)
 
   // The company id header comes from this tab's storage, and everything already loaded belongs to the old company.
   const switchCompany = (comp: ICompany) => {
@@ -246,11 +201,10 @@ const CompanyList = () => {
               render: getOptionBtns,
             },
             {
-              title: translate('company-setup'),
-              key: 'setup',
-              align: 'center',
-              width: 250,
-              render: getStatusDiv,
+              title: translate('plan'),
+              key: 'plan',
+              width: 120,
+              render: getPlanDiv,
             },
             {
               title: '',

@@ -112,20 +112,14 @@ describe('rows', () => {
   })
 
   test.each([
-    ['nothing set up', undefined, null],
-    ['set up', { has_been_setup: true }, 'Started'],
-    ['channels', { has_been_setup: true, has_set_channel: true }, 'Channels'],
-    ['articles', { has_been_setup: true, has_set_channel: true, has_set_article: true }, 'News/Articles'],
-    ['done', { has_been_setup: true, has_done_wizard: true }, 'Done'],
-  ])('shows the setup step: %s', async (_name, onBoard, step) => {
-    services.getAll.mockResolvedValue(listOf([{ ...acme, config: { onBoard } }]))
-    const { container } = renderList()
-    await screen.findByText('Acme')
-    if (step === null) {
-      expect(screen.getByText('Not on-boarded')).toBeInTheDocument()
-      return
-    }
-    expect(container.querySelector('.ant-steps-item-process')).toHaveTextContent(step)
+    ['from before plans', null, 'No limits'],
+    ['free', { plan: 'free' }, 'Free'],
+    ['starter', { plan: 'starter' }, 'Starter'],
+    ['unlimited', { plan: 'unlimited' }, 'Unlimited'],
+  ])('shows the plan: %s', async (_name, adminConfig, plan) => {
+    services.getAll.mockResolvedValue(listOf([{ ...acme, adminConfig }]))
+    renderList()
+    expect(await screen.findByText(plan)).toBeInTheDocument()
   })
 
   test('shows the JSON of a company in a modal, until it is closed', async () => {
