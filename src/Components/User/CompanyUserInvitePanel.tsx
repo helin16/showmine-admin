@@ -1,9 +1,12 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { MailOutlined, SendOutlined, WechatOutlined } from '@ant-design/icons'
 import { QRCodeCanvas } from 'qrcode.react'
 import { FormattedMessage, useIntl } from 'react-intl'
+import { useSelector } from 'react-redux'
+import { RootState } from '../../Redux/makeReduxStore'
 import CompanyUserService from '../../Services/CompanyUserService'
 import Utils from '../../Services/Utils'
+import Alert from '../Form/Alert'
 import Button from '../Form/Button'
 import Form from '../Form/Form'
 import FormItem from '../Form/FormItem'
@@ -19,7 +22,23 @@ const CompanyUserInvitePanel = () => {
   const [isLoadingQr, setIsLoadingQr] = useState(false)
   const [qr, setQr] = useState<{ url: string; expiresInSeconds: number } | null>(null)
   const [formKey, setFormKey] = useState(0)
+  const [isFull, setIsFull] = useState(false)
+  const maxUsers = useSelector((s: RootState) => s.auth.company?.maxUsers)
   const intl = useIntl()
+
+  useEffect(() => {
+    if (typeof maxUsers !== 'number') return
+    let isCancelled = false
+    CompanyUserService.getAll({ where: JSON.stringify({ isActive: true }), perPage: 1, currentPage: 1 })
+      .then((res) => {
+        if (isCancelled === true) return
+        setIsFull(res.total >= maxUsers)
+      })
+      .catch((err) => message.error(Utils.getErrorMessage(err)))
+    return () => {
+      isCancelled = true
+    }
+  }, [maxUsers])
 
   const onFinish = ({ email }: { email: string }) => {
     setIsSending(true)
@@ -38,6 +57,10 @@ const CompanyUserInvitePanel = () => {
       .then(setQr)
       .catch((err) => message.error(Utils.getErrorMessage(err)))
       .finally(() => setIsLoadingQr(false))
+  }
+
+  if (isFull === true) {
+    return <Alert type='info' message={intl.formatMessage({ id: 'invite-plan-full' }, { max: maxUsers })} />
   }
 
   const emailLabel = intl.formatMessage({ id: 'email' })

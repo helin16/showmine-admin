@@ -12,7 +12,7 @@ import Spin from '../Form/Spin';
 import Utils from '../../Services/Utils'
 
 const CompanyUserStats = () => {
-  const { user } = useSelector((s: RootState) => s.auth)
+  const { user, company } = useSelector((s: RootState) => s.auth)
   const [isLoading, setIsLoading] = useState(false);
   const [state, setState] = useState({
     realValue: 0,
@@ -34,6 +34,7 @@ const CompanyUserStats = () => {
         setState({
           ...state,
           realValue: resp.total,
+          maxValue: company?.maxUsers ?? -1,
         });
       })
       .catch(err => {
@@ -45,7 +46,7 @@ const CompanyUserStats = () => {
     return () => {
       isCanceled = true;
     }
-  }, []);
+  }, [company?.maxUsers]);
   /**
    *
    */

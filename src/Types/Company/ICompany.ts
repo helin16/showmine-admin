@@ -22,6 +22,8 @@ type ICompany = IBaseModel & {
   adminConfig?: any
   paidTo?: Date
   isExpired?: boolean
+  // Null means no limit.
+  maxUsers?: number | null
   LogoAsset?: IAsset
 }
 

@@ -72,15 +72,23 @@ describe('UserAvatar', () => {
 })
 
 describe.each([
-  ['CompanyUserStats', CompanyUserStats, CompanyUserService, 'Users', COMPANY_USERS_URL],
-  ['CompanyChannelStats', CompanyChannelStats, ChannelService, 'Channels', COMPANY_CHANNELS_URL],
-])('%s', (_name, Stats, service, title, url) => {
-  const params = { where: JSON.stringify({ isActive: true }), perPage: 1, currentPage: 1 }
+  ['CompanyUserStats', CompanyUserStats, CompanyUserService, 'Users', COMPANY_USERS_URL, { isActive: true }, 7],
+  [
+    'CompanyChannelStats',
+    CompanyChannelStats,
+    ChannelService,
+    'Channels',
+    COMPANY_CHANNELS_URL,
+    { isActive: true, isOnBoarded: false },
+    8,
+  ],
+])('%s', (_name, Stats, service, title, url, where, shown) => {
+  const params = { where: JSON.stringify(where), perPage: 1, currentPage: 1 }
 
   test('shows the total against an unlimited plan', async () => {
     vi.mocked(service.getAll).mockResolvedValue({ total: 7 } as never)
     renderWithProviders(<Stats />)
-    expect(await screen.findByText('7')).toBeInTheDocument()
+    expect(await screen.findByText(`${shown}`)).toBeInTheDocument()
     expect(screen.getByText(title)).toBeInTheDocument()
     expect(screen.getByText('/ Unlimited')).toBeInTheDocument()
     expect(service.getAll).toHaveBeenCalledExactlyOnceWith(params)
@@ -90,7 +98,7 @@ describe.each([
   test('links through for a super admin', async () => {
     vi.mocked(service.getAll).mockResolvedValue({ total: 7 } as never)
     renderWithProviders(<Stats />, { state: { auth: { user: { isSuperAdmin: true } } } })
-    await screen.findByText('7')
+    await screen.findByText(`${shown}`)
     expect(screen.getByRole('link')).toHaveAttribute('href', url)
   })
 
@@ -99,6 +107,12 @@ describe.each([
     renderWithProviders(<Stats />)
     await waitFor(() => expect(message.error).toHaveBeenCalledWith('down'))
   })
+})
+
+test('CompanyUserStats shows the plan\'s user limit', async () => {
+  vi.mocked(CompanyUserService.getAll).mockResolvedValue({ total: 1 } as never)
+  renderWithProviders(<CompanyUserStats />, { state: { auth: { company: { maxUsers: 1 } } } })
+  expect(await screen.findByText('/ 1')).toBeInTheDocument()
 })
 
 describe('CompanyUserList', () => {

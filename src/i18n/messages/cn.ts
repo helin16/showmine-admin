@@ -262,6 +262,7 @@ const LanguageCN = {
     'no-company-notice': '您的账号尚未关联公司。请联系公司管理员添加您。',
     'no-company-pending': '您加入 {names} 的申请正在等待管理员审批。',
     'invite-people': '邀请成员',
+    'invite-plan-full': '您的计划最多支持 {max} 个用户。升级计划后才能邀请更多成员。',
     'invite-send': '发送邀请',
     'invite-sent': '如果 {email} 尚未加入本公司，邀请邮件正在发送。',
     'invite-qr-show': '显示微信二维码',

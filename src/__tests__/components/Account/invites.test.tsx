@@ -11,7 +11,7 @@ import message from '../../../Components/Form/message'
 import { messages } from '../../../i18n/messages'
 
 vi.mock('../../../Services/CompanyUserService', () => ({
-  default: { invite: vi.fn(), getInviteQr: vi.fn(), getPending: vi.fn(), approve: vi.fn(), reject: vi.fn() },
+  default: { getAll: vi.fn(), invite: vi.fn(), getInviteQr: vi.fn(), getPending: vi.fn(), approve: vi.fn(), reject: vi.fn() },
 }))
 vi.mock('../../../Components/Form/message', () => ({ default: { error: vi.fn(), success: vi.fn() } }))
 vi.mock('qrcode.react', () => ({ QRCodeCanvas: ({ value }: { value: string }) => <div>qr for {value}</div> }))
@@ -19,6 +19,21 @@ vi.mock('qrcode.react', () => ({ QRCodeCanvas: ({ value }: { value: string }) =>
 beforeAll(() => stubMatchMedia())
 
 describe('CompanyUserInvitePanel', () => {
+  test('replaces the invite form when the plan is full', async () => {
+    vi.mocked(CompanyUserService.getAll).mockResolvedValue({ total: 1 } as never)
+    renderWithProviders(<CompanyUserInvitePanel />, { state: { auth: { company: { maxUsers: 1 } } } })
+    expect(await screen.findByText(/Your plan allows 1 user\./)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Send invite/ })).not.toBeInTheDocument()
+  })
+
+  test('keeps the invite form while the plan has room', async () => {
+    vi.mocked(CompanyUserService.getAll).mockResolvedValue({ total: 3 } as never)
+    renderWithProviders(<CompanyUserInvitePanel />, { state: { auth: { company: { maxUsers: 10 } } } })
+    await waitFor(() => expect(CompanyUserService.getAll).toHaveBeenCalled())
+    expect(screen.queryByText(/Your plan allows/)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /invite/i })).toBeInTheDocument()
+  })
+
   const email = () => screen.getByRole('textbox', { name: 'Email' })
   const sendBtn = () => screen.getByRole('button', { name: /Send invite/ })
 

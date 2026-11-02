@@ -11,9 +11,12 @@ import ChannelService from '../../Services/ChannelService';
 import {COMPANY_CHANNELS_URL} from '../../UrlMap';
 import Utils from '../../Services/Utils'
 
+// The main WeChat channel belongs to the system company, and every company has it.
+const INCLUDED_CHANNELS = 1
+
 const CompanyChannelStats = () => {
   const { user } = useSelector((s: RootState) => s.auth)
-  const [state, setState] = useState({ realValue: 0, maxValue: -1 })
+  const [state, setState] = useState({ realValue: INCLUDED_CHANNELS, maxValue: -1 })
   const [isLoading, setIsLoading] = useState(false);
   const intl = useIntl()
   /**
@@ -23,14 +26,14 @@ const CompanyChannelStats = () => {
     let isCanceled = false;
     setIsLoading(true);
     ChannelService.getAll({
-      where: JSON.stringify({isActive: true}),
+      where: JSON.stringify({isActive: true, isOnBoarded: false}),
       perPage: 1,
       currentPage: 1,
     })
       .then(resp => {
         setState({
           ...state,
-          realValue: resp.total,
+          realValue: resp.total + INCLUDED_CHANNELS,
         });
       })
       .catch(err => {
