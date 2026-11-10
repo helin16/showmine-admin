@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto'
 import { APIRequestContext, Browser, BrowserContext, expect, Page, test } from '@playwright/test'
 import { COMPANY_ID, COMPANY_NAME, PREFIX, READER_URL, signIn } from './support'
 
-const { E2E_EMAIL, E2E_PASSWORD } = process.env
+const { E2E_EMAIL, E2E_PASSWORD, E2E_MEMBER_EMAIL } = process.env
 const ONE_PIXEL_PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
   'base64',
@@ -64,6 +64,26 @@ const expectNoActiveChannels = async () => {
   expect(channels, 'the test company must have no active channels: publishing could post to WeChat').toHaveLength(0)
 }
 
+// A published article is emailed to every other member of its company, so only the test accounts may belong,
+// and they must be opted out. Ids only: this repository's CI logs are public.
+const expectNoNoticeRecipients = async () => {
+  const where = encodeURIComponent(JSON.stringify({ isActive: true }))
+  const response = await api.get(`/companyUser?where=${where}&include=User&perPage=9999&currentPage=1`)
+  expect(response.ok(), 'listing the test company\'s members').toBeTruthy()
+  const members: { User: { id: string; email?: string; emailOptOut?: boolean } }[] = (await response.json()).data
+  const allowed = [E2E_EMAIL, E2E_MEMBER_EMAIL].filter(Boolean).map((email) => `${email}`.toLowerCase())
+  const strangers = members.filter(({ User }) => !allowed.includes(`${User.email || ''}`.toLowerCase()))
+  expect(
+    strangers.map(({ User }) => User.id),
+    'the test company must hold only the test accounts: publishing would notify these users',
+  ).toEqual([])
+  const optedIn = members.filter(({ User }) => User.emailOptOut !== true)
+  expect(
+    optedIn.map(({ User }) => User.id),
+    'these test accounts must be opted out of notice emails',
+  ).toEqual([])
+}
+
 const upload = async (fileName: string) => {
   const uploaded = await api.post('/asset/upload', {
     multipart: { file: { name: fileName, mimeType: 'image/png', buffer: ONE_PIXEL_PNG } },
@@ -78,6 +98,7 @@ const cleanUp = async () => {
   expect(await deleteRows('/item', 'title'), 'no test articles should remain').toBe(0)
   expect(await deleteRows('/asset', 'fileName'), 'no test files should remain').toBe(0)
   await expectNoActiveChannels()
+  await expectNoNoticeRecipients()
   isCleanedUp = true
 }
 
@@ -156,8 +177,9 @@ test('publishing is disabled when the channels cannot be loaded', async () => {
 })
 
 test('the Publish button puts the article on the reader', async () => {
-  // Publishing can post to connected channels, which cannot be undone.
+  // Publishing can post to connected channels and email or WeChat the company's members, which cannot be undone.
   await expectNoActiveChannels()
+  await expectNoNoticeRecipients()
   await page.goto(`/b/articles/${articleId}`)
   await page.getByRole('button', { name: PUBLISH }).click()
   await page.getByRole('dialog').getByRole('button', { name: CONFIRM_PUBLISH }).click()
@@ -213,6 +235,8 @@ test('the API hides channel secrets and refuses another company', async () => {
 })
 
 test('the reader shows the five newest articles, and the next page holds the rest', async () => {
+  // These are published as they are created, as they have a publish time.
+  await expectNoNoticeRecipients()
   const [cover, other] = uploads
   const image = (url: string) => `<img src="${url}" width="120" height="120">`
   const titles = [0, 1, 2, 3, 4, 5].map((index) => `${runId}-reader-${index}`)
@@ -244,6 +268,40 @@ test('the reader shows the five newest articles, and the next page holds the res
   })
   expect(nextPage.ok()).toBeTruthy()
   expect((await nextPage.json()).data[0].title).toBe(titles[5])
+})
+
+// antd sizes the cards per breakpoint, by window width, and leaves them as wide as their content where the grid sets no count.
+test('the article cards share one width at every window size', async () => {
+  const columnsByWidth: [number, number][] = [
+    [400, 1],
+    [700, 2],
+    [900, 3],
+    [1300, 4],
+    [1700, 6],
+    [2000, 6],
+  ]
+  try {
+    for (const [width, columns] of columnsByWidth) {
+      await page.setViewportSize({ width, height: 900 })
+      await page.goto('/b/articles')
+      const cards = page.locator('.ant-list-item')
+      await expect(cards.first()).toBeVisible()
+      const boxes = (await Promise.all((await cards.all()).map((card) => card.boundingBox()))).filter(
+        (box) => box !== null,
+      )
+      const [first] = boxes
+      expect(
+        boxes.filter((box) => Math.abs(box.y - first.y) <= 1),
+        `cards in the first row at ${width}px`,
+      ).toHaveLength(columns)
+      for (const box of boxes) {
+        expect(Math.abs(box.width - first.width), `card widths at ${width}px`).toBeLessThanOrEqual(1)
+      }
+    }
+  } finally {
+    // Playwright's default, which the config does not change.
+    await page.setViewportSize({ width: 1280, height: 720 })
+  }
 })
 
 test('inside WeChat an article is signed, shared and previewed', async () => {

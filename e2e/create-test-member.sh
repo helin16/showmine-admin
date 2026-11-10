@@ -23,8 +23,9 @@ SELECT 1 / (SELECT count(*) FROM companies WHERE id = 'b3f1fdbd-c990-493b-aedc-0
 WITH company AS (
   SELECT id, "createdById" FROM companies WHERE id = 'b3f1fdbd-c990-493b-aedc-0f0776badf59' AND name = 'test company'
 ), new_user AS (
-  INSERT INTO users (id, "createdById", "updatedById", "firstName", "lastName", "nickName", email, password)
-  SELECT gen_random_uuid(), "createdById", "createdById", 'E2E', 'Member', 'E2E Member', :'email', :'hash' FROM company
+  -- Opted out: notices would reach this inbox on every E2E publish.
+  INSERT INTO users (id, "createdById", "updatedById", "firstName", "lastName", "nickName", email, password, "emailOptOut")
+  SELECT gen_random_uuid(), "createdById", "createdById", 'E2E', 'Member', 'E2E Member', :'email', :'hash', true FROM company
   RETURNING id, "createdById"
 )
 INSERT INTO "companyUsers" (id, "createdById", "updatedById", "userId", "companyId", role, "isPending")

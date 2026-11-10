@@ -34,6 +34,8 @@ const initialState: iState = {
   page: 0,
   pageSize: 12,
 }
+// Every breakpoint needs a count: antd leaves items as wide as their content where one is missing.
+export const ARTICLE_LIST_GRID = { gutter: listGutter, xs: 1, sm: 2, md: 3, lg: 4, xl: 4, xxl: 6, xxxl: 6 }
 const Wrapper = styled.div`
   .article-item {
     .article-cover-img-div {
@@ -43,7 +45,6 @@ const Wrapper = styled.div`
           object-fit: cover;
           display: block;
           height: 180px;
-          min-width: 300px;
         }
       }
     }
@@ -170,15 +171,7 @@ const ArticleList = ({ company, searchParams }: iArticleList) => {
             }
           />
         }
-        grid={{
-          gutter: listGutter,
-          xs: 1,
-          sm: 2,
-          md: 3,
-          lg: 4,
-          xl: 4,
-          xxl: 6,
-        }}
+        grid={ARTICLE_LIST_GRID}
         dataSource={state.articleList?.data || []}
         renderItem={(article: IArticle) => (
           <ListItem>
