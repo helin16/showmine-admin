@@ -20,6 +20,9 @@ import IUser from '../../Types/User/IUser';
 import IItemVisit from '../../Types/Article/IItemVisit';
 import Utils from '../../Services/Utils'
 
+// Every breakpoint needs a count: antd leaves items as wide as their content where one is missing.
+export const VISIT_STATS_GRID = { gutter: listGutter, xs: 1, sm: 1, md: 1, lg: 3, xl: 3, xxl: 3, xxxl: 3 }
+
 const StatsWrapper = styled.div``
 
 type iStatsSum = {
@@ -132,15 +135,7 @@ const VisitStats = ({ article }: { article?: IArticle }) => {
       <List
         className="visit-stats-list"
         loading={state.initLoading}
-        grid={{
-          gutter: listGutter,
-          xs: 1,
-          sm: 1,
-          md: 1,
-          lg: 3,
-          xl: 3,
-          xxl: 3,
-        }}
+        grid={VISIT_STATS_GRID}
         dataSource={['channelPortion', 'visitTrend', 'sharerPortion']}
         renderItem={(key: string) => (
           <ListItem>

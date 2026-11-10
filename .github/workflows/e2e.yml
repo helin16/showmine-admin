@@ -3,6 +3,9 @@ name: E2E
 # Runs against production, so it stays off pull requests and ordinary pushes.
 # Signed-in journeys are skipped until the E2E_EMAIL and E2E_PASSWORD secrets exist.
 # Normal member journeys are skipped until the E2E_MEMBER_EMAIL and E2E_MEMBER_PASSWORD secrets exist.
+# Publishing emails every other member of the company, so the run stops before publishing unless
+# "test company" holds only the two test accounts, both with users."emailOptOut" = true.
+# The e2e/create-test-*.sh scripts create them that way. Remove anyone else from the company.
 on:
   deployment_status:
   schedule:
