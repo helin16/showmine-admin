@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto'
 import { APIRequestContext, Browser, BrowserContext, expect, Page, test } from '@playwright/test'
 import { COMPANY_ID, COMPANY_NAME, PREFIX, READER_URL, signIn } from './support'
 
-const { E2E_EMAIL, E2E_PASSWORD, E2E_MEMBER_EMAIL } = process.env
+const { E2E_EMAIL, E2E_PASSWORD, E2E_MEMBER_EMAIL, E2E_MEMBER_PASSWORD } = process.env
 const ONE_PIXEL_PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
   'base64',
@@ -35,6 +35,7 @@ let context: BrowserContext
 let page: Page
 let api: APIRequestContext
 let unauthenticatedApi: APIRequestContext
+let member: { context: BrowserContext; api: APIRequestContext } | undefined
 let articleId = ''
 let uploads: Asset[] = []
 let weChat: BrowserContext
@@ -65,21 +66,27 @@ const expectNoActiveChannels = async () => {
 }
 
 // A published article is emailed to every other member of its company, so only the test accounts may belong,
-// and they must be opted out. Ids only: this repository's CI logs are public.
+// and they must be opted out. The member list gives no emails, so each account reads its own id from /auth/me.
+// Ids only: this repository's CI logs are public.
 const expectNoNoticeRecipients = async () => {
+  const accounts: { id: string; emailOptOut?: boolean }[] = []
+  for (const client of [api, member?.api]) {
+    if (!client) continue
+    const me = await client.get('/auth/me')
+    expect(me.ok(), 'reading a test account').toBeTruthy()
+    accounts.push((await me.json()).user)
+  }
   const where = encodeURIComponent(JSON.stringify({ isActive: true }))
-  const response = await api.get(`/companyUser?where=${where}&include=User&perPage=9999&currentPage=1`)
+  const response = await api.get(`/companyUser?where=${where}&perPage=9999&currentPage=1`)
   expect(response.ok(), 'listing the test company\'s members').toBeTruthy()
-  const members: { User: { id: string; email?: string; emailOptOut?: boolean } }[] = (await response.json()).data
-  const allowed = [E2E_EMAIL, E2E_MEMBER_EMAIL].filter(Boolean).map((email) => `${email}`.toLowerCase())
-  const strangers = members.filter(({ User }) => !allowed.includes(`${User.email || ''}`.toLowerCase()))
+  const members: { userId: string }[] = (await response.json()).data
+  const ids = accounts.map(({ id }) => id)
   expect(
-    strangers.map(({ User }) => User.id),
+    members.map(({ userId }) => userId).filter((userId) => !ids.includes(userId)),
     'the test company must hold only the test accounts: publishing would notify these users',
   ).toEqual([])
-  const optedIn = members.filter(({ User }) => User.emailOptOut !== true)
   expect(
-    optedIn.map(({ User }) => User.id),
+    accounts.filter(({ emailOptOut }) => emailOptOut !== true).map(({ id }) => id),
     'these test accounts must be opted out of notice emails',
   ).toEqual([])
 }
@@ -105,6 +112,12 @@ const cleanUp = async () => {
 test.beforeAll(async ({ browser }: { browser: Browser }) => {
   ;({ context, page, api, unauthenticatedApi } = await signIn(browser, E2E_EMAIL as string, E2E_PASSWORD as string))
   weChat = await browser.newContext({ userAgent: WECHAT_USER_AGENT })
+  // Only to read its own settings for the notice guard. Without it, the member must not belong to the company.
+  if (E2E_MEMBER_EMAIL && E2E_MEMBER_PASSWORD) {
+    const signedIn = await signIn(browser, E2E_MEMBER_EMAIL, E2E_MEMBER_PASSWORD)
+    await signedIn.unauthenticatedApi.dispose()
+    member = { context: signedIn.context, api: signedIn.api }
+  }
 })
 
 test.afterAll(async () => {
@@ -115,6 +128,8 @@ test.afterAll(async () => {
   await unauthenticatedApi.dispose()
   await context.close()
   await weChat.close()
+  await member?.api.dispose()
+  await member?.context.close()
 })
 
 test('signing in reaches the back end for the test company', async () => {
