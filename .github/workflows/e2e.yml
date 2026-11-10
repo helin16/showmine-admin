@@ -8,8 +8,6 @@ name: E2E
 # The e2e/create-test-*.sh scripts create them that way. Remove anyone else from the company.
 on:
   deployment_status:
-  schedule:
-    - cron: '0 20 * * *'
   workflow_dispatch:
     inputs:
       admin_url:
