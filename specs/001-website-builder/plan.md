@@ -139,8 +139,8 @@ showmine-api/
 ├── src/models/Website/        Website.ts, WebsitePage.ts, WebsitePageView.ts
 ├── src/helpers/               WebsiteHelper.ts (section schemas, publish, snapshot), PlanHelper.ts (maxPages)
 ├── src/templates/website/     index.ts, shop.ts, services.ts, simple.ts
-├── src/controllers/Website/   WebsiteController.ts, WebsitePageController.ts, PublicWebsiteController.ts
-├── src/controllers/Assets/    AssetController.ts (WEBSITE rules, usage, delete check)
+├── src/controllers/Website/   WebsiteController.ts, WebsitePageController.ts, WebsiteImageController.ts, PublicWebsiteController.ts
+├── src/controllers/Assets/    AssetController.ts (WEBSITE refusals, delete check)
 ├── src/helpers/S3Helper.ts    (WEBSITE type limits, delete S3 object when create fails)
 ├── src/queue/processor/AssetCleanUp.ts (WEBSITE check, references)
 └── tests/                     controllers/Website/*, models/Website*Migration.test.ts, RouteMatrix.test.ts

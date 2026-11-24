@@ -46,13 +46,13 @@ All Technical Context unknowns are resolved below. An independent reviewer check
 
 ## R8. Images
 
-- **Decision**: Add a new asset type `WEBSITE`. Uploads of this type accept only jpeg, png, webp and gif up to 10 MB, within the plan's storage. `POST /asset` and `PUT /asset/:id` cannot create or change `WEBSITE` assets. Section image ids must be active `WEBSITE` assets of the same company with an `isCompanyUploadPath` key. The existing `/asset/articles` usage route is extended to cover websites. `DELETE` returns 409 for an image in use, including on the `purgeDeletedAssets` path. A failed `Asset.create` deletes the uploaded S3 object.
+- **Decision**: Add a new asset type `WEBSITE`. Uploads of this type accept only jpeg, png, webp and gif up to 10 MB, within the plan's storage. `POST /asset` and `PUT /asset/:id` cannot create or change `WEBSITE` assets. Section image ids must be active `WEBSITE` assets of the same company with an `isCompanyUploadPath` key. Uploads and usage have their own routes, `POST /website/images` and `GET /website/images/usage`, behind the website guards. `/asset/upload` reads `type` only after storing the file, and the admin reads `/asset/articles` in its current shape (changed during SMN-62 with Lin's approval). `DELETE` returns 409 for an image in use, including on the `purgeDeletedAssets` path. A failed `Asset.create` deletes the uploaded S3 object.
 - **Rationale**: It closes the reviewer's forgery and orphan findings, and reuses the existing upload, storage limit and media list.
 - **Alternatives**: SVG is excluded because it can carry script when opened directly.
 
 ## R9. Asset clean-up
 
-- **Decision**: `AssetCleanUp` gets a `WEBSITE` unused-asset check. `TEXT_REFERENCES` gets `websitePages.sections`, `websites.seo` and `websites.publishedSnapshot`. The website JSON stores asset ids, and the check matches by id.
+- **Decision**: `AssetCleanUp` keeps any deactivated asset the website still refers to: its text check also matches the asset id, and `TEXT_REFERENCES` gets `websitePages.sections`, `websites.seo` and `websites.publishedSnapshot`. The website JSON stores asset ids, and the check matches by id. Unused website images are not deactivated automatically, as the library keeps images that are not used yet (SMN-62, Lin's approval).
 - **Rationale**: Without this, the monthly job would remove website images.
 
 ## R10. Page views

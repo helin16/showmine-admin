@@ -208,8 +208,8 @@ description: "Task list for the Website Builder (SMN-53, Sprint 3)"
 ### Implementation
 
 - [ ] T059 [US5] Type and size limits for `WEBSITE` uploads, plus S3 delete on failure, in `api:src/helpers/S3Helper.ts`
-- [ ] T060 [US5] `WEBSITE` rules, usage and delete check in `api:src/controllers/Assets/AssetController.ts`
-- [ ] T061 [US5] `WEBSITE` unused check and `TEXT_REFERENCES` entries in `api:src/queue/processor/AssetCleanUp.ts`
+- [ ] T060 [US5] Upload and usage routes in `api:src/controllers/Website/WebsiteImageController.ts`; `WEBSITE` refusals and delete check in `api:src/controllers/Assets/AssetController.ts`
+- [ ] T061 [US5] Id matching and `TEXT_REFERENCES` entries in `api:src/queue/processor/AssetCleanUp.ts`
 - [ ] T062 [US5] `admin:src/Components/Website/MediaPicker.tsx` (built on `AssetService`), used by the image, gallery and hero editors and on the media page `admin:src/Pages/Website/WebsiteMediaPage.tsx`
 
 ---

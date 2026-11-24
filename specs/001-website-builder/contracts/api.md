@@ -51,13 +51,21 @@ The `theme` and `seo` keys sent are merged over the saved ones.
 
 ## Images (US5)
 
-- `POST /asset/upload` with `type=WEBSITE`:
-  - 400 when the file is not jpeg, png, webp or gif;
+Website images have their own routes, with the same guards as `/website` (company admin, switch on). The guards run
+before the file is read.
+
+- `POST /website/images`, multipart field `file`: 200 with the new asset (`type: WEBSITE`).
+  - 400 when the file is not jpeg, png, webp or gif, judged by its first bytes and its extension;
   - 413 when it is over 10 MB;
   - 403 when it is over the plan's storage.
+- `GET /website/images/usage?ids=<id,...>` (at most 100 ids of this company): 200
+  `{ [assetId]: [{ pageId?, pageTitle?, published: boolean }] }`. It covers the draft pages (sections and SEO), the
+  site's SEO and the published copy. An unused image maps to `[]`.
+- `POST /asset/upload` with `type=WEBSITE`: 400.
 - `POST /asset` and `PUT /asset/:id` with `type=WEBSITE`, or on a `WEBSITE` asset: 400.
-- `GET /asset/articles` now also lists `websites: [{ pageId?, pageTitle?, published: boolean }]` per asset.
-- `DELETE /asset/:id`: 409 `{ message, usedBy }` when the asset is in use.
+- `DELETE /asset/:id` on a `WEBSITE` asset: 401 for a member; 409 `{ message, usedBy }` (shape as in usage) when the
+  website uses it.
+- `GET /asset/articles` is unchanged; the admin keeps reading it as `{ [assetId]: [articles] }`.
 
 ## Public (US3, US7)
 
