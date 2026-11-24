@@ -22,6 +22,7 @@ import {
   COMPANY_WEBSITE_IMAGES_URL,
   COMPANY_WEBSITE_PAGES_URL,
   COMPANY_WEBSITE_SETTINGS_URL,
+  COMPANY_WEBSITE_ANALYTICS_URL,
   COMPANY_WEBSITE_TEMPLATES_URL,
 } from '../../UrlMap'
 import PublishBar from '../../Components/Website/PublishBar'
@@ -214,6 +215,7 @@ const WebsiteOverviewPage = () => {
                 <Link to={COMPANY_WEBSITE_TEMPLATES_URL}>{translate('website-templates-choose')}</Link>
                 <Link to={COMPANY_WEBSITE_IMAGES_URL}>{translate('website-images')}</Link>
                 <Link to={COMPANY_WEBSITE_SETTINGS_URL}>{translate('website-settings')}</Link>
+                <Link to={COMPANY_WEBSITE_ANALYTICS_URL}>{translate('website-analytics')}</Link>
               </Space>
             </>
           ) : null}

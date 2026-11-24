@@ -1,6 +1,5 @@
 ---
-
-description: "Task list for the Website Builder (SMN-53, Sprint 3)"
+description: 'Task list for the Website Builder (SMN-53, Sprint 3)'
 ---
 
 # Tasks: Website Builder
@@ -242,20 +241,20 @@ description: "Task list for the Website Builder (SMN-53, Sprint 3)"
 
 ### Tests
 
-- [ ] T068 [P] [US7] Tests in `api:tests/controllers/Website/WebsitePageViews.test.ts`:
+- [x] T068 [P] [US7] Tests in `api:tests/controllers/Website/WebsitePageViews.test.ts`:
   - the server key is required;
   - unknown `pageSlug`, previews and the E2E user agent are ignored;
   - daily upsert; range at most 366 days; empty period;
   - `GET /website/pageViews` member 401, other company, switch off 403; both routes added to `api:tests/controllers/RouteMatrix.test.ts` (the public one with its reason).
-- [ ] T069 [US7] Reader test that a published page posts one view, while a preview, a template page and the `ShowMine-E2E` user agent do not, and that a failed view call still renders the page,, in `reader:src/__tests__/pages/s/website.test.tsx`
-- [ ] T070 [P] [US7] Admin analytics page test (period, update time, empty state) in `admin:src/__tests__/pages/Website/WebsiteAnalyticsPage.test.tsx`
+- [x] T069 [US7] Reader test that a published page posts one view, while a preview, a template page and the `ShowMine-E2E` user agent do not, and that a failed view call still renders the page,, in `reader:src/__tests__/pages/s/website.test.tsx`
+- [x] T070 [P] [US7] Admin analytics page test (period, update time, empty state) in `admin:src/__tests__/pages/Website/WebsiteAnalyticsPage.test.tsx`
 
 ### Implementation
 
-- [ ] T071 [US7] Migration `api:migrations/20261122000004-add-website-page-views.js` and model `api:src/models/Website/WebsitePageView.ts`
-- [ ] T072 [US7] `POST /publicWebsite/:slug/pageView` (server key) and `GET /website/pageViews` in `api:src/controllers/Website/`
-- [ ] T073 [US7] Server-side view call in `reader:src/pages/s/[slug]/[[...page]].tsx`. Skipped for previews and the `ShowMine-E2E` user agent (the Reader sees the visitor's agent). Timeout 1 s; any failure ignored
-- [ ] T074 [US7] `admin:src/Pages/Website/WebsiteAnalyticsPage.tsx`, using the existing `@ant-design/charts`, with strings
+- [x] T071 [US7] Migration `api:migrations/20261122000004-add-website-page-views.js` and model `api:src/models/Website/WebsitePageView.ts`
+- [x] T072 [US7] `POST /publicWebsite/:slug/pageView` (server key) and `GET /website/pageViews` in `api:src/controllers/Website/`
+- [x] T073 [US7] Server-side view call in `reader:src/pages/s/[slug]/[[...page]].tsx`. Skipped for previews and the `ShowMine-E2E` user agent (the Reader sees the visitor's agent). Timeout 1 s; any failure ignored
+- [x] T074 [US7] `admin:src/Pages/Website/WebsiteAnalyticsPage.tsx`, using the existing `@ant-design/charts`, with strings
 
 ---
 

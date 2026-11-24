@@ -72,3 +72,11 @@ export type IFieldError = { path: string; message: string }
 export type IImageUse = { pageId?: string; pageTitle?: string; published: boolean }
 
 export default IWebsite
+
+// GET /website/pageViews (US7): days with no views are left out.
+export type IWebsitePageViews = {
+  from: string
+  to: string
+  updatedAt: string | null
+  days: { date: string; pageSlug: string; count: number }[]
+}

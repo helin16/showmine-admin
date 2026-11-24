@@ -2,6 +2,7 @@ import AppService, { iConfigParams } from './AppService'
 import IWebsite, {
   IImageUse,
   IWebsitePage,
+  IWebsitePageViews,
   IWebsiteSection,
   IWebsiteSeo,
   IWebsiteTemplate,
@@ -86,7 +87,12 @@ const getImageUploadUrl = () => `${process.env.REACT_APP_REST_END_POINT || ''}${
 
 const deleteImage = async (id: string) => AppService.delete(`/asset/${id}`).then((resp) => resp.data)
 
+// Page views per day and page, for a period of up to 366 UTC days.
+const getPageViews = async (from: string, to: string): Promise<IWebsitePageViews> =>
+  AppService.get(`${endPoint}/pageViews`, { from, to }).then((resp) => resp.data)
+
 const WebsiteService = {
+  getPageViews,
   getImages,
   getImageUsage,
   getImageUploadUrl,
