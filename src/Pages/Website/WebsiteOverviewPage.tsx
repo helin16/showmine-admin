@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
-import moment from 'moment'
 import { RootState } from '../../Redux/makeReduxStore'
 import { MENU_KEY_COMPANY_WEBSITE } from '../../Components/Menu/MenuItems'
 import BackendPage from '../../Layouts/BackendPage'
@@ -13,14 +12,14 @@ import Card from '../../Components/Form/Card'
 import InputBox from '../../Components/Form/InputBox'
 import Space from '../../Components/Form/Space'
 import Spin from '../../Components/Form/Spin'
-import Tag from '../../Components/Form/Tag'
 import message from '../../Components/Form/message'
 import { BoxTitleDiv, FormInputWrapper } from '../../Styles/AppWrapper'
 import translate from '../../i18n/translate'
 import WebsiteService from '../../Services/WebsiteService'
 import Utils from '../../Services/Utils'
 import IWebsite, { WEBSITE_SLUG_PATTERN } from '../../Types/Website/IWebsite'
-import { COMPANY_WEBSITE_TEMPLATES_URL } from '../../UrlMap'
+import { COMPANY_WEBSITE_PAGES_URL, COMPANY_WEBSITE_TEMPLATES_URL } from '../../UrlMap'
+import PublishBar from '../../Components/Website/PublishBar'
 
 // The Website area's first page (specs/001-website-builder, US1, T019): create the website by choosing its address
 // name, or change the name, and see the public address and whether the site is published.
@@ -93,7 +92,9 @@ const WebsiteOverviewPage = () => {
     const companyId = company?.id
     const isSameCompany = () => companyIdRef.current === companyId
     setState((s) => ({ ...s, saving: true, slugError: undefined }))
-    const request = website ? WebsiteService.update({ slug, updatedAt: website.updatedAt }) : WebsiteService.create(slug)
+    const request = website
+      ? WebsiteService.update({ slug, updatedAt: website.updatedAt })
+      : WebsiteService.create(slug)
     request
       .then((saved) => {
         if (!isSameCompany()) return
@@ -116,18 +117,6 @@ const WebsiteOverviewPage = () => {
         }
       })
       .finally(() => setState((s) => ({ ...s, saving: false })))
-  }
-
-  const getStatus = (website: IWebsite) => {
-    if (!website.publishedAt) {
-      return <Tag>{translate('website-not-published')}</Tag>
-    }
-    const date = moment(website.publishedAt).format('lll')
-    return website.hasUnpublishedChanges ? (
-      <Tag color={'orange'}>{translate('website-unpublished-changes', { date })}</Tag>
-    ) : (
-      <Tag color={'green'}>{translate('website-published', { date })}</Tag>
-    )
   }
 
   const getContent = () => {
@@ -209,9 +198,16 @@ const WebsiteOverviewPage = () => {
               </FormInputWrapper>
               <FormInputWrapper>
                 <BoxTitleDiv>{translate('website-status')}</BoxTitleDiv>
-                {getStatus(website)}
+                <PublishBar
+                  website={website}
+                  onChanged={(changed) => setState((s) => ({ ...s, website: changed }))}
+                  onStale={reload}
+                />
               </FormInputWrapper>
-              <Link to={COMPANY_WEBSITE_TEMPLATES_URL}>{translate('website-templates-choose')}</Link>
+              <Space wrap>
+                <Link to={COMPANY_WEBSITE_PAGES_URL}>{translate('website-pages-edit')}</Link>
+                <Link to={COMPANY_WEBSITE_TEMPLATES_URL}>{translate('website-templates-choose')}</Link>
+              </Space>
             </>
           ) : null}
         </Space>

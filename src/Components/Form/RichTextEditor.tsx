@@ -185,13 +185,16 @@ type iRichTextEditor = {
   isInLine?: boolean,
   showToolBar?: boolean,
   assetType?: string;
+  // Replace the default toolbar and plugins, e.g. to leave out uploads.
+  toolbar?: string;
+  plugins?: string[];
 }
 /**
  *
  * @param onChange
  * @param value
  */
-const RichTextEditor = ({ className, onChange, value, placeholder, isInLine = false, showToolBar = true, assetType, ...props }: iRichTextEditor) => {
+const RichTextEditor = ({ className, onChange, value, placeholder, isInLine = false, showToolBar = true, assetType, toolbar, plugins, ...props }: iRichTextEditor) => {
   const [state, setState] = useState(initialState);
   /**
    *
@@ -235,6 +238,8 @@ const RichTextEditor = ({ className, onChange, value, placeholder, isInLine = fa
         // @ts-ignore
         init={{
           ...state.editor,
+          ...(toolbar === undefined ? {} : { toolbar: [toolbar] }),
+          ...(plugins === undefined ? {} : { plugins, paste_data_images: false, file_picker_types: '' }),
           content_style: 'img { max-width: 100%; }',
           inline: isInLine,
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment

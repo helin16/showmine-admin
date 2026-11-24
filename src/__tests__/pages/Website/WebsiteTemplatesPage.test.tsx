@@ -7,7 +7,7 @@ import WebsiteTemplatesPage from '../../../Pages/Website/WebsiteTemplatesPage'
 import WebsiteService from '../../../Services/WebsiteService'
 import message from '../../../Components/Form/message'
 import { changeCompany } from '../../../Redux/reduxers/auth.slice'
-import { COMPANY_WEBSITE_TEMPLATES_URL, COMPANY_WEBSITE_URL } from '../../../UrlMap'
+import { COMPANY_WEBSITE_PAGES_URL, COMPANY_WEBSITE_TEMPLATES_URL, COMPANY_WEBSITE_URL } from '../../../UrlMap'
 import { renderWithProviders } from '../../testUtils'
 import { stubMatchMedia } from '../../components/Access/domHelpers'
 
@@ -49,6 +49,7 @@ const renderPage = (state: object = { auth: { company } }) =>
     <Routes>
       <Route path={COMPANY_WEBSITE_TEMPLATES_URL} element={<WebsiteTemplatesPage />} />
       <Route path={COMPANY_WEBSITE_URL} element={<div>overview page</div>} />
+      <Route path={COMPANY_WEBSITE_PAGES_URL} element={<div>pages list</div>} />
     </Routes>,
     { state, route: COMPANY_WEBSITE_TEMPLATES_URL },
   )
@@ -104,7 +105,7 @@ describe('WebsiteTemplatesPage', () => {
     expect(col).toHaveClass('ant-col-lg-8')
   })
 
-  test('with no pages yet, uses the template and goes back to the overview', async () => {
+  test('with no pages yet, uses the template and goes on to its pages', async () => {
     vi.mocked(WebsiteService.getTemplates).mockResolvedValue(templates as never)
     vi.mocked(WebsiteService.initialise).mockResolvedValue([] as never)
     renderPage()
@@ -112,7 +113,7 @@ describe('WebsiteTemplatesPage', () => {
     fireEvent.click(await useBtn('simple en'))
 
     expect(WebsiteService.initialise).toHaveBeenCalledExactlyOnceWith({ templateId: 'simple', templateVersion: 1 })
-    expect(await screen.findByText('overview page')).toBeInTheDocument()
+    expect(await screen.findByText('pages list')).toBeInTheDocument()
     expect(message.success).toHaveBeenCalledWith('The simple en template was applied.')
   })
 
@@ -140,7 +141,7 @@ describe('WebsiteTemplatesPage', () => {
           pageCount: 3,
         }),
       )
-      expect(await screen.findByText('overview page')).toBeInTheDocument()
+      expect(await screen.findByText('pages list')).toBeInTheDocument()
     })
 
     test('cancelling replaces nothing', async () => {
@@ -181,7 +182,7 @@ describe('WebsiteTemplatesPage', () => {
         'Your plan does not allow this many pages. Choose a smaller template or change your plan.',
       ),
     )
-    expect(screen.queryByText('overview page')).not.toBeInTheDocument()
+    expect(screen.queryByText('pages list')).not.toBeInTheDocument()
   })
 
   test('an updated template reloads the list', async () => {

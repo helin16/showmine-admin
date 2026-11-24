@@ -23,12 +23,22 @@ export type IWebsiteTemplate = {
   thumbnail: string
 }
 
+// A section of a page (data-model "Section"): an id made by the client, its type and that type's fields.
+export type IWebsiteSection = { id: string; type: string; [field: string]: unknown }
+
 // A page of the draft, as GET /website/pages and POST /website/initialise give it.
 export type IWebsitePage = IBaseModel & {
   slug: string
   title: string
   position: number
+  sections?: IWebsiteSection[] | null
   hasUnpublishedChanges: boolean
 }
+
+// A page's address name, as the API checks it.
+export const PAGE_SLUG_PATTERN = /^[a-z0-9-]{1,40}$/
+
+// One problem that stops a publish or a save: `path` names the field, e.g. pages[about].sections[2].heading.
+export type IFieldError = { path: string; message: string }
 
 export default IWebsite

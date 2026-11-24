@@ -54,4 +54,51 @@ describe('WebsiteService', () => {
     await expect(WebsiteService.update(changes)).resolves.toEqual(body)
     expect(axios.put).toHaveBeenCalledWith(`${API}/website`, changes, { headers })
   })
+
+  describe('pages, preview and publishing', () => {
+    test.each([
+      ['getPages', () => WebsiteService.getPages(), 'get', '/website/pages', undefined],
+      [
+        'createPage',
+        () => WebsiteService.createPage({ slug: 'a', title: 'A' }),
+        'post',
+        '/website/pages',
+        { slug: 'a', title: 'A' },
+      ],
+      [
+        'updatePage',
+        () => WebsiteService.updatePage('p-1', { title: 'A', updatedAt: 't' }),
+        'put',
+        '/website/pages/p-1',
+        { title: 'A', updatedAt: 't' },
+      ],
+      [
+        'orderPages',
+        () => WebsiteService.orderPages(['p-2', 'p-1']),
+        'put',
+        '/website/pages/order',
+        { ids: ['p-2', 'p-1'] },
+      ],
+      ['getPreviewUrl', () => WebsiteService.getPreviewUrl(), 'post', '/website/preview', {}],
+      ['publish', () => WebsiteService.publish('t'), 'post', '/website/publish', { updatedAt: 't' }],
+      ['unpublish', () => WebsiteService.unpublish(), 'post', '/website/unpublish', {}],
+    ] as [string, () => Promise<unknown>, 'get' | 'post' | 'put', string, object | undefined][])(
+      '%s calls %s %s',
+      async (_name, call, method, path, data) => {
+        vi.mocked(axios[method]).mockResolvedValue({ data: body })
+        await expect(call()).resolves.toEqual(body)
+        if (data === undefined) {
+          expect(axios[method]).toHaveBeenCalledWith(`${API}${path}`, { headers })
+        } else {
+          expect(axios[method]).toHaveBeenCalledWith(`${API}${path}`, data, { headers })
+        }
+      },
+    )
+
+    test('deletePage deletes the page', async () => {
+      vi.mocked(axios.delete).mockResolvedValue({ data: {} })
+      await WebsiteService.deletePage('p-1')
+      expect(vi.mocked(axios.delete).mock.calls[0][0]).toBe(`${API}/website/pages/p-1`)
+    })
+  })
 })

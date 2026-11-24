@@ -72,21 +72,27 @@ describe('WebsiteOverviewPage', () => {
       expect(message.success).toHaveBeenCalledWith('Saved.')
     })
 
-    test.each(['ab', 'My Shop', '-acme', 'acme-', 'a'.repeat(41)])('refuses "%s" before asking the API', async (name) => {
-      renderPage()
-      await screen.findByText('Create your website')
+    test.each(['ab', 'My Shop', '-acme', 'acme-', 'a'.repeat(41)])(
+      'refuses "%s" before asking the API',
+      async (name) => {
+        renderPage()
+        await screen.findByText('Create your website')
 
-      setName(name)
-      fireEvent.click(screen.getByRole('button', { name: 'Create website' }))
+        setName(name)
+        fireEvent.click(screen.getByRole('button', { name: 'Create website' }))
 
-      expect(screen.getByRole('alert')).toHaveTextContent('This name does not follow the rule above.')
-      expect(nameBox()).toHaveAttribute('aria-invalid', 'true')
-      expect(WebsiteService.create).not.toHaveBeenCalled()
-    })
+        expect(screen.getByRole('alert')).toHaveTextContent('This name does not follow the rule above.')
+        expect(nameBox()).toHaveAttribute('aria-invalid', 'true')
+        expect(WebsiteService.create).not.toHaveBeenCalled()
+      },
+    )
 
     test('shows the field error from the API next to the name', async () => {
       vi.mocked(WebsiteService.create).mockRejectedValue(
-        httpError(400, { message: 'Some fields are not valid.', errors: [{ path: 'slug', message: 'This name is reserved.' }] })
+        httpError(400, {
+          message: 'Some fields are not valid.',
+          errors: [{ path: 'slug', message: 'This name is reserved.' }],
+        }),
       )
       renderPage()
       await screen.findByText('Create your website')
@@ -105,7 +111,9 @@ describe('WebsiteOverviewPage', () => {
     })
 
     test('another admin creating the website at the same time asks to reload', async () => {
-      vi.mocked(WebsiteService.create).mockRejectedValue(httpError(409, { message: 'This company already has a website.' }))
+      vi.mocked(WebsiteService.create).mockRejectedValue(
+        httpError(409, { message: 'This company already has a website.' }),
+      )
       renderPage()
       await screen.findByText('Create your website')
 
@@ -118,7 +126,7 @@ describe('WebsiteOverviewPage', () => {
 
     test('the race message that also mentions "taken" is not shown as a taken name', async () => {
       vi.mocked(WebsiteService.create).mockRejectedValue(
-        httpError(409, { message: 'That name is taken, or the company already has a website.' })
+        httpError(409, { message: 'That name is taken, or the company already has a website.' }),
       )
       renderPage()
       await screen.findByText('Create your website')
@@ -172,6 +180,8 @@ describe('WebsiteOverviewPage', () => {
         'href',
         '/b/company/website/templates',
       )
+      expect(screen.getByRole('link', { name: 'Edit pages' })).toHaveAttribute('href', '/b/company/website/pages')
+      expect(screen.getByRole('button', { name: 'Publish' })).toBeInTheDocument()
     })
 
     test('renames it with the updatedAt it was loaded with', async () => {
@@ -191,7 +201,7 @@ describe('WebsiteOverviewPage', () => {
     test('a stale save asks to reload, and reloading shows the saved website', async () => {
       vi.mocked(WebsiteService.get).mockResolvedValue(website() as never)
       vi.mocked(WebsiteService.update).mockRejectedValue(
-        httpError(409, { message: 'The website was changed by someone else. Reload and try again.' })
+        httpError(409, { message: 'The website was changed by someone else. Reload and try again.' }),
       )
       renderPage()
       await screen.findByDisplayValue('acme')

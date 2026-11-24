@@ -20,7 +20,7 @@ import translate from '../../i18n/translate'
 import WebsiteService from '../../Services/WebsiteService'
 import Utils from '../../Services/Utils'
 import { IWebsiteTemplate } from '../../Types/Website/IWebsite'
-import { COMPANY_WEBSITE_URL } from '../../UrlMap'
+import { COMPANY_WEBSITE_PAGES_URL, COMPANY_WEBSITE_URL } from '../../UrlMap'
 
 // The template gallery (specs/001-website-builder, US4, T055): preview a template on the Reader, then use it to create
 // the website's pages. Existing pages are replaced only after the admin confirms how many.
@@ -89,7 +89,7 @@ const WebsiteTemplatesPage = () => {
       .then(() => {
         if (!isSameCompany()) return
         message.success(translate('website-template-used', { name: getName(template) }))
-        navigate(COMPANY_WEBSITE_URL)
+        navigate(COMPANY_WEBSITE_PAGES_URL)
       })
       .catch((err) => {
         if (!isSameCompany()) return

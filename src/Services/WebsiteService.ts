@@ -1,5 +1,5 @@
 import AppService, { iConfigParams } from './AppService'
-import IWebsite, { IWebsitePage, IWebsiteTemplate } from '../Types/Website/IWebsite'
+import IWebsite, { IWebsitePage, IWebsiteSection, IWebsiteTemplate } from '../Types/Website/IWebsite'
 
 // The company's website (specs/001-website-builder, contracts/api.md "Website").
 const endPoint = '/website'
@@ -28,6 +28,48 @@ const getReaderUrl = (path: string) => {
   return readerUrl === '' ? null : `${readerUrl}${path}`
 }
 
-const WebsiteService = { get, create, update, getTemplates, initialise, getReaderUrl }
+const pagesEndPoint = `${endPoint}/pages`
+
+const getPages = async (): Promise<IWebsitePage[]> => AppService.get(pagesEndPoint).then((resp) => resp.data)
+
+const createPage = async (params: { slug: string; title: string }): Promise<IWebsitePage> =>
+  AppService.post(pagesEndPoint, params).then((resp) => resp.data)
+
+const updatePage = async (
+  id: string,
+  params: { slug?: string; title?: string; sections?: IWebsiteSection[]; updatedAt: Date | string | undefined },
+): Promise<IWebsitePage> => AppService.put(`${pagesEndPoint}/${id}`, params).then((resp) => resp.data)
+
+const deletePage = async (id: string) => AppService.delete(`${pagesEndPoint}/${id}`).then((resp) => resp.data)
+
+// The ids of all the pages, in their new order.
+const orderPages = async (ids: string[]): Promise<IWebsitePage[]> =>
+  AppService.put(`${pagesEndPoint}/order`, { ids }).then((resp) => resp.data)
+
+// A 30-minute link to the draft on the Reader.
+const getPreviewUrl = async (): Promise<{ url: string; expiresAt: string }> =>
+  AppService.post(`${endPoint}/preview`, {}).then((resp) => resp.data)
+
+const publish = async (updatedAt: Date | string | undefined): Promise<IWebsite> =>
+  AppService.post(`${endPoint}/publish`, { updatedAt: `${updatedAt ?? ''}` }).then((resp) => resp.data)
+
+const unpublish = async (): Promise<IWebsite> => AppService.post(`${endPoint}/unpublish`, {}).then((resp) => resp.data)
+
+const WebsiteService = {
+  get,
+  create,
+  update,
+  getTemplates,
+  initialise,
+  getReaderUrl,
+  getPages,
+  createPage,
+  updatePage,
+  deletePage,
+  orderPages,
+  getPreviewUrl,
+  publish,
+  unpublish,
+}
 
 export default WebsiteService

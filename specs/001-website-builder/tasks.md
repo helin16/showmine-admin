@@ -103,7 +103,7 @@ description: "Task list for the Website Builder (SMN-53, Sprint 3)"
   - stale 409; delete frees the slug; preview token 30 minutes, tied to company and website;
   - another company 404.
 - [ ] T025 [P] [US2] Add every page route to `api:tests/controllers/RouteMatrix.test.ts`, and a switch-off 403 case per route in T024
-- [ ] T026 [P] [US2] Admin tests for the page list, section editor, up and down reorder, delete confirmation, 409 reload and preview link in `admin:src/__tests__/pages/Website/WebsitePagesPage.test.tsx` and `admin:src/__tests__/components/Website/SectionEditor.test.tsx`
+- [x] T026 [P] [US2] Admin tests for the page list, section editor, up and down reorder, delete confirmation, 409 reload and preview link in `admin:src/__tests__/pages/Website/WebsitePagesPage.test.tsx` and `admin:src/__tests__/components/Website/SectionEditor.test.tsx`
 
 ### Implementation
 
@@ -112,10 +112,10 @@ description: "Task list for the Website Builder (SMN-53, Sprint 3)"
 - [ ] T029 [P] [US2] `maxPages` (free 5, starter 20) in `PLANS` and `iPlan` in `api:src/models/Settings/Company.ts`, plus `PlanHelper.validateCanAddPages` in `api:src/helpers/PlanHelper.ts`
 - [ ] T030 [US2] Section schemas and validation, link and URL allow-lists, HTML cleaning and asset checks in `api:src/helpers/WebsiteHelper.ts`
 - [ ] T031 [US2] Page routes in `api:src/controllers/Website/WebsitePageController.ts`, mounted under `/website/pages` (`/order` registered before `/:id`). Every page write, and every website write, sets `websites.contentChangedAt` and the row's `updatedAt` (research R13). The home page is the lowest `position`; tested in T024
-- [ ] T033 [P] [US2] Page and section types plus service methods in `admin:src/Types/Website/` and `admin:src/Services/WebsiteService.ts`
-- [ ] T034 [US2] Pages list page `admin:src/Pages/Website/WebsitePagesPage.tsx`: add, rename, up and down, delete with confirmation
-- [ ] T035 [US2] Page editor `admin:src/Pages/Website/WebsitePageEditPage.tsx`, with one editor per section type in `admin:src/Components/Website/Sections/`. `text` uses the existing `RichTextEditor`. Includes the preview button (new tab)
-- [ ] T036 [P] [US2] Strings in `admin:src/i18n/messages/en.ts` and `cn.ts`
+- [x] T033 [P] [US2] Page and section types plus service methods in `admin:src/Types/Website/` and `admin:src/Services/WebsiteService.ts`
+- [x] T034 [US2] Pages list page `admin:src/Pages/Website/WebsitePagesPage.tsx`: add, rename, up and down, delete with confirmation
+- [x] T035 [US2] Page editor `admin:src/Pages/Website/WebsitePageEditPage.tsx`, with one editor per section type in `admin:src/Components/Website/Sections/`. `text` uses the existing `RichTextEditor`. Includes the preview button (new tab). Built as `admin:src/Components/Website/SectionEditors.tsx`; image and gallery sections become editable with the image library (slice 8), and the text editor has no upload buttons (Lin, 2026-11-24)
+- [x] T036 [P] [US2] Strings in `admin:src/i18n/messages/en.ts` and `cn.ts`
 
 **Checkpoint**: quickstart step 3.
 
@@ -155,7 +155,7 @@ description: "Task list for the Website Builder (SMN-53, Sprint 3)"
 - [ ] T044 [P] [US3] `reader:src/serivices/WebsiteService.ts` (`getPublicWebsite`) using `AppService`
 - [ ] T045 [P] [US3] Section components in `reader:src/components/Website/sections/` (Hero, Text, Image, Gallery, Contact, Articles), plus `Site.tsx` and `Nav.tsx`, and `reader:src/styles/website.scss` imported in `_app.tsx`
 - [ ] T046 [US3] Page `reader:src/pages/s/[slug]/[[...page]].tsx`, server-rendered, with the articles section fetched server-side through `ItemService` and the `Header` meta fallback
-- [ ] T047 [US3] Publish bar (publish, unpublish with confirmation, unpublished-changes badge, list of publish `errors`) in `admin:src/Components/Website/PublishBar.tsx`, used on the overview and editor pages
+- [x] T047 [US3] Publish bar (publish, unpublish with confirmation, unpublished-changes badge, list of publish `errors`) in `admin:src/Components/Website/PublishBar.tsx`, used on the overview and editor pages
 
 **Checkpoint**: MVP complete (quickstart step 4).
 
