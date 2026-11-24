@@ -17,6 +17,7 @@ vi.mock('../../../Services/WebsiteService', () => ({
     getPages: vi.fn(),
     updatePage: vi.fn(),
     getPreviewUrl: vi.fn(),
+    getImages: vi.fn(),
     publish: vi.fn(),
     unpublish: vi.fn(),
   },
@@ -370,5 +371,35 @@ describe('WebsitePageEditPage', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Move 1. Hero down' }))
       expect(screen.getByText('Hero moved to position 2.')).toBeInTheDocument()
     })
+  })
+
+  test('loads the thumbnails of the images its sections use, and marks a missing one', async () => {
+    vi.mocked(WebsiteService.getPages).mockResolvedValue([
+      page({
+        sections: [
+          { id: 'i1', type: 'image', assetId: 'a1' },
+          { id: 'i2', type: 'image', assetId: 'gone' },
+        ],
+      }),
+    ] as never)
+    vi.mocked(WebsiteService.get).mockResolvedValue(website as never)
+    vi.mocked(WebsiteService.getImages).mockResolvedValue({
+      data: [{ id: 'a1', url: 'https://cdn.test/a1.png', fileName: 'a1.png' }],
+    } as never)
+    renderPage()
+
+    expect(await screen.findByRole('img', { name: 'a1.png' })).toHaveAttribute('src', 'https://cdn.test/a1.png')
+    expect(screen.getByText('This image is missing. Choose another.')).toBeInTheDocument()
+    expect(WebsiteService.getImages).toHaveBeenCalledWith(1, ['a1', 'gone'])
+  })
+
+  test('an image section without an image stops the save', async () => {
+    vi.mocked(WebsiteService.getPages).mockResolvedValue([page({ sections: [{ id: 'i1', type: 'image' }] })] as never)
+    vi.mocked(WebsiteService.get).mockResolvedValue(website as never)
+    renderPage()
+    fireEvent.change(await screen.findByLabelText('Title'), { target: { value: 'Changed' } })
+    fireEvent.click(saveBtn())
+    expect(await screen.findByText('Choose an image.')).toBeInTheDocument()
+    expect(WebsiteService.updatePage).not.toHaveBeenCalled()
   })
 })

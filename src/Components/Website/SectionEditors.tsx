@@ -1,15 +1,32 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Checkbox, Input, InputNumber } from 'antd'
+import Button from '../Form/Button'
 import RichTextEditor from '../Form/RichTextEditor'
+import MediaPicker from './MediaPicker'
+import IAsset from '../../Types/Asset/IAsset'
 import Space from '../Form/Space'
 import translate from '../../i18n/translate'
 import { IWebsiteSection } from '../../Types/Website/IWebsite'
 
-// One editor per section type (specs/001-website-builder, data-model "Section", US2, T035). Limits match the API's.
-// Image and gallery sections need the image library (slice 8): until then they can be moved or removed, not edited.
+// One editor per section type (specs/001-website-builder, data-model "Section", US2 T035, US5 T062). Limits match the
+// API's. Images are chosen from the company's website images with the media picker.
 
-// The types an admin can add now.
-export const ADDABLE_SECTION_TYPES = ['hero', 'text', 'contact', 'articles']
+export const ADDABLE_SECTION_TYPES = ['hero', 'text', 'image', 'gallery', 'contact', 'articles']
+export const MAX_GALLERY_IMAGES = 24
+
+type iGalleryImage = { assetId: string; alt?: string }
+
+// Every image id a page's sections use.
+export const getImageIds = (sections: IWebsiteSection[]) =>
+  Array.from(
+    new Set(
+      sections.flatMap((section) => [
+        ...(typeof section.imageAssetId === 'string' ? [section.imageAssetId] : []),
+        ...(typeof section.assetId === 'string' ? [section.assetId] : []),
+        ...(Array.isArray(section.images) ? (section.images as iGalleryImage[]).map((image) => image.assetId) : []),
+      ]),
+    ),
+  )
 
 export const newSection = (type: string): IWebsiteSection => {
   const id = crypto.randomUUID()
@@ -20,6 +37,10 @@ export const newSection = (type: string): IWebsiteSection => {
       return { id, type, html: '' }
     case 'contact':
       return { id, type, showPhone: true, showEmail: true, showAddress: true }
+    case 'image':
+      return { id, type }
+    case 'gallery':
+      return { id, type, images: [] }
     default:
       return { id, type: 'articles', count: 3 }
   }
@@ -60,9 +81,74 @@ type iSectionEditor = {
   onChange: (section: IWebsiteSection) => void
   // Problems by field name, from the API or the checks here.
   errors?: { [field: string]: string }
+  // The page's images by id: null when one is no longer among the website images.
+  images?: { [assetId: string]: IAsset | null }
+  // Images just picked, so the page can show them.
+  onImagesPicked?: (assets: IAsset[]) => void
 }
 
-const SectionEditor = ({ section, onChange, errors = {} }: iSectionEditor) => {
+// An image of a section: its thumbnail, or a note that it is missing.
+const Thumbnail = ({ id, images }: { id: string; images: { [assetId: string]: IAsset | null } }) => {
+  const image = images[id]
+  if (image === undefined) return <span>{translate('website-image-loading')}</span>
+  if (image === null) return <span className={'ant-form-item-explain-error'}>{translate('website-image-missing')}</span>
+  return <img src={image.url} alt={image.fileName} style={{ maxWidth: 160, maxHeight: 100 }} />
+}
+
+const SectionEditor = ({ section, onChange, errors = {}, images = {}, onImagesPicked }: iSectionEditor) => {
+  // Which image the picker is choosing: a single field, or more for the gallery.
+  const [picking, setPicking] = useState<'imageAssetId' | 'assetId' | 'images'>()
+  const picked = (assets: IAsset[]) => {
+    onImagesPicked?.(assets)
+    if (picking === 'images') {
+      const old = (section.images as iGalleryImage[]) || []
+      onChange({ ...section, images: [...old, ...assets.map((asset) => ({ assetId: `${asset.id}` }))] })
+    } else if (picking) {
+      onChange({ ...section, [picking]: `${assets[0].id}` })
+    }
+    setPicking(undefined)
+  }
+  const picker = (
+    <MediaPicker
+      open={picking !== undefined}
+      multiple={picking === 'images'}
+      max={MAX_GALLERY_IMAGES - ((section.images as iGalleryImage[]) || []).length}
+      onCancel={() => setPicking(undefined)}
+      onPick={picked}
+    />
+  )
+  // A single image field: thumbnail, choose or change, and remove when it is optional.
+  const imageField = (name: 'imageAssetId' | 'assetId', label: string, isOptional: boolean) => {
+    const id = typeof section[name] === 'string' ? `${section[name]}` : ''
+    return (
+      // A group named by its label, so the buttons keep their own names.
+      <div key={name} role={'group'} aria-label={label} className={'website-section-field'}>
+        <div>{label}</div>
+        <Space wrap>
+          {id ? <Thumbnail id={id} images={images} /> : <span>{translate('website-image-none')}</span>}
+          <Button onClick={() => setPicking(name)}>
+            {translate(id ? 'website-image-change' : 'website-image-choose')}
+          </Button>
+          {id && isOptional ? (
+            <Button
+              onClick={() => {
+                const next = { ...section }
+                delete next[name]
+                onChange(next)
+              }}
+            >
+              {translate('website-image-remove')}
+            </Button>
+          ) : null}
+        </Space>
+        {errors[name] ? (
+          <div role={'alert'} className={'ant-form-item-explain-error'}>
+            {errors[name]}
+          </div>
+        ) : null}
+      </div>
+    )
+  }
   const set = (field: string, value: unknown) => {
     const next = { ...section, [field]: value }
     // An empty optional field is left out, as the API refuses an empty link.
@@ -98,6 +184,8 @@ const SectionEditor = ({ section, onChange, errors = {} }: iSectionEditor) => {
       return (
         <Space orientation={'vertical'} style={{ width: '100%' }}>
           {field('heading', translate('website-section-heading'), text('heading', 120))}
+          {imageField('imageAssetId', translate('website-section-hero-image'), true)}
+          {picker}
           {field('subheading', translate('website-section-subheading'), text('subheading', 300, true))}
           {field('buttonText', translate('website-section-button-text'), text('buttonText', 40))}
           {field('buttonUrl', translate('website-section-button-url'), text('buttonUrl', 2000))}
@@ -150,8 +238,90 @@ const SectionEditor = ({ section, onChange, errors = {} }: iSectionEditor) => {
         </Space>
       )
     case 'image':
-    case 'gallery':
-      return <div>{translate('website-section-needs-images')}</div>
+      return (
+        <Space orientation={'vertical'} style={{ width: '100%' }}>
+          {imageField('assetId', translate('website-section-image'), false)}
+          {field('alt', translate('website-section-alt'), text('alt', 200))}
+          {field('caption', translate('website-section-caption'), text('caption', 300))}
+          {picker}
+        </Space>
+      )
+    case 'gallery': {
+      const gallery = (section.images as iGalleryImage[]) || []
+      const setGallery = (next: iGalleryImage[]) => onChange({ ...section, images: next })
+      const move = (index: number, by: number) => {
+        const next = [...gallery]
+        const [image] = next.splice(index, 1)
+        next.splice(index + by, 0, image)
+        setGallery(next)
+      }
+      return (
+        <Space orientation={'vertical'} style={{ width: '100%' }}>
+          {gallery.map((image, index) => {
+            const name = translate('website-gallery-image', { number: index + 1 })
+            const altId = `${section.id}-images-${index}-alt`
+            const altError = errors[`images[${index}].alt`] || errors[`images[${index}].assetId`]
+            return (
+              <Space key={index} wrap align={'start'}>
+                <Thumbnail id={image.assetId} images={images} />
+                <div>
+                  <label htmlFor={altId}>{translate('website-gallery-alt', { number: index + 1 })}</label>
+                  <Input
+                    id={altId}
+                    value={image.alt ?? ''}
+                    maxLength={200}
+                    status={altError ? 'error' : undefined}
+                    onChange={(e) =>
+                      setGallery(
+                        gallery.map((g, i) => {
+                          if (i !== index) return g
+                          // An empty description is left out, as other empty fields are.
+                          return e.target.value === '' ? { assetId: g.assetId } : { ...g, alt: e.target.value }
+                        }),
+                      )
+                    }
+                  />
+                  {altError ? (
+                    <div role={'alert'} className={'ant-form-item-explain-error'}>
+                      {altError}
+                    </div>
+                  ) : null}
+                </div>
+                <Button
+                  aria-label={translate('website-move-up', { name })}
+                  disabled={index === 0}
+                  onClick={() => move(index, -1)}
+                >
+                  ↑
+                </Button>
+                <Button
+                  aria-label={translate('website-move-down', { name })}
+                  disabled={index === gallery.length - 1}
+                  onClick={() => move(index, 1)}
+                >
+                  ↓
+                </Button>
+                <Button
+                  aria-label={translate('website-remove-named', { name })}
+                  onClick={() => setGallery(gallery.filter((_, i) => i !== index))}
+                >
+                  {translate('website-remove')}
+                </Button>
+              </Space>
+            )
+          })}
+          <Button disabled={gallery.length >= MAX_GALLERY_IMAGES} onClick={() => setPicking('images')}>
+            {translate('website-gallery-add')}
+          </Button>
+          {errors.images ? (
+            <div role={'alert'} className={'ant-form-item-explain-error'}>
+              {errors.images}
+            </div>
+          ) : null}
+          {picker}
+        </Space>
+      )
+    }
     default:
       return <div>{translate('website-section-unknown')}</div>
   }
@@ -162,6 +332,12 @@ export const checkSection = (section: IWebsiteSection): { [field: string]: strin
   const errors: { [field: string]: string } = {}
   if (section.type === 'hero' && typeof section.buttonUrl === 'string' && !isLink(section.buttonUrl)) {
     errors.buttonUrl = translate('website-section-bad-link')
+  }
+  if (section.type === 'image' && typeof section.assetId !== 'string') {
+    errors.assetId = translate('website-section-image-required')
+  }
+  if (section.type === 'gallery' && (!Array.isArray(section.images) || section.images.length === 0)) {
+    errors.images = translate('website-section-gallery-required')
   }
   if (section.type === 'contact' && typeof section.mapUrl === 'string' && getProtocol(section.mapUrl) !== 'https:') {
     errors.mapUrl = translate('website-section-bad-map-url')

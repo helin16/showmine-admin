@@ -15,7 +15,13 @@ import Space from '../../Components/Form/Space'
 import Spin from '../../Components/Form/Spin'
 import message from '../../Components/Form/message'
 import PublishBar from '../../Components/Website/PublishBar'
-import SectionEditor, { ADDABLE_SECTION_TYPES, checkSection, newSection } from '../../Components/Website/SectionEditors'
+import SectionEditor, {
+  ADDABLE_SECTION_TYPES,
+  checkSection,
+  getImageIds,
+  newSection,
+} from '../../Components/Website/SectionEditors'
+import IAsset from '../../Types/Asset/IAsset'
 import translate from '../../i18n/translate'
 import WebsiteService from '../../Services/WebsiteService'
 import Utils from '../../Services/Utils'
@@ -41,6 +47,8 @@ type iState = {
   previewUrl?: string
   // Read by screen readers after a section moves.
   announcement: string
+  // The page's images by id; null for one that is no longer among the website images.
+  images: { [assetId: string]: IAsset | null }
   count: number
 }
 const initState: iState = {
@@ -51,6 +59,7 @@ const initState: iState = {
   isStale: false,
   addingType: 'text',
   announcement: '',
+  images: {},
   count: 0,
 }
 
@@ -90,6 +99,20 @@ const WebsitePageEditPage = () => {
             ? { ...s, page, website, draft: kept ?? toDraft(page) }
             : { ...s, page: undefined, draft: undefined, notFound: true },
         )
+        const ids = getImageIds((kept ?? (page ? toDraft(page) : undefined))?.sections || [])
+        if (ids.length > 0) {
+          // Thumbnails only: a failure leaves them loading, and saving or publishing still works.
+          WebsiteService.getImages(1, ids)
+            .then(({ data }) => {
+              if (!isCurrent) return
+              const found = Object.fromEntries(data.map((asset) => [`${asset.id}`, asset]))
+              setState((s) => ({
+                ...s,
+                images: { ...s.images, ...Object.fromEntries(ids.map((assetId) => [assetId, found[assetId] ?? null])) },
+              }))
+            })
+            .catch(() => undefined)
+        }
       })
       .catch((err) => {
         if (!isCurrent) return
@@ -282,6 +305,13 @@ const WebsitePageEditPage = () => {
         <SectionEditor
           section={section}
           errors={sectionErrors(index)}
+          images={state.images}
+          onImagesPicked={(assets) =>
+            setState((s) => ({
+              ...s,
+              images: { ...s.images, ...Object.fromEntries(assets.map((asset) => [`${asset.id}`, asset])) },
+            }))
+          }
           onChange={(changed) => setSections(sections.map((s) => (s.id === section.id ? changed : s)))}
         />
       </Card>

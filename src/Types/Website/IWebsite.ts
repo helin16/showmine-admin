@@ -41,4 +41,7 @@ export const PAGE_SLUG_PATTERN = /^[a-z0-9-]{1,40}$/
 // One problem that stops a publish or a save: `path` names the field, e.g. pages[about].sections[2].heading.
 export type IFieldError = { path: string; message: string }
 
+// Where a website image is used (GET /website/images/usage, and a refused delete's usedBy).
+export type IImageUse = { pageId?: string; pageTitle?: string; published: boolean }
+
 export default IWebsite

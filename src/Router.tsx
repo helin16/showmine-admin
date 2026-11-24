@@ -14,6 +14,7 @@ import {
   COMPANY_WEBSITE_TEMPLATES_URL,
   COMPANY_WEBSITE_PAGES_URL,
   COMPANY_WEBSITE_PAGE_URL,
+  COMPANY_WEBSITE_IMAGES_URL,
   COMPANY_CHANNEL_NEW_URL,
   COMPANY_CHANNELS_URL,
   COMPANY_LIST_URL,
@@ -51,6 +52,7 @@ const WebsiteOverviewPage = lazy(() => import('./Pages/Website/WebsiteOverviewPa
 const WebsiteTemplatesPage = lazy(() => import('./Pages/Website/WebsiteTemplatesPage'))
 const WebsitePagesPage = lazy(() => import('./Pages/Website/WebsitePagesPage'))
 const WebsitePageEditPage = lazy(() => import('./Pages/Website/WebsitePageEditPage'))
+const WebsiteMediaPage = lazy(() => import('./Pages/Website/WebsiteMediaPage'))
 const CompanyUsersPage = lazy(() => import('./Pages/Company/CompanyUsersPage'))
 const CompanyListPage = lazy(() => import('./Pages/Company/CompanyListPage'))
 const CompanyChannelsPage = lazy(() => import('./Pages/Channel/ChannelsPage'))
@@ -188,6 +190,16 @@ const Router = () => {
                     <ProtectedRoute>
                       <CompanyAdminRoute>
                         <WebsitePageEditPage />
+                      </CompanyAdminRoute>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path={COMPANY_WEBSITE_IMAGES_URL}
+                  element={
+                    <ProtectedRoute>
+                      <CompanyAdminRoute>
+                        <WebsiteMediaPage />
                       </CompanyAdminRoute>
                     </ProtectedRoute>
                   }

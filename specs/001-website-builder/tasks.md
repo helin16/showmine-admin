@@ -204,14 +204,14 @@ description: "Task list for the Website Builder (SMN-53, Sprint 3)"
   - the S3 object is deleted when `Asset.create` fails;
   - member and other-company refusals for upload, usage and delete of `WEBSITE` assets.
 - [ ] T057 [P] [US5] Clean-up test that website images in pages, SEO and the published copy survive, in the existing clean-up tests under `api:tests/queue/processor/`
-- [ ] T058 [P] [US5] Admin tests for the media picker (upload progress, errors, select) and for deletion refused with the usage, in `admin:src/__tests__/components/Website/MediaPicker.test.tsx`
+- [x] T058 [P] [US5] Admin tests for the media picker (upload progress, errors, select) and for deletion refused with the usage, in `admin:src/__tests__/components/Website/MediaPicker.test.tsx`
 
 ### Implementation
 
 - [ ] T059 [US5] Type and size limits for `WEBSITE` uploads, plus S3 delete on failure, in `api:src/helpers/S3Helper.ts`
 - [ ] T060 [US5] Upload and usage routes in `api:src/controllers/Website/WebsiteImageController.ts`; `WEBSITE` refusals and delete check in `api:src/controllers/Assets/AssetController.ts`
 - [ ] T061 [US5] Id matching and `TEXT_REFERENCES` entries in `api:src/queue/processor/AssetCleanUp.ts`
-- [ ] T062 [US5] `admin:src/Components/Website/MediaPicker.tsx` (built on `AssetService`), used by the image, gallery and hero editors and on the media page `admin:src/Pages/Website/WebsiteMediaPage.tsx`
+- [x] T062 [US5] `admin:src/Components/Website/MediaPicker.tsx` (built on `AssetService`), used by the image, gallery and hero editors and on the media page `admin:src/Pages/Website/WebsiteMediaPage.tsx`
 
 ---
 

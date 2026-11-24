@@ -101,4 +101,34 @@ describe('WebsiteService', () => {
       expect(vi.mocked(axios.delete).mock.calls[0][0]).toBe(`${API}/website/pages/p-1`)
     })
   })
+
+  describe('images', () => {
+    test('getImages asks for active website images, newest first, by page', async () => {
+      vi.mocked(axios.get).mockResolvedValue({ data: body })
+      await WebsiteService.getImages(2)
+      const url = new URL(vi.mocked(axios.get).mock.calls[0][0] as string)
+      expect(url.pathname).toBe('/asset')
+      expect(JSON.parse(`${url.searchParams.get('where')}`)).toStrictEqual({ isActive: true, type: 'WEBSITE' })
+      expect(url.searchParams.get('sort')).toBe('createdAt:DESC')
+      expect(url.searchParams.get('currentPage')).toBe('2')
+    })
+
+    test('getImages by ids asks for just those', async () => {
+      vi.mocked(axios.get).mockResolvedValue({ data: body })
+      await WebsiteService.getImages(1, ['a1', 'a2'])
+      const url = new URL(vi.mocked(axios.get).mock.calls[0][0] as string)
+      expect(JSON.parse(`${url.searchParams.get('where')}`)).toMatchObject({ id: ['a1', 'a2'] })
+      expect(url.searchParams.get('perPage')).toBe('2')
+    })
+
+    test('getImageUsage, the upload address and deleteImage', async () => {
+      vi.mocked(axios.get).mockResolvedValue({ data: { a1: [] } })
+      await expect(WebsiteService.getImageUsage(['a1', 'a2'])).resolves.toStrictEqual({ a1: [] })
+      expect(vi.mocked(axios.get).mock.calls[0][0]).toBe(`${API}/website/images/usage?ids=a1%2Ca2`)
+      expect(WebsiteService.getImageUploadUrl()).toBe(`${API}/website/images`)
+      vi.mocked(axios.delete).mockResolvedValue({ data: {} })
+      await WebsiteService.deleteImage('a1')
+      expect(vi.mocked(axios.delete).mock.calls[0][0]).toBe(`${API}/asset/a1`)
+    })
+  })
 })

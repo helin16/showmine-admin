@@ -1,5 +1,7 @@
 import AppService, { iConfigParams } from './AppService'
-import IWebsite, { IWebsitePage, IWebsiteSection, IWebsiteTemplate } from '../Types/Website/IWebsite'
+import IWebsite, { IImageUse, IWebsitePage, IWebsiteSection, IWebsiteTemplate } from '../Types/Website/IWebsite'
+import IAsset, { ASSET_TYPE_WEBSITE } from '../Types/Asset/IAsset'
+import IResList from '../Types/IResList'
 
 // The company's website (specs/001-website-builder, contracts/api.md "Website").
 const endPoint = '/website'
@@ -55,7 +57,28 @@ const publish = async (updatedAt: Date | string | undefined): Promise<IWebsite> 
 
 const unpublish = async (): Promise<IWebsite> => AppService.post(`${endPoint}/unpublish`, {}).then((resp) => resp.data)
 
+// The company's website images, newest first; or the ones with these ids.
+const getImages = async (currentPage = 1, ids?: string[]): Promise<IResList<IAsset>> =>
+  AppService.get('/asset', {
+    where: JSON.stringify({ isActive: true, type: ASSET_TYPE_WEBSITE, ...(ids ? { id: ids } : {}) }),
+    sort: 'createdAt:DESC',
+    currentPage,
+    ...(ids ? { perPage: Math.max(ids.length, 1) } : {}),
+  }).then((resp) => resp.data)
+
+const getImageUsage = async (ids: string[]): Promise<{ [assetId: string]: IImageUse[] }> =>
+  AppService.get(`${endPoint}/images/usage`, { ids: ids.join(',') }).then((resp) => resp.data)
+
+// Where the upload control sends a file (multipart field `file`).
+const getImageUploadUrl = () => `${process.env.REACT_APP_REST_END_POINT || ''}${endPoint}/images`
+
+const deleteImage = async (id: string) => AppService.delete(`/asset/${id}`).then((resp) => resp.data)
+
 const WebsiteService = {
+  getImages,
+  getImageUsage,
+  getImageUploadUrl,
+  deleteImage,
   get,
   create,
   update,

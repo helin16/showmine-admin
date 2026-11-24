@@ -6,6 +6,8 @@ export const ASSET_TYPE_COMPANY_LOGO = 'COMPANY_LOGO';
 export const ASSET_TYPE_COMPANY_PROFILE = 'COMPANY_PROFILE';
 export const ASSET_TYPE_ITEM_DESCRIPTION = 'ITEM_DESCRIPTION';
 export const ASSET_TYPE_ITEM_COVER = 'ITEM_COVER';
+// Images for the company's website, uploaded only through POST /website/images.
+export const ASSET_TYPE_WEBSITE = 'WEBSITE';
 
 type IAsset = IBaseModel & {
   type: string
