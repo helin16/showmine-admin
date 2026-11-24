@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 import moment from 'moment'
 import { RootState } from '../../Redux/makeReduxStore'
@@ -18,6 +18,8 @@ import Card from '../Form/Card'
 import Table from '../Form/Table'
 import Modal from '../Form/Modal'
 import Alert from '../Form/Alert'
+import Switch from '../Form/Switch'
+import { changeCompany } from '../../Redux/reduxers/auth.slice'
 import AuthService from '../../Services/AuthService'
 import Utils from '../../Services/Utils'
 import translate from '../../i18n/translate'
@@ -39,6 +41,8 @@ type iState = {
   loading: boolean
   loadingErr?: string
   showingCompany?: ICompany
+  // The company whose website builder switch is being saved.
+  savingSwitchId?: string
 }
 const initialState: iState = {
   companies: [],
@@ -48,6 +52,7 @@ const CompanyList = () => {
   const [state, setState] = useState(initialState)
   const { user, company } = useSelector((s: RootState) => s.auth)
   const isSuperAdmin = user?.isSuperAdmin === true
+  const dispatch = useDispatch()
 
   useEffect(() => {
     if (!isSuperAdmin) return
@@ -160,6 +165,37 @@ const CompanyList = () => {
       })
   }
 
+  // Turns the website builder on or off for a company (specs/001-website-builder; only a super admin may). The
+  // signed-in company is updated too, so its menu changes without signing in again.
+  const setWebsiteBuilder = (comp: ICompany, isOn: boolean) => {
+    setState((s) => ({ ...s, savingSwitchId: comp.id }))
+    CompanyService.update(`${comp.id}`, { websiteBuilderEnabled: isOn })
+      .then((saved) => {
+        const websiteBuilderEnabled = saved.websiteBuilderEnabled === true
+        setState((s) => ({
+          ...s,
+          companies: s.companies.map((com) => (com.id === comp.id ? { ...com, websiteBuilderEnabled } : com)),
+        }))
+        if (company && comp.id === company.id) {
+          dispatch(changeCompany({ company: { ...company, websiteBuilderEnabled } }))
+        }
+        message.success(
+          translate(websiteBuilderEnabled ? 'website-builder-on' : 'website-builder-off', { name: comp.name })
+        )
+      })
+      .catch((err) => message.error(Utils.getErrorMessage(err)))
+      .finally(() => setState((s) => ({ ...s, savingSwitchId: undefined })))
+  }
+
+  const getWebsiteBuilderSwitch = (comp: ICompany) => (
+    <Switch
+      checked={comp.websiteBuilderEnabled === true}
+      loading={state.savingSwitchId === comp.id}
+      aria-label={translate('website-builder-for', { name: comp.name })}
+      onChange={(isOn: boolean) => setWebsiteBuilder(comp, isOn)}
+    />
+  )
+
   const companyDeleted = (deleted: ICompany) => {
     setState((s) => ({
       ...s,
@@ -217,6 +253,12 @@ const CompanyList = () => {
               key: 'contacts',
               width: 160,
               render: getOptionBtns,
+            },
+            {
+              title: translate('website-builder'),
+              key: 'websiteBuilder',
+              width: 110,
+              render: getWebsiteBuilderSwitch,
             },
             {
               title: '',

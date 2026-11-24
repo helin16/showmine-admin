@@ -371,6 +371,10 @@ const LanguageCN = {
     'website-published': '{date} 已发布',
     'website-unpublished-changes': '{date} 已发布，有尚未发布的修改',
     'website-address-unknown': '无法显示：没有配置 Reader 的网址。',
+    'website-builder': '网站功能',
+    'website-builder-for': '{name} 的网站功能',
+    'website-builder-on': '已为 {name} 打开网站功能。',
+    'website-builder-off': '已为 {name} 关闭网站功能。',
     'website-load-failed': '无法加载网站：{message}',
   },
 }

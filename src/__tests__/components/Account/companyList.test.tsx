@@ -12,7 +12,7 @@ import CompanyService from '../../../Services/CompanyService'
 import { BACK_END_URL } from '../../../UrlMap'
 
 vi.mock('../../../Services/AuthService', () => ({ default: { updateMe: vi.fn() } }))
-vi.mock('../../../Services/CompanyService', () => ({ default: { getAll: vi.fn(), deactivate: vi.fn() } }))
+vi.mock('../../../Services/CompanyService', () => ({ default: { getAll: vi.fn(), deactivate: vi.fn(), update: vi.fn() } }))
 vi.mock('../../../Components/Form/message', () => ({ default: { error: vi.fn(), success: vi.fn() } }))
 
 const acme = { id: 'co-1', name: 'Acme' }
@@ -208,4 +208,48 @@ test('deleting a company takes it off the list', async () => {
   fireEvent.click(within(dialog).getByRole('button', { name: /Confirm Delete/ }))
   await waitFor(() => expect(screen.queryByText('Globex')).not.toBeInTheDocument())
   expect(services.deactivate).toHaveBeenCalledExactlyOnceWith('co-2')
+})
+
+describe('website builder switch', () => {
+  const builderSwitch = (name: string) => screen.findByRole('switch', { name: `Website builder for ${name}` })
+
+  test('shows each company\'s switch and turns one on', async () => {
+    services.getAll.mockResolvedValue(listOf([acme, { ...globex, websiteBuilderEnabled: true }]))
+    services.update.mockResolvedValue({ ...acme, websiteBuilderEnabled: true } as never)
+    const { store } = renderList()
+    expect(await builderSwitch('Globex')).toBeChecked()
+    expect(await builderSwitch('Acme')).not.toBeChecked()
+
+    fireEvent.click(await builderSwitch('Acme'))
+
+    expect(services.update).toHaveBeenCalledExactlyOnceWith('co-1', { websiteBuilderEnabled: true })
+    await waitFor(() => expect(message.success).toHaveBeenCalledWith('The website builder is on for Acme.'))
+    expect(await builderSwitch('Acme')).toBeChecked()
+    // Acme is the signed-in company, so its menu follows at once.
+    expect(store.getState().auth.company).toMatchObject({ id: 'co-1', websiteBuilderEnabled: true })
+  })
+
+  test('turning off another company leaves the signed-in company alone', async () => {
+    services.getAll.mockResolvedValue(listOf([acme, { ...globex, websiteBuilderEnabled: true }]))
+    services.update.mockResolvedValue({ ...globex, websiteBuilderEnabled: false } as never)
+    const { store } = renderList()
+
+    fireEvent.click(await builderSwitch('Globex'))
+
+    expect(services.update).toHaveBeenCalledExactlyOnceWith('co-2', { websiteBuilderEnabled: false })
+    await waitFor(() => expect(message.success).toHaveBeenCalledWith('The website builder is off for Globex.'))
+    expect(await builderSwitch('Globex')).not.toBeChecked()
+    expect(store.getState().auth.company).toStrictEqual(acme)
+  })
+
+  test('a refused change keeps the switch as it was and says why', async () => {
+    services.getAll.mockResolvedValue(listOf([acme]))
+    services.update.mockRejectedValue(apiError('Not allowed'))
+    renderList()
+
+    fireEvent.click(await builderSwitch('Acme'))
+
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Not allowed'))
+    expect(await builderSwitch('Acme')).not.toBeChecked()
+  })
 })

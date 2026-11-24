@@ -82,6 +82,7 @@ description: "Task list for the Website Builder (SMN-53, Sprint 3)"
 - [x] T019 [US1] Overview page `admin:src/Pages/Website/WebsiteOverviewPage.tsx`: create or edit the name, show the address and publish state, link to the other pages
 - [x] T020 [US1] Address field, multi-line, ≤500, in `admin:src/Components/Company/CompanyEditor.tsx`
 - [x] T021 [P] [US1] Strings in `admin:src/i18n/messages/en.ts` and `admin:src/i18n/messages/cn.ts`
+- [x] T021a [US1] The super admin's "Website builder" switch per company in `admin:src/Components/Company/CompanyList.tsx`, saved with `PUT /company/:id`; the signed-in company's session is updated. Tested in `admin:src/__tests__/components/Account/companyList.test.tsx` (added by Lin, 2026-11-24: no screen could turn the builder on)
 
 **Checkpoint**: US1 works for the test company (quickstart step 2).
 

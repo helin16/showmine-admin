@@ -169,7 +169,7 @@ showmine-admin/
 
 ### Delivery slices (one branch and PR per repository per slice; Lin merges, API first)
 
-This table sets the order of work; the phases in tasks.md group tasks by story, not by time.
+This table numbers the slices; the phases in tasks.md group tasks by story, not by time. Slices are done in the order 1 to 7, then 9, then 8, then 10 and 11 (Lin, 2026-11-24), so the whole path can be tried in the admin before the image library.
 
 | Slice | Stories | Jira | Repositories |
 |---|---|---|---|
@@ -178,10 +178,10 @@ This table sets the order of work; the phases in tasks.md group tasks by story, 
 | 3 | US5 API | SMN-62 | api |
 | 4 | US3 publish and public view | SMN-63, part of SMN-64 | api, then reader |
 | 5 | US4 templates | SMN-58, SMN-57 (preview) | api, then reader |
-| 6 | US1 admin | SMN-55 | admin |
+| 6 | US1 admin, and the super admin's switch per company | SMN-55 | admin |
 | 7 | US4 admin | SMN-57 | admin |
 | 8 | US5 admin | SMN-61 | admin |
-| 9 | US2 admin (editor and preview) | SMN-59 | api (preview token), admin |
+| 9 | US2 admin (editor and preview) | SMN-59 | admin (the preview token shipped in slice 4) |
 | 10 | US6 | SMN-64 | api, admin |
 | 11 | US7 | SMN-65 | api, reader, admin |
 

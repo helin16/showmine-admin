@@ -372,6 +372,10 @@ const LanguageEN = {
     'website-published': 'Published {date}',
     'website-unpublished-changes': 'Published {date}, with changes not yet published',
     'website-address-unknown': 'Not available: the Reader address is not configured.',
+    'website-builder': 'Website builder',
+    'website-builder-for': 'Website builder for {name}',
+    'website-builder-on': 'The website builder is on for {name}.',
+    'website-builder-off': 'The website builder is off for {name}.',
     'website-load-failed': 'The website could not be loaded: {message}',
   },
 }
