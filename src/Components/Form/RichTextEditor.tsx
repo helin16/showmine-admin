@@ -188,13 +188,17 @@ type iRichTextEditor = {
   // Replace the default toolbar and plugins, e.g. to leave out uploads.
   toolbar?: string;
   plugins?: string[];
+  // Called on every change, not only when the editor loses focus, so unsaved typing is never invisible.
+  onLiveChange?: (newText: string) => void;
+  // The editor's accessible name.
+  ariaLabel?: string;
 }
 /**
  *
  * @param onChange
  * @param value
  */
-const RichTextEditor = ({ className, onChange, value, placeholder, isInLine = false, showToolBar = true, assetType, toolbar, plugins, ...props }: iRichTextEditor) => {
+const RichTextEditor = ({ className, onChange, value, placeholder, isInLine = false, showToolBar = true, assetType, toolbar, plugins, onLiveChange, ariaLabel, ...props }: iRichTextEditor) => {
   const [state, setState] = useState(initialState);
   /**
    *
@@ -220,6 +224,9 @@ const RichTextEditor = ({ className, onChange, value, placeholder, isInLine = fa
       ...state,
       value: content,
     })
+    if (typeof onLiveChange === 'function') {
+      onLiveChange(content)
+    }
   }
   /**
    *
@@ -240,6 +247,7 @@ const RichTextEditor = ({ className, onChange, value, placeholder, isInLine = fa
           ...state.editor,
           ...(toolbar === undefined ? {} : { toolbar: [toolbar] }),
           ...(plugins === undefined ? {} : { plugins, paste_data_images: false, file_picker_types: '' }),
+          ...(ariaLabel ? { iframe_aria_text: ariaLabel } : {}),
           content_style: 'img { max-width: 100%; }',
           inline: isInLine,
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment

@@ -25,9 +25,17 @@ export const newSection = (type: string): IWebsiteSection => {
   }
 }
 
-// Web, email or phone links, or a page of the same site, as the API allows.
+const getProtocol = (value: string) => {
+  try {
+    return new URL(value).protocol
+  } catch {
+    return null
+  }
+}
+
+// Web, email or phone links, or a page of the same site: the same rule as the API's.
 export const isLink = (value: string) =>
-  /^\/[a-z0-9-]{1,40}$/.test(value) || /^(https?:\/\/[^\s]+|mailto:[^\s]+|tel:[^\s]+)$/i.test(value)
+  /^\/[a-z0-9-]{1,40}$/.test(value) || ['http:', 'https:', 'mailto:', 'tel:'].includes(`${getProtocol(value)}`)
 
 // The text editor without image, video or embed buttons: their uploads would not be website images.
 const TEXT_TOOLBAR =
@@ -103,7 +111,8 @@ const SectionEditor = ({ section, onChange, errors = {} }: iSectionEditor) => {
           value={`${section.html ?? ''}`}
           toolbar={TEXT_TOOLBAR}
           plugins={TEXT_PLUGINS}
-          onChange={(html) => onChange({ ...section, html })}
+          ariaLabel={translate('website-section-text')}
+          onLiveChange={(html) => onChange({ ...section, html })}
         />,
       )
     case 'contact':
@@ -140,8 +149,11 @@ const SectionEditor = ({ section, onChange, errors = {} }: iSectionEditor) => {
           {field('tagName', translate('website-section-tag'), text('tagName', 50))}
         </Space>
       )
-    default:
+    case 'image':
+    case 'gallery':
       return <div>{translate('website-section-needs-images')}</div>
+    default:
+      return <div>{translate('website-section-unknown')}</div>
   }
 }
 
@@ -151,7 +163,7 @@ export const checkSection = (section: IWebsiteSection): { [field: string]: strin
   if (section.type === 'hero' && typeof section.buttonUrl === 'string' && !isLink(section.buttonUrl)) {
     errors.buttonUrl = translate('website-section-bad-link')
   }
-  if (section.type === 'contact' && typeof section.mapUrl === 'string' && !/^https:\/\/[^\s]+$/i.test(section.mapUrl)) {
+  if (section.type === 'contact' && typeof section.mapUrl === 'string' && getProtocol(section.mapUrl) !== 'https:') {
     errors.mapUrl = translate('website-section-bad-map-url')
   }
   return errors

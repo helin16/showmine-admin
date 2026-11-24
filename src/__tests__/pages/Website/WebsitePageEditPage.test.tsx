@@ -23,8 +23,8 @@ vi.mock('../../../Services/WebsiteService', () => ({
 }))
 vi.mock('../../../Components/Form/message', () => ({ default: { error: vi.fn(), success: vi.fn() } }))
 vi.mock('../../../Components/Form/RichTextEditor', () => ({
-  default: ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
-    <textarea aria-label={'rich text'} defaultValue={value} onBlur={(e) => onChange(e.target.value)} />
+  default: ({ value, onLiveChange }: { value: string; onLiveChange: (v: string) => void }) => (
+    <textarea aria-label={'rich text'} defaultValue={value} onChange={(e) => onLiveChange(e.target.value)} />
   ),
 }))
 vi.mock('../../../Layouts/BackendPage', () => ({
@@ -271,5 +271,104 @@ describe('WebsitePageEditPage', () => {
 
     expect(message.success).not.toHaveBeenCalled()
     expect(await screen.findByText('This page does not exist.')).toBeInTheDocument()
+  })
+
+  describe('after review', () => {
+    test('typing in a text section counts as an unsaved change at once', async () => {
+      await loaded()
+      fireEvent.change(screen.getByLabelText('rich text'), { target: { value: '<p>New words</p>' } })
+      expect(screen.getByText('Unsaved changes')).toBeInTheDocument()
+      expect(saveBtn()).not.toBeDisabled()
+      const event = new Event('beforeunload', { cancelable: true })
+      window.dispatchEvent(event)
+      expect(event.defaultPrevented).toBe(true)
+    })
+
+    test('typing during a save is kept, not replaced by the saved page', async () => {
+      let finish!: (value: unknown) => void
+      await loaded()
+      vi.mocked(WebsiteService.updatePage).mockReturnValue(new Promise((resolve) => (finish = resolve)) as never)
+      fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'First' } })
+      fireEvent.click(saveBtn())
+      fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'First and more' } })
+
+      await act(async () => finish(page({ title: 'First', updatedAt: 'new-time' })))
+
+      expect(screen.getByLabelText('Title')).toHaveValue('First and more')
+      expect(screen.getByText('Unsaved changes')).toBeInTheDocument()
+    })
+
+    test('after a stale save, keeping my version loads theirs underneath and saves mine over it', async () => {
+      await loaded()
+      vi.mocked(WebsiteService.updatePage).mockRejectedValueOnce(
+        httpError(409, { message: 'The page was changed by someone else. Reload and try again.' }),
+      )
+      fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Mine' } })
+      fireEvent.click(saveBtn())
+      vi.mocked(WebsiteService.getPages).mockResolvedValue([
+        page({ title: 'Theirs', updatedAt: 'their-time' }),
+      ] as never)
+
+      fireEvent.click(await screen.findByRole('button', { name: 'Keep my version' }))
+
+      await waitFor(() => expect(screen.queryByText(/Someone else changed this page/)).not.toBeInTheDocument())
+      expect(screen.getByLabelText('Title')).toHaveValue('Mine')
+      vi.mocked(WebsiteService.updatePage).mockResolvedValue(page({ title: 'Mine' }) as never)
+      await screen.findByText('Theirs')
+      fireEvent.click(screen.getByText('Save').closest('button') as HTMLElement)
+      expect(WebsiteService.updatePage).toHaveBeenLastCalledWith(
+        'p-1',
+        expect.objectContaining({ title: 'Mine', updatedAt: 'their-time' }),
+      )
+    })
+
+    test('a blocked preview tab shows the link to open by hand', async () => {
+      await loaded()
+      vi.spyOn(window, 'open').mockReturnValue(null)
+      vi.mocked(WebsiteService.getPreviewUrl).mockResolvedValue({
+        url: 'https://reader.test/s/acme?preview=x',
+        expiresAt: '',
+      })
+
+      fireEvent.click(screen.getByRole('button', { name: 'Preview' }))
+
+      const link = await screen.findByRole('link', { name: 'Open the preview' })
+      expect(link).toHaveAttribute('href', 'https://reader.test/s/acme?preview=x')
+      expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+    })
+
+    test('problems with the sections as a whole are shown', async () => {
+      await loaded()
+      vi.mocked(WebsiteService.updatePage).mockRejectedValue(
+        httpError(400, {
+          message: 'Bad',
+          errors: [
+            { path: 'sections', message: 'A list of at most 30 sections.' },
+            { path: 'sections[1].type', message: 'One of hero, text.' },
+          ],
+        }),
+      )
+      fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'X' } })
+      fireEvent.click(saveBtn())
+
+      expect(await screen.findByText('A list of at most 30 sections.')).toBeInTheDocument()
+      expect(screen.getByText('Section 2: One of hero, text.')).toBeInTheDocument()
+    })
+
+    test('no more than 30 sections can be added', async () => {
+      vi.mocked(WebsiteService.getPages).mockResolvedValue([
+        page({ sections: Array.from({ length: 30 }, (_, i) => ({ id: `s${i}`, type: 'articles', count: 3 })) }),
+      ] as never)
+      vi.mocked(WebsiteService.get).mockResolvedValue(website as never)
+      renderPage()
+      expect(await screen.findByText('A page can have at most 30 sections.')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Add section' })).toBeDisabled()
+    })
+
+    test('a move is announced', async () => {
+      await loaded()
+      fireEvent.click(screen.getByRole('button', { name: 'Move 1. Hero down' }))
+      expect(screen.getByText('Hero moved to position 2.')).toBeInTheDocument()
+    })
   })
 })

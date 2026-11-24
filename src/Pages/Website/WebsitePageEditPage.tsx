@@ -37,6 +37,10 @@ type iState = {
   saving: boolean
   isStale: boolean
   addingType: string
+  // A preview link the browser would not open in a new tab.
+  previewUrl?: string
+  // Read by screen readers after a section moves.
+  announcement: string
   count: number
 }
 const initState: iState = {
@@ -46,11 +50,15 @@ const initState: iState = {
   saving: false,
   isStale: false,
   addingType: 'text',
+  announcement: '',
   count: 0,
 }
 
 // The API's own words for a stale save.
 const STALE_PAGE = 'The page was changed by someone else. Reload and try again.'
+
+// The API's limit on sections per page.
+const MAX_SECTIONS = 30
 
 const toDraft = (page: IWebsitePage): iDraft => ({ title: page.title, slug: page.slug, sections: page.sections || [] })
 const isSame = (a?: iDraft, b?: iDraft) => JSON.stringify(a) === JSON.stringify(b)
@@ -63,6 +71,8 @@ const WebsitePageEditPage = () => {
   const [state, setState] = useState(initState)
   const companyIdRef = useRef(company?.id)
   companyIdRef.current = company?.id
+  // The admin's own version, kept across a reload when they chose to keep it after someone else's change.
+  const keptDraftRef = useRef<iDraft | undefined>(undefined)
   const isDirty = !!state.page && !!state.draft && !isSame(state.draft, toDraft(state.page))
 
   useEffect(() => {
@@ -73,9 +83,11 @@ const WebsitePageEditPage = () => {
       .then(([pages, website]) => {
         if (!isCurrent) return
         const page = pages.find((p) => p.id === id)
+        const kept = keptDraftRef.current
+        keptDraftRef.current = undefined
         setState((s) =>
           page
-            ? { ...s, page, website, draft: toDraft(page) }
+            ? { ...s, page, website, draft: kept ?? toDraft(page) }
             : { ...s, page: undefined, draft: undefined, notFound: true },
         )
       })
@@ -105,7 +117,13 @@ const WebsitePageEditPage = () => {
     return () => window.removeEventListener('beforeunload', warn)
   }, [isDirty])
 
-  const reload = () => setState((s) => ({ ...s, count: s.count + 1 }))
+  const reload = () => setState((s) => ({ ...s, count: s.count + 1, previewUrl: undefined }))
+
+  // Loads the other admin's saved page but keeps this admin's draft on top, so saving replaces their change.
+  const keepMine = () => {
+    keptDraftRef.current = state.draft
+    reload()
+  }
 
   const setDraft = (changes: Partial<iDraft>) =>
     setState((s) => (s.draft ? { ...s, draft: { ...s.draft, ...changes } } : s))
@@ -116,6 +134,13 @@ const WebsitePageEditPage = () => {
     const [section] = sections.splice(index, 1)
     sections.splice(index + by, 0, section)
     setSections(sections)
+    setState((s) => ({
+      ...s,
+      announcement: translate('website-section-moved', {
+        name: translate(`website-section-type-${section.type}`),
+        number: index + by + 1,
+      }),
+    }))
   }
 
   // Saves the draft. Resolves with whether it was saved, so Preview can wait for it.
@@ -144,7 +169,8 @@ const WebsitePageEditPage = () => {
         if (!isSameCompany()) return false
         // The website's "unpublished changes" follows the save.
         const website = await WebsiteService.get().catch(() => state.website)
-        setState((s) => ({ ...s, page: saved, draft: toDraft(saved), website }))
+        // Typing that went on during the save is kept: the saved page replaces the draft only if it is unchanged.
+        setState((s) => ({ ...s, page: saved, draft: isSame(s.draft, draft) ? toDraft(saved) : s.draft, website }))
         message.success(translate('website-saved'))
         return true
       })
@@ -174,18 +200,23 @@ const WebsitePageEditPage = () => {
     if (tab) {
       tab.opener = null
     }
+    const companyId = company?.id
+    const isSameCompany = () => companyIdRef.current === companyId
+    setState((s) => ({ ...s, previewUrl: undefined }))
     const isSaved = isDirty ? await save() : true
-    if (!isSaved) {
+    if (!isSaved || !isSameCompany()) {
       tab?.close()
       return
     }
     try {
       const { url } = await WebsiteService.getPreviewUrl()
-      if (tab) {
+      if (!isSameCompany()) {
+        tab?.close()
+      } else if (tab) {
         tab.location.href = url
       } else {
-        // The browser blocked the early tab; this one may still open.
-        window.open(url, '_blank', 'noopener')
+        // The browser blocked the tab: the admin opens the link themselves.
+        setState((s) => ({ ...s, previewUrl: url }))
       }
     } catch (err) {
       tab?.close()
@@ -200,11 +231,23 @@ const WebsitePageEditPage = () => {
         .map(([path, problem]) => [path.slice(`sections[${index}].`.length), problem]),
     )
 
+  // Problems about the sections as a whole, or a section's type or id, which have no field of their own.
+  const getPageProblems = () =>
+    Object.entries(state.errors)
+      .filter(([path]) => path === 'sections' || /^sections\[\d+\]\.(type|id)$/.test(path))
+      .map(([path, problem]) =>
+        path === 'sections'
+          ? problem
+          : `${translate('website-section-number', { number: Number(path.slice(9, path.indexOf(']'))) + 1 })}: ${problem}`,
+      )
+
   const getSection = (section: IWebsiteSection, index: number, sections: IWebsiteSection[]) => {
     const name = `${index + 1}. ${translate(`website-section-type-${section.type}`)}`
     return (
+      // Keyed by position: moving a section changes the content of the cards, never moves a text editor's frame,
+      // which would reload it.
       <Card
-        key={section.id}
+        key={index}
         title={name}
         extra={
           <Space wrap>
@@ -280,9 +323,17 @@ const WebsitePageEditPage = () => {
           <Alert
             type={'warning'}
             message={translate('website-page-stale')}
-            action={<Button onClick={reload}>{translate('website-reload')}</Button>}
+            action={
+              <Space wrap>
+                <Button onClick={reload}>{translate('website-reload')}</Button>
+                <Button onClick={keepMine}>{translate('website-page-keep-mine')}</Button>
+              </Space>
+            }
           />
         ) : null}
+        <div aria-live={'polite'} className={'sr-only'} style={{ position: 'absolute', left: -10000 }}>
+          {state.announcement}
+        </div>
         {website ? (
           <Card>
             <PublishBar
@@ -314,6 +365,18 @@ const WebsitePageEditPage = () => {
         </Card>
         {draft.sections.map(getSection)}
         {draft.sections.length === 0 ? <Alert type={'info'} message={translate('website-sections-none')} /> : null}
+        {getPageProblems().length > 0 ? (
+          <Alert
+            type={'error'}
+            message={
+              <ul>
+                {getPageProblems().map((problem) => (
+                  <li key={problem}>{problem}</li>
+                ))}
+              </ul>
+            }
+          />
+        ) : null}
         <Card>
           <Space wrap>
             <label htmlFor={'add-section-type'}>{translate('website-section-add-type')}</label>
@@ -327,9 +390,15 @@ const WebsitePageEditPage = () => {
                 label: translate(`website-section-type-${type}`),
               }))}
             />
-            <Button onClick={() => setSections([...draft.sections, newSection(state.addingType)])}>
+            <Button
+              disabled={draft.sections.length >= MAX_SECTIONS}
+              onClick={() => setSections([...draft.sections, newSection(state.addingType)])}
+            >
               {translate('website-section-add')}
             </Button>
+            {draft.sections.length >= MAX_SECTIONS ? (
+              <span>{translate('website-sections-full', { max: MAX_SECTIONS })}</span>
+            ) : null}
           </Space>
         </Card>
         <Card>
@@ -341,6 +410,11 @@ const WebsitePageEditPage = () => {
               {translate('website-preview')}
             </Button>
             {isDirty ? <span>{translate('website-page-unsaved')}</span> : null}
+            {state.previewUrl ? (
+              <a href={state.previewUrl} target={'_blank'} rel={'noopener noreferrer'}>
+                {translate('website-preview-open')}
+              </a>
+            ) : null}
           </Space>
         </Card>
       </Space>

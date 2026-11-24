@@ -13,12 +13,12 @@ import { renderWithProviders } from '../../testUtils'
 vi.mock('../../../Components/Form/RichTextEditor', () => ({
   default: ({
     value,
-    onChange,
+    onLiveChange,
     toolbar,
     plugins,
   }: {
     value: string
-    onChange: (v: string) => void
+    onLiveChange: (v: string) => void
     toolbar?: string
     plugins?: string[]
   }) => (
@@ -27,7 +27,7 @@ vi.mock('../../../Components/Form/RichTextEditor', () => ({
       data-toolbar={toolbar}
       data-plugins={(plugins || []).join(',')}
       defaultValue={value}
-      onBlur={(e) => onChange(e.target.value)}
+      onChange={(e) => onLiveChange(e.target.value)}
     />
   ),
 }))
@@ -83,7 +83,7 @@ describe('text', () => {
     const editor = screen.getByLabelText('rich text')
     expect(editor.getAttribute('data-toolbar')).not.toMatch(/image|media|customInsertButton/)
     expect(editor.getAttribute('data-plugins')).not.toMatch(/image|media/)
-    fireEvent.blur(editor, { target: { value: '<p>b</p>' } })
+    fireEvent.change(editor, { target: { value: '<p>b</p>' } })
     expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'text', html: '<p>b</p>' })
   })
 })
@@ -128,6 +128,7 @@ describe('checks before saving', () => {
     ['http://a.test', true],
     ['mailto:a@b.test', true],
     ['tel:0300', true],
+    ['tel:+44 20 7946 0958', true],
     ['javascript:alert(1)', false],
     ['about', false],
     ['/About', false],

@@ -110,7 +110,7 @@ const WebsitePagesPage = () => {
 
   const add = () => {
     const { adding } = state
-    if (!adding) return
+    if (!adding || adding.saving) return
     const title = adding.title.trim()
     const slug = adding.slug.trim()
     const errors = {

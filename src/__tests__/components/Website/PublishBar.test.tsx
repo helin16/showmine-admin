@@ -1,9 +1,10 @@
 import React from 'react'
-import { fireEvent, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { vi } from 'vitest'
 import PublishBar, { describeProblems } from '../../../Components/Website/PublishBar'
 import WebsiteService from '../../../Services/WebsiteService'
 import message from '../../../Components/Form/message'
+import { changeCompany } from '../../../Redux/reduxers/auth.slice'
 import { renderWithProviders } from '../../testUtils'
 import { stubMatchMedia } from '../Access/domHelpers'
 
@@ -131,5 +132,22 @@ describe('PublishBar', () => {
         [],
       ),
     ).toStrictEqual([{ text: 'Add a page first.' }, { text: 'Page gone, section 1: Too long.', pageId: undefined }])
+  })
+
+  test('an answer arriving after a switch of company is dropped', async () => {
+    let finish!: (value: unknown) => void
+    vi.mocked(WebsiteService.publish).mockReturnValue(new Promise((resolve) => (finish = resolve)) as never)
+    const onChanged = vi.fn()
+    const { store } = renderWithProviders(
+      <PublishBar website={website() as never} onChanged={onChanged} onStale={vi.fn()} />,
+      { state: { auth: { company: { id: 'co-1' } } } as never },
+    )
+    fireEvent.click(publishBtn())
+    await act(async () => {
+      store.dispatch(changeCompany({ company: { id: 'co-2' } }))
+    })
+    await act(async () => finish(website(published)))
+    expect(onChanged).not.toHaveBeenCalled()
+    expect(message.success).not.toHaveBeenCalled()
   })
 })

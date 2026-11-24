@@ -1,4 +1,6 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { RootState } from '../../Redux/makeReduxStore'
 import { Link } from 'react-router-dom'
 import moment from 'moment'
 import Alert from '../Form/Alert'
@@ -46,38 +48,52 @@ export const describeProblems = (errors: IFieldError[], pages: IWebsitePage[]): 
 const PublishBar = ({ website, onChanged, onStale, hasUnsavedChanges = false }: iPublishBar) => {
   const [working, setWorking] = useState(false)
   const [problems, setProblems] = useState<iProblem[]>([])
+  // Answers that arrive after a switch of company are for the old one and are dropped.
+  const { company } = useSelector((s: RootState) => s.auth)
+  const companyIdRef = useRef(company?.id)
+  companyIdRef.current = company?.id
+  const forThisCompany = <T,>(work: (value: T) => unknown) => {
+    const companyId = company?.id
+    return (value: T) => (companyIdRef.current === companyId ? work(value) : undefined)
+  }
 
   const publish = () => {
     setWorking(true)
     setProblems([])
     WebsiteService.publish(website.updatedAt)
-      .then((published) => {
-        message.success(translate('website-published-now'))
-        onChanged(published)
-      })
-      .catch(async (err) => {
-        const { status, data } = err?.response || {}
-        if (status === 400 && Array.isArray(data?.errors)) {
-          const pages = await WebsiteService.getPages().catch(() => [])
-          setProblems(describeProblems(data.errors, pages))
-        } else if (status === 409) {
-          message.error(translate('website-stale'))
-          onStale()
-        } else {
-          message.error(Utils.getErrorMessage(err))
-        }
-      })
+      .then(
+        forThisCompany((published: IWebsite) => {
+          message.success(translate('website-published-now'))
+          onChanged(published)
+        }),
+      )
+      .catch(
+        forThisCompany(async (err: { response?: { status?: number; data?: { errors?: IFieldError[] } } }) => {
+          const { status, data } = err?.response || {}
+          if (status === 400 && Array.isArray(data?.errors)) {
+            const pages = await WebsiteService.getPages().catch(() => [])
+            setProblems(describeProblems(data.errors, pages))
+          } else if (status === 409) {
+            message.error(translate('website-stale'))
+            onStale()
+          } else {
+            message.error(Utils.getErrorMessage(err))
+          }
+        }),
+      )
       .finally(() => setWorking(false))
   }
 
   const unpublish = () => {
     setWorking(true)
     WebsiteService.unpublish()
-      .then((unpublished) => {
-        message.success(translate('website-unpublished-now'))
-        onChanged(unpublished)
-      })
-      .catch((err) => message.error(Utils.getErrorMessage(err)))
+      .then(
+        forThisCompany((unpublished: IWebsite) => {
+          message.success(translate('website-unpublished-now'))
+          onChanged(unpublished)
+        }),
+      )
+      .catch(forThisCompany((err: unknown) => message.error(Utils.getErrorMessage(err))))
       .finally(() => setWorking(false))
   }
 
