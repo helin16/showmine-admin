@@ -24,6 +24,9 @@ type ICompany = IBaseModel & {
   isExpired?: boolean
   // Null means no limit.
   maxUsers?: number | null
+  address?: string | null
+  // Set only by a super admin; the website builder is shown only when it is on.
+  websiteBuilderEnabled?: boolean
   LogoAsset?: IAsset
 }
 

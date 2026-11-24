@@ -9,6 +9,7 @@ import {
   PartitionOutlined,
   UsergroupAddOutlined,
   UnorderedListOutlined,
+  GlobalOutlined,
 } from '@ant-design/icons'
 
 import { FormattedMessage } from 'react-intl'
@@ -22,6 +23,7 @@ import {
   COMPANY_USERS_URL,
   COMPANY_CHANNELS_URL,
   COMPANY_LIST_URL,
+  COMPANY_WEBSITE_URL,
 } from '../../UrlMap'
 
 export const MENU_KEY_DASHBOARD = 'dashboard'
@@ -32,6 +34,7 @@ export const MENU_KEY_COMPANY_ADMIN = 'company-admin'
 export const MENU_KEY_COMPANY_BILLING = 'company-billing'
 export const MENU_KEY_COMPANY_CHANNELS = 'company-channels'
 export const MENU_KEY_COMPANY_USERS = 'company-users'
+export const MENU_KEY_COMPANY_WEBSITE = 'company-website'
 export const MENU_ACCESS_LEVEL_COMPANY_ADMIN = 'access-company-admin'
 export const defaultSelectedKey = MENU_KEY_DASHBOARD
 export const MENU_ACCESS_LEVEL_SUPER_ADMIN = 'access-super-admin'
@@ -95,6 +98,14 @@ const MenuItems = [
         name: <FormattedMessage id='users' />,
         url: COMPANY_USERS_URL,
         icon: <UsergroupAddOutlined />,
+      },
+      {
+        key: MENU_KEY_COMPANY_WEBSITE,
+        name: <FormattedMessage id='website' />,
+        url: COMPANY_WEBSITE_URL,
+        icon: <GlobalOutlined />,
+        // Only for companies a super admin has turned the website builder on for.
+        needsWebsiteBuilder: true,
       },
     ],
   },

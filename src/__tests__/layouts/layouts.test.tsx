@@ -11,7 +11,7 @@ import BackendPageSideMenu from '../../Layouts/BackendPageSideMenu'
 import FullPageWrapper from '../../Layouts/FullPageWrapper'
 import { ROLE_ADMIN, ROLE_NON_ADMIN } from '../../Types/Company/ICompanyUser'
 import { MENU_KEY_ARTICLES, MENU_KEY_COMPANY_ADMIN } from '../../Components/Menu/MenuItems'
-import { ARTICLE_LIST_URL, MY_PROFILE_URL } from '../../UrlMap'
+import { ARTICLE_LIST_URL, COMPANY_WEBSITE_URL, MY_PROFILE_URL } from '../../UrlMap'
 
 vi.mock('../../Services/AuthService', () => ({ default: { updateMe: vi.fn() } }))
 vi.mock('../../Services/CompanyService', () => ({ default: { getAll: vi.fn() } }))
@@ -98,6 +98,28 @@ describe('BackendPageSideMenu', () => {
       state: { auth: { company: acme, companyUsers: [{ ...admin, ...overrides }] } },
     })
     expect(screen.queryByText('My Company')).not.toBeInTheDocument()
+  })
+
+  test('shows the website only when the builder is on for the company', () => {
+    const { unmount } = renderWithProviders(<BackendPageSideMenu />, {
+      state: { auth: { company: acme, companyUsers: [admin] } },
+    })
+    expect(screen.getByRole('link', { name: 'Company Info' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Website' })).not.toBeInTheDocument()
+    unmount()
+    renderWithProviders(<BackendPageSideMenu />, {
+      state: { auth: { company: { ...acme, websiteBuilderEnabled: true }, companyUsers: [admin] } },
+    })
+    expect(screen.getByRole('link', { name: 'Website' })).toHaveAttribute('href', COMPANY_WEBSITE_URL)
+  })
+
+  test('a member never sees the website, even with the builder on', () => {
+    renderWithProviders(<BackendPageSideMenu />, {
+      state: {
+        auth: { company: { ...acme, websiteBuilderEnabled: true }, companyUsers: [{ ...admin, role: ROLE_NON_ADMIN }] },
+      },
+    })
+    expect(screen.queryByRole('link', { name: 'Website' })).not.toBeInTheDocument()
   })
 
   test('shows everything to a super admin', () => {

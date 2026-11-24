@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Input } from 'antd'
 import styled from 'styled-components'
 import ICompany from '../../Types/Company/ICompany'
 import CompanyService from '../../Services/CompanyService'
@@ -20,6 +21,8 @@ import Icons from '../Icons'
 import Spin from '../Form/Spin'
 
 const CompanyEditorWrapper = styled.div``
+// The API's limit (specs/001-website-builder, US1); shown on the company's website.
+const ADDRESS_MAX = 500
 /**
  *
  * @param company
@@ -136,6 +139,29 @@ const CompanyEditor = ({ company, onSaved }: { company: ICompany; onSaved?: (new
                       prefix={<Icons.PhoneFilled/>}
                       value={company.contactNumber || ''}
                       onChange={(newValue: string) => companyUpdated('contactNumber', newValue, onSaved)}
+                    />
+                  </FormInputWrapper>
+                </Col>
+                <Col md={{ span: 24 }}>
+                  <FormInputWrapper>
+                    <BoxTitleDiv>
+                      <label htmlFor={'company-address'}>{translate('company-address-label')}</label>
+                    </BoxTitleDiv>
+                    {/* Keyed by the saved value, so it shows what was saved after each save. */}
+                    <Input.TextArea
+                      key={company.address || ''}
+                      id={'company-address'}
+                      defaultValue={company.address || ''}
+                      maxLength={ADDRESS_MAX}
+                      showCount
+                      autoSize={{ minRows: 2, maxRows: 4 }}
+                      placeholder={translate('company-address')}
+                      onBlur={(e) => {
+                        const address = e.target.value.trim() === '' ? null : e.target.value
+                        if (address !== (company.address || null)) {
+                          companyUpdated('address', address, onSaved)
+                        }
+                      }}
                     />
                   </FormInputWrapper>
                 </Col>

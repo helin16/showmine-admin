@@ -437,6 +437,35 @@ describe('CompanyEditor', () => {
     expect(message.success).toHaveBeenCalledWith('Company (New) updated.')
   })
 
+  describe('address', () => {
+    const address = () => screen.getByLabelText('Address')
+
+    test('shows the saved address and saves a change on leaving the field', async () => {
+      vi.mocked(CompanyService.update).mockResolvedValue(saved as never)
+      const { onSaved } = renderEditor(vi.fn(), { ...(company as object), address: '1 Old St' } as never)
+      expect(address()).toHaveValue('1 Old St')
+      fireEvent.change(address(), { target: { value: '2 New St\nMelbourne' } })
+      fireEvent.blur(address())
+      expect(CompanyService.update).toHaveBeenCalledExactlyOnceWith('co-1', { address: '2 New St\nMelbourne' })
+      await waitFor(() => expect(onSaved).toHaveBeenCalledWith(saved))
+    })
+
+    test('clearing it saves null', () => {
+      vi.mocked(CompanyService.update).mockResolvedValue(saved as never)
+      renderEditor(vi.fn(), { ...(company as object), address: '1 Old St' } as never)
+      fireEvent.change(address(), { target: { value: '   ' } })
+      fireEvent.blur(address())
+      expect(CompanyService.update).toHaveBeenCalledExactlyOnceWith('co-1', { address: null })
+    })
+
+    test('leaving it unchanged saves nothing, and it holds at most 500 characters', () => {
+      renderEditor()
+      fireEvent.blur(address())
+      expect(CompanyService.update).not.toHaveBeenCalled()
+      expect(address()).toHaveAttribute('maxlength', '500')
+    })
+  })
+
   test('saves the description and the footer', async () => {
     vi.mocked(CompanyService.update).mockResolvedValue(saved as never)
     renderEditor()

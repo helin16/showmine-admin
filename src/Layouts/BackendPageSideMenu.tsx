@@ -44,7 +44,7 @@ const BackendPageSideMenu = () => {
         type: 'group',
         label: <div className={'group-div'}>{item.name}</div>,
         key: item.key,
-        children: item.items.map((subItem) => ({
+        children: item.items.filter((subItem) => !('needsWebsiteBuilder' in subItem) || company?.websiteBuilderEnabled === true).map((subItem) => ({
           label: (
             <Link type={'link'} to={subItem.url}>
               {subItem.name}
