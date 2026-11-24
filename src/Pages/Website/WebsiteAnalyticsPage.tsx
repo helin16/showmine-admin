@@ -29,14 +29,12 @@ const CUSTOM = 'custom'
 const toDay = (time: number) => new Date(time).toISOString().slice(0, 10)
 const toTime = (day: string) => Date.parse(`${day}T00:00:00Z`)
 const lastDays = (count: number) => ({ from: toDay(Date.now() - (count - 1) * DAY_MS), to: toDay(Date.now()) })
-// Every day from the start to the end, or none when the period is not one the API takes.
+// Every day from the start to the end, or none when the period is not one the API takes. An empty date (NaN) or an
+// end before the start gives a length Array.from treats as 0.
 const getDays = (from: string, to: string) => {
   const start = toTime(from)
-  const end = toTime(to)
-  const length = (end - start) / DAY_MS + 1
-  return Number.isNaN(length) || length < 1 || length > MAX_DAYS
-    ? []
-    : Array.from({ length }, (_, index) => toDay(start + index * DAY_MS))
+  const length = (toTime(to) - start) / DAY_MS + 1
+  return length > MAX_DAYS ? [] : Array.from({ length }, (_, index) => toDay(start + index * DAY_MS))
 }
 
 type iState = {
@@ -57,7 +55,11 @@ const WebsiteAnalyticsPage = () => {
   const isValid = days.length > 0
 
   useEffect(() => {
-    if (!isOn || !isValid) return
+    // A load cut short by a change of period or company never finishes, so nothing old may stay on show.
+    if (!isOn || !isValid) {
+      setState((s) => ({ ...s, loading: false, loadError: undefined, views: undefined }))
+      return
+    }
     let isCurrent = true
     setState((s) => ({ ...s, loading: true, loadError: undefined, views: undefined }))
     WebsiteService.getPageViews(state.from, state.to)
@@ -69,6 +71,9 @@ const WebsiteAnalyticsPage = () => {
     }
   }, [isOn, isValid, company?.id, state.from, state.to, state.count])
 
+  // Trying again also moves a preset period on to today, for a page left open past midnight (UTC).
+  const retry = () =>
+    setState((s) => ({ ...s, count: s.count + 1, ...(s.preset === CUSTOM ? {} : lastDays(Number(s.preset))) }))
   const choosePreset = (preset: string) =>
     setState((s) => ({ ...s, preset, ...(preset === CUSTOM ? {} : lastDays(Number(preset))) }))
 
@@ -162,7 +167,7 @@ const WebsiteAnalyticsPage = () => {
         <Alert
           type={'error'}
           message={translate('website-analytics-load-failed', { message: state.loadError })}
-          action={<Button onClick={() => setState((s) => ({ ...s, count: s.count + 1 }))}>{translate('retry')}</Button>}
+          action={<Button onClick={retry}>{translate('retry')}</Button>}
         />
       ) : null}
       {isValid ? <Card>{getViews()}</Card> : null}

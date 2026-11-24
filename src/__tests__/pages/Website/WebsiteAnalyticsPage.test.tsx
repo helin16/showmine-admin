@@ -1,5 +1,5 @@
 import React from 'react'
-import { act, fireEvent, screen } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor } from '@testing-library/react'
 import { vi } from 'vitest'
 import WebsiteAnalyticsPage from '../../../Pages/Website/WebsiteAnalyticsPage'
 import WebsiteService from '../../../Services/WebsiteService'
@@ -131,6 +131,33 @@ describe('WebsiteAnalyticsPage', () => {
     expect(WebsiteService.getPageViews).toHaveBeenLastCalledWith('2026-11-24', '2026-11-24')
   })
 
+  test('a load cut short by an invalid period leaves no spinner and nothing old on show', async () => {
+    vi.mocked(WebsiteService.getPageViews).mockResolvedValueOnce(
+      views('2026-11-19', '2026-11-25', [], '2026-11-24T10:00:00.000Z') as never,
+    )
+    vi.mocked(WebsiteService.getPageViews).mockReturnValueOnce(new Promise(() => undefined) as never)
+    const { container } = renderPage()
+    expect(await screen.findByText(/Last updated/)).toBeInTheDocument()
+    await choose('Choose dates')
+    setDate('From', '2026-11-20')
+    await waitFor(() => expect(container.querySelector('.ant-spin-spinning')).not.toBeNull())
+    setDate('From', '')
+    expect(container.querySelector('.ant-spin-spinning')).toBeNull()
+    expect(screen.queryByText(/Last updated/)).toBeNull()
+    expect(screen.getByLabelText('From')).not.toBeDisabled()
+  })
+
+  test('trying again moves a preset period on to today', async () => {
+    vi.mocked(WebsiteService.getPageViews).mockRejectedValueOnce(new Error('offline'))
+    vi.mocked(WebsiteService.getPageViews).mockResolvedValueOnce(views('x', 'y') as never)
+    renderPage()
+    await screen.findByText('Try again')
+    vi.setSystemTime(new Date('2026-11-26T00:30:00Z'))
+    fireEvent.click(screen.getByText('Try again'))
+    expect(WebsiteService.getPageViews).toHaveBeenLastCalledWith('2026-11-20', '2026-11-26')
+    expect(await screen.findByText('2026-11-20 to 2026-11-26')).toBeInTheDocument()
+  })
+
   test('a failed load says why and can be tried again', async () => {
     vi.mocked(WebsiteService.getPageViews).mockRejectedValueOnce(
       Object.assign(new Error('x'), {
@@ -157,5 +184,7 @@ describe('WebsiteAnalyticsPage', () => {
     expect(WebsiteService.getPageViews).toHaveBeenCalledTimes(2)
     await act(async () => finish(views('2026-11-19', '2026-11-25')))
     expect(screen.queryByText('No page views in this period.')).toBeNull()
+    // Still waiting for the new company's answer.
+    await waitFor(() => expect(document.querySelector('.ant-spin-spinning')).not.toBeNull())
   })
 })
