@@ -31,25 +31,33 @@ const WebsiteMediaPage = () => {
   const [usage, setUsage] = useState<{ [assetId: string]: IImageUse[] }>({})
   const [removedIds, setRemovedIds] = useState<string[]>([])
   const [deletingId, setDeletingId] = useState<string>()
+  // Images whose usage could not be checked; they can be checked again.
+  const [usageFailed, setUsageFailed] = useState<string[]>([])
   const companyIdRef = useRef(company?.id)
   companyIdRef.current = company?.id
 
   useEffect(() => {
     setUsage({})
     setRemovedIds([])
+    setUsageFailed([])
   }, [company?.id])
+
+  const checkUsage = (ids: string[]) => {
+    const companyId = company?.id
+    setUsageFailed((old) => old.filter((id) => !ids.includes(id)))
+    // The API answers for at most 100 ids at a time.
+    for (let i = 0; i < ids.length; i += 100) {
+      const batch = ids.slice(i, i + 100)
+      WebsiteService.getImageUsage(batch)
+        .then((found) => companyIdRef.current === companyId && setUsage((old) => ({ ...old, ...found })))
+        .catch(() => companyIdRef.current === companyId && setUsageFailed((old) => [...old, ...batch]))
+    }
+  }
 
   // Where the shown images are used; asked again whenever the list changes.
   const imagesChanged = (images: IAsset[]) => {
-    const ids = images.map((image) => `${image.id}`).filter((id) => !(id in usage))
-    if (ids.length === 0) return
-    const companyId = company?.id
-    // The API answers for at most 100 ids at a time.
-    for (let i = 0; i < ids.length; i += 100) {
-      WebsiteService.getImageUsage(ids.slice(i, i + 100))
-        .then((found) => companyIdRef.current === companyId && setUsage((old) => ({ ...old, ...found })))
-        .catch(() => undefined)
-    }
+    const ids = images.map((image) => `${image.id}`).filter((id) => !(id in usage) && !usageFailed.includes(id))
+    if (ids.length > 0) checkUsage(ids)
   }
 
   const remove = (image: IAsset) => {
@@ -77,6 +85,16 @@ const WebsiteMediaPage = () => {
 
   const renderExtra = (image: IAsset) => {
     const uses = usage[`${image.id}`]
+    if (usageFailed.includes(`${image.id}`)) {
+      return (
+        <div>
+          {translate('website-image-check-failed')}{' '}
+          <Button size={'small'} onClick={() => checkUsage([`${image.id}`])}>
+            {translate('retry')}
+          </Button>
+        </div>
+      )
+    }
     if (uses === undefined) {
       return <div>{translate('website-image-checking')}</div>
     }

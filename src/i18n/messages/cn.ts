@@ -502,6 +502,9 @@ const LanguageCN = {
     'website-gallery-add': '添加图片',
     'website-section-image-required': '请选择一张图片。',
     'website-section-gallery-required': '请至少添加一张图片。',
+    'website-image-selected': '已选第 {number} 张：{name}',
+    'website-image-check-failed': '无法查看使用情况。',
+    'website-gallery-moved': '图片已移到第 {number} 个位置。',
     'website-load-failed': '无法加载网站：{message}',
   },
 }

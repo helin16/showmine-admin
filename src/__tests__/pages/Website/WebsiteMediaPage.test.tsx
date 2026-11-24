@@ -110,4 +110,14 @@ describe('WebsiteMediaPage', () => {
       'Home, website settings, the published website',
     )
   })
+
+  test('a failed usage check says so and can be tried again', async () => {
+    vi.mocked(WebsiteService.getImageUsage).mockRejectedValueOnce(new Error('down'))
+    renderPage()
+    const used = await tileOf('used.png')
+    expect(await within(used).findByText('Could not check where it is used.')).toBeInTheDocument()
+    vi.mocked(WebsiteService.getImageUsage).mockResolvedValue({ used: [] })
+    fireEvent.click(within(used).getByRole('button', { name: /Try again/ }))
+    expect(await within(used).findByText('Not used')).toBeInTheDocument()
+  })
 })

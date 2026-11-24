@@ -98,6 +98,8 @@ const Thumbnail = ({ id, images }: { id: string; images: { [assetId: string]: IA
 const SectionEditor = ({ section, onChange, errors = {}, images = {}, onImagesPicked }: iSectionEditor) => {
   // Which image the picker is choosing: a single field, or more for the gallery.
   const [picking, setPicking] = useState<'imageAssetId' | 'assetId' | 'images'>()
+  // Read by screen readers after a gallery image moves.
+  const [announcement, setAnnouncement] = useState('')
   const picked = (assets: IAsset[]) => {
     onImagesPicked?.(assets)
     if (picking === 'images') {
@@ -254,7 +256,13 @@ const SectionEditor = ({ section, onChange, errors = {}, images = {}, onImagesPi
         const [image] = next.splice(index, 1)
         next.splice(index + by, 0, image)
         setGallery(next)
+        setAnnouncement(translate('website-gallery-moved', { number: index + by + 1 }))
       }
+      // Rows keep their identity when moved: the image id, and which copy of it when it is used twice.
+      const keys = gallery.map((image, index) => {
+        const copy = gallery.slice(0, index).filter((g) => g.assetId === image.assetId).length
+        return `${image.assetId}-${copy}`
+      })
       return (
         <Space orientation={'vertical'} style={{ width: '100%' }}>
           {gallery.map((image, index) => {
@@ -262,7 +270,7 @@ const SectionEditor = ({ section, onChange, errors = {}, images = {}, onImagesPi
             const altId = `${section.id}-images-${index}-alt`
             const altError = errors[`images[${index}].alt`] || errors[`images[${index}].assetId`]
             return (
-              <Space key={index} wrap align={'start'}>
+              <Space key={keys[index]} wrap align={'start'}>
                 <Thumbnail id={image.assetId} images={images} />
                 <div>
                   <label htmlFor={altId}>{translate('website-gallery-alt', { number: index + 1 })}</label>
@@ -313,6 +321,9 @@ const SectionEditor = ({ section, onChange, errors = {}, images = {}, onImagesPi
           <Button disabled={gallery.length >= MAX_GALLERY_IMAGES} onClick={() => setPicking('images')}>
             {translate('website-gallery-add')}
           </Button>
+          <div aria-live={'polite'} style={{ position: 'absolute', left: -10000 }}>
+            {announcement}
+          </div>
           {errors.images ? (
             <div role={'alert'} className={'ant-form-item-explain-error'}>
               {errors.images}

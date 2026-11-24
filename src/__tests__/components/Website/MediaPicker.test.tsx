@@ -6,6 +6,7 @@ import MediaPicker, { formatSize, ImageLibrary } from '../../../Components/Websi
 import WebsiteService from '../../../Services/WebsiteService'
 import AppService from '../../../Services/AppService'
 import message from '../../../Components/Form/message'
+import { changeCompany } from '../../../Redux/reduxers/auth.slice'
 import { renderWithProviders } from '../../testUtils'
 import { stubMatchMedia } from '../Access/domHelpers'
 import { FakeXHR } from '../Form/fakeXhr'
@@ -124,15 +125,25 @@ describe('ImageLibrary', () => {
     })
 
     test.each([
-      [400, 'Only JPEG, PNG, WebP or GIF images can be used.'],
-      [413, 'The image is over 10 MB.'],
-      [403, 'Your plan has no room for this image. Delete unused images or change your plan.'],
-    ])('the API refusing with %i is said in words', async (status, text) => {
+      [400, { message: 'Invalid type.' }, 'Only JPEG, PNG, WebP or GIF images can be used.'],
+      [413, 'too large', 'The image is over 10 MB.'],
+      [
+        403,
+        { message: 'Your plan\u0027s storage is full.' },
+        'Your plan has no room for this image. Delete unused images or change your plan.',
+      ],
+      [
+        403,
+        { message: 'The website builder is not turned on for this company.' },
+        'The website builder is not turned on for this company.',
+      ],
+      [401, { message: 'You are not an admin of this company.' }, 'You are not an admin of this company.'],
+    ])('the API refusing with %i (%j) is said in words', async (status, body, text) => {
       renderWithProviders(<ImageLibrary />, { state: auth })
       await screen.findByRole('img', { name: 'a1.png' })
       await userEvent.upload(fileInput(), new File(['img'], 'x.png', { type: 'image/png' }))
       await waitFor(() => expect(FakeXHR.last?.body).toBeDefined())
-      act(() => FakeXHR.last.respond(status, { message: 'refused' }))
+      act(() => FakeXHR.last.respond(status, body))
       await waitFor(() => expect(message.error).toHaveBeenCalledWith(text))
     })
   })
@@ -151,7 +162,8 @@ describe('MediaPicker', () => {
 
     fireEvent.click(await within(dialog).findByRole('button', { name: 'Select a1.png' }))
     fireEvent.click(within(dialog).getByRole('button', { name: 'Select a2.png' }))
-    expect(within(dialog).getByRole('button', { name: 'Select a2.png' })).toHaveAttribute('aria-pressed', 'true')
+    expect(within(dialog).getByRole('button', { name: 'Selected 1: a2.png' })).toHaveAttribute('aria-pressed', 'true')
+    expect(within(dialog).getByRole('button', { name: 'Select a1.png' })).toHaveAttribute('aria-pressed', 'false')
     fireEvent.click(within(dialog).getByRole('button', { name: 'Use 1 image' }))
 
     expect(onPick).toHaveBeenCalledWith([image('a2')])
@@ -164,6 +176,7 @@ describe('MediaPicker', () => {
 
     fireEvent.click(await within(dialog).findByRole('button', { name: 'Select a3.png' }))
     fireEvent.click(within(dialog).getByRole('button', { name: 'Select a1.png' }))
+    expect(within(dialog).getByRole('button', { name: 'Selected 2: a1.png' })).toBeInTheDocument()
     fireEvent.click(within(dialog).getByRole('button', { name: 'Select a2.png' }))
     expect(message.error).toHaveBeenCalledWith('At most 2 more images can be added.')
     fireEvent.click(within(dialog).getByRole('button', { name: 'Use 2 images' }))
@@ -191,4 +204,56 @@ test('formatSize gives KB below a megabyte and MB above', () => {
   expect(formatSize(0)).toBe('1 KB')
   expect(formatSize(1536)).toBe('2 KB')
   expect(formatSize(5 * 1024 * 1024)).toBe('5.0 MB')
+})
+
+describe('after review', () => {
+  test('an image uploaded before loading more is not shown twice', async () => {
+    vi.mocked(WebsiteService.getImages)
+      .mockResolvedValueOnce(page([image('a1')], 1, 2) as never)
+      .mockResolvedValueOnce(page([image('a1'), image('a2')], 2, 2) as never)
+    renderWithProviders(<ImageLibrary />, { state: auth })
+    await screen.findByRole('img', { name: 'a1.png' })
+    fireEvent.click(screen.getByRole('button', { name: 'Load more' }))
+    expect(await screen.findByRole('img', { name: 'a2.png' })).toBeInTheDocument()
+    expect(screen.getAllByRole('img', { name: 'a1.png' })).toHaveLength(1)
+  })
+
+  test('after a delete the list starts again from the first page', async () => {
+    vi.mocked(WebsiteService.getImages).mockResolvedValue(page([image('a1'), image('a2')]) as never)
+    const Host = () => {
+      const [removedIds, setRemovedIds] = React.useState<string[]>([])
+      return (
+        <>
+          <ImageLibrary removedIds={removedIds} />
+          <button onClick={() => setRemovedIds(['a1'])}>deleted</button>
+        </>
+      )
+    }
+    renderWithProviders(<Host />, { state: auth })
+    await screen.findByRole('img', { name: 'a1.png' })
+    expect(WebsiteService.getImages).toHaveBeenCalledTimes(1)
+    fireEvent.click(screen.getByRole('button', { name: 'deleted' }))
+    await waitFor(() => expect(WebsiteService.getImages).toHaveBeenCalledTimes(2))
+    expect(WebsiteService.getImages).toHaveBeenLastCalledWith(1)
+    expect(screen.queryByRole('img', { name: 'a1.png' })).not.toBeInTheDocument()
+  })
+
+  test('another company never sees the old images, nor an upload that finishes after the switch', async () => {
+    vi.mocked(WebsiteService.getImages)
+      .mockResolvedValueOnce(page([image('a1')]) as never)
+      .mockReturnValueOnce(new Promise(() => undefined) as never)
+    const { store } = renderWithProviders(<ImageLibrary />, { state: auth })
+    await screen.findByRole('img', { name: 'a1.png' })
+    await userEvent.upload(fileInput(), new File(['img'], 'late.png', { type: 'image/png' }))
+    await waitFor(() => expect(FakeXHR.last?.body).toBeDefined())
+
+    await act(async () => {
+      store.dispatch(changeCompany({ company: { id: 'co-2', websiteBuilderEnabled: true } }))
+    })
+    expect(screen.queryByRole('img', { name: 'a1.png' })).not.toBeInTheDocument()
+    act(() => FakeXHR.last.respond(200, image('late', { fileName: 'late.png' })))
+    await new Promise((r) => setTimeout(r, 50))
+    expect(screen.queryByRole('img', { name: 'late.png' })).not.toBeInTheDocument()
+    expect(message.success).not.toHaveBeenCalled()
+  })
 })

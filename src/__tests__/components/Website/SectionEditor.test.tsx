@@ -201,6 +201,7 @@ describe('images', () => {
       images: [{ assetId: 'a1' }, { assetId: 'a2', alt: 'Team' }],
     })
     fireEvent.click(screen.getByRole('button', { name: 'Move image 1 down' }))
+    expect(screen.getByText('Image moved to position 2.')).toBeInTheDocument()
     expect(onChange).toHaveBeenLastCalledWith({
       id: 's1',
       type: 'gallery',

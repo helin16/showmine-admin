@@ -29,12 +29,19 @@ export const formatSize = (bytes?: number | null) => {
   return size >= 1024 * 1024 ? `${(size / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(size / 1024))} KB`
 }
 
-// The API's refusals of an upload, in words.
-const UPLOAD_REFUSALS: { [status: number]: string } = {
-  400: 'website-image-bad-type',
-  403: 'website-image-storage-full',
-  413: 'website-image-too-large',
+// The API's refusal of an upload, in words. The same status can mean different things (403 is a full plan or the
+// builder turned off), so its message decides; anything else shows the API's own words.
+export const describeUploadRefusal = (status?: number, response?: unknown) => {
+  const apiMessage = `${(response as { message?: string } | undefined)?.message || ''}`
+  if (status === 413) return translate('website-image-too-large')
+  if (status === 400 && apiMessage === 'Invalid type.') return translate('website-image-bad-type')
+  if (status === 403 && /^Your plan.s storage is full\.$/.test(apiMessage))
+    return translate('website-image-storage-full')
+  return apiMessage || AppService.getUploadFailure(status, response) || translate('website-image-upload-failed')
 }
+
+// Adds a page of images, leaving out any already shown (an upload shifts the pages by one).
+const appendNew = (old: IAsset[], more: IAsset[]) => [...old, ...more.filter((m) => !old.some((o) => o.id === m.id))]
 
 type iImageLibrary = {
   // Selected image ids, in the order chosen; given when images can be picked.
@@ -65,6 +72,8 @@ export const ImageLibrary = ({
   const [count, setCount] = useState(0)
   const companyIdRef = useRef(company?.id)
   companyIdRef.current = company?.id
+  // The company an upload was started for; one that finishes after a switch is not shown.
+  const uploadCompanyRef = useRef<string | undefined>(undefined)
 
   const load = (currentPage: number) => {
     const companyId = company?.id
@@ -73,16 +82,23 @@ export const ImageLibrary = ({
     return WebsiteService.getImages(currentPage)
       .then((res) => {
         if (companyIdRef.current !== companyId) return
-        setImages((old) => (currentPage === 1 ? res.data : [...old, ...res.data]))
+        setImages((old) => (currentPage === 1 ? res.data : appendNew(old, res.data)))
         setPage({ current: res.currentPage, pages: res.pages })
       })
       .catch((err) => companyIdRef.current === companyId && setLoadError(Utils.getErrorMessage(err)))
       .finally(() => setLoading(false))
   }
 
+  // Another company's images never stay on screen while this one's load.
+  useEffect(() => {
+    setImages([])
+    setPage({ current: 1, pages: 1 })
+  }, [company?.id])
+
+  // A delete shifts the later pages back by one, so the list starts again from the first page.
   useEffect(() => {
     load(1)
-  }, [company?.id, count])
+  }, [company?.id, count, removedIds.length])
 
   const shown = images.filter((image) => !removedIds.includes(`${image.id}`))
   useEffect(() => {
@@ -99,27 +115,26 @@ export const ImageLibrary = ({
       message.error(translate('website-image-too-large'))
       return Upload.LIST_IGNORE
     }
+    uploadCompanyRef.current = company?.id
     return true
   }
 
   const uploadChanged = ({ file }: UploadChangeParam<UploadFile<IAsset>>) => {
     if (file.status === 'uploading') {
       setPercent(Math.round(file.percent || 0))
-    } else if (file.status === 'done' && file.response) {
+    } else if (file.status === 'done' || file.status === 'error') {
       setPercent(undefined)
+    }
+    if (uploadCompanyRef.current !== companyIdRef.current) {
+      return
+    }
+    if (file.status === 'done' && file.response) {
       const asset = file.response
-      setImages((old) => [asset, ...old])
+      setImages((old) => [asset, ...old.filter((o) => o.id !== asset.id)])
       message.success(translate('website-image-uploaded', { name: asset.fileName }))
       onUploaded?.(asset)
     } else if (file.status === 'error') {
-      setPercent(undefined)
-      const status = (file.error as { status?: number } | undefined)?.status
-      const refusal = UPLOAD_REFUSALS[status as number]
-      message.error(
-        refusal
-          ? translate(refusal)
-          : AppService.getUploadFailure(status, file.response) || translate('website-image-upload-failed'),
-      )
+      message.error(describeUploadRefusal((file.error as { status?: number } | undefined)?.status, file.response))
     }
   }
 
@@ -160,7 +175,11 @@ export const ImageLibrary = ({
                       <Button
                         type={order >= 0 ? 'primary' : 'default'}
                         aria-pressed={order >= 0}
-                        aria-label={translate('website-image-select', { name: image.fileName })}
+                        aria-label={
+                          order >= 0
+                            ? translate('website-image-selected', { name: image.fileName, number: order + 1 })
+                            : translate('website-image-select', { name: image.fileName })
+                        }
                         onClick={() => onToggle(image)}
                         style={{ height: 'auto', padding: 4, width: '100%' }}
                       >

@@ -503,6 +503,9 @@ const LanguageEN = {
     'website-gallery-add': 'Add images',
     'website-section-image-required': 'Choose an image.',
     'website-section-gallery-required': 'Add at least one image.',
+    'website-image-selected': 'Selected {number}: {name}',
+    'website-image-check-failed': 'Could not check where it is used.',
+    'website-gallery-moved': 'Image moved to position {number}.',
     'website-load-failed': 'The website could not be loaded: {message}',
   },
 }
