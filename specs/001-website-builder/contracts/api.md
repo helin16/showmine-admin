@@ -46,8 +46,8 @@ The `theme` and `seo` keys sent are merged over the saved ones.
 | Route | Body | Success | Errors |
 |---|---|---|---|
 | `GET /website/templates` | | 200 `[{ id, version, name: {en, zh}, description: {en, zh}, thumbnail }]`; `thumbnail` is an absolute URL on the Reader (`APP_READER_BASE_URL`) | |
-| `POST /website/initialise` | `{ templateId, templateVersion, replace? }` | 200 `[page]` (an identical repeat creates nothing) | 404 template; 409 old version, or `{ message, pageCount }` when pages exist and `replace` is not true; 403 over `maxPages` |
-| `GET /publicTemplate/:id` | | 200 `{ template, pages }`, app token only | 404 |
+| `POST /website/initialise` | `{ templateId, templateVersion, replace?, pageCount? }`; `pageCount` is required with `replace: true` and is the count the admin confirmed | 200 `[page]` as `GET /website/pages`. Creates the template's pages, sets the website's `theme` to the template's, and leaves the published copy alone. Repeating the last template and version while its pages exist creates nothing | 400 bad fields; 404 template or no website; 409 old version; 409 `{ message, pageCount }` when pages exist and `replace` is not true, or `pageCount` differs from the current count; 403 over `maxPages` |
+| `GET /publicTemplate/:id` | | 200 `{ template: { id, version, name, description, theme }, company, pages }`, app token only. `company` is the template's sample business (`name`, `phone`, `email`, `address`); `pages` are in the published-copy shape with new section ids | 404 |
 
 ## Images (US5)
 

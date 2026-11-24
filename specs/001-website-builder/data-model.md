@@ -87,7 +87,7 @@ section, and `isPreview: true` for a preview.
 
 ## Template (code, `src/templates/website/*.ts`; US4)
 
-`{ id, version, name: {en, zh}, description: {en, zh}, thumbnail, theme, pages: [{ slug, title, sections }] }`. Three are shipped. They contain no images.
+`{ id, version, name: {en, zh}, description: {en, zh}, theme, sample, pages: [{ slug, title, sections }] }`. Three are shipped: `shop`, `services`, `simple`. They contain no images, and their sections have no ids (each use gets new ones). `sample` is a made-up business shown only in the preview. The thumbnail is not stored: it is `<reader>/templates/<id>.png`.
 
 ## Asset (existing; US5)
 
