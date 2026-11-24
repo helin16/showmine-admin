@@ -9,7 +9,10 @@ import { renderWithProviders } from '../../testUtils'
 import { stubMatchMedia } from '../../components/Access/domHelpers'
 
 // The website overview (specs/001-website-builder, US1, T012).
-vi.mock('../../../Services/WebsiteService', () => ({ default: { get: vi.fn(), create: vi.fn(), update: vi.fn() } }))
+vi.mock('../../../Services/WebsiteService', async (importOriginal) => {
+  const actual = (await importOriginal()) as { default: object }
+  return { default: { ...actual.default, get: vi.fn(), create: vi.fn(), update: vi.fn() } }
+})
 vi.mock('../../../Components/Form/message', () => ({ default: { error: vi.fn(), success: vi.fn() } }))
 vi.mock('../../../Layouts/BackendPage', () => ({
   default: ({ children, ContentHeader }: { children: React.ReactNode; ContentHeader?: React.ReactNode }) => (
@@ -58,6 +61,7 @@ describe('WebsiteOverviewPage', () => {
       vi.mocked(WebsiteService.create).mockResolvedValue(website() as never)
       renderPage()
       expect(await screen.findByText('Create your website')).toBeInTheDocument()
+      expect(screen.queryByRole('link', { name: 'Choose a template' })).not.toBeInTheDocument()
 
       setName('acme')
       fireEvent.click(screen.getByRole('button', { name: 'Create website' }))
@@ -161,6 +165,15 @@ describe('WebsiteOverviewPage', () => {
       expect(link).toHaveAttribute('rel', 'noopener noreferrer')
     })
 
+    test('links to the template gallery', async () => {
+      vi.mocked(WebsiteService.get).mockResolvedValue(website() as never)
+      renderPage()
+      expect(await screen.findByRole('link', { name: 'Choose a template' })).toHaveAttribute(
+        'href',
+        '/b/company/website/templates',
+      )
+    })
+
     test('renames it with the updatedAt it was loaded with', async () => {
       vi.mocked(WebsiteService.get).mockResolvedValue(website() as never)
       vi.mocked(WebsiteService.update).mockResolvedValue(website({ slug: 'acme-shop' }) as never)
@@ -231,7 +244,7 @@ describe('WebsiteOverviewPage', () => {
     vi.mocked(WebsiteService.get).mockResolvedValue(website({ publishedAt: '2026-11-20T00:00:00.000Z' }) as never)
     renderPage()
     expect(await screen.findByText('Not available: the Reader address is not configured.')).toBeInTheDocument()
-    expect(screen.queryByRole('link')).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /reader/ })).not.toBeInTheDocument()
   })
 
   test('a failed load says why and can be tried again', async () => {

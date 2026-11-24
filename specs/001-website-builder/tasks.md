@@ -177,7 +177,7 @@ description: "Task list for the Website Builder (SMN-53, Sprint 3)"
   - every shipped template passes the section schemas;
   - member 401, other company, switch off 403; and the three template routes added to `api:tests/controllers/RouteMatrix.test.ts`.
 - [x] T049 [P] [US4] Reader test for the template preview page, including 404, 500 and network failure, in `reader:src/__tests__/pages/t/template.test.tsx`
-- [ ] T050 [P] [US4] Admin test for the template gallery (cards, preview in a new tab, replace confirmation with the count, mobile layout) in `admin:src/__tests__/pages/Website/WebsiteTemplatesPage.test.tsx`
+- [x] T050 [P] [US4] Admin test for the template gallery (cards, preview in a new tab, replace confirmation with the count, mobile layout) in `admin:src/__tests__/pages/Website/WebsiteTemplatesPage.test.tsx`
 
 ### Implementation
 
@@ -185,7 +185,7 @@ description: "Task list for the Website Builder (SMN-53, Sprint 3)"
 - [x] T052 [P] [US4] Three templates in `api:src/templates/website/{shop,services,simple}.ts` and the map in `index.ts`
 - [x] T053 [US4] `GET /website/templates`, `POST /website/initialise` and `GET /publicTemplate/:id` in `api:src/controllers/Website/`
 - [x] T054 [P] [US4] Thumbnails `reader:public/templates/{shop,services,simple}.png`, and the page `reader:src/pages/t/[id]/[[...page]].tsx`
-- [ ] T055 [US4] Gallery page `admin:src/Pages/Website/WebsiteTemplatesPage.tsx`, with strings in `en.ts` and `cn.ts`
+- [x] T055 [US4] Gallery page `admin:src/Pages/Website/WebsiteTemplatesPage.tsx`, with strings in `en.ts` and `cn.ts`
 
 ---
 

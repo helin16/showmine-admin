@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
+import { Link } from 'react-router-dom'
 import moment from 'moment'
 import { RootState } from '../../Redux/makeReduxStore'
 import { MENU_KEY_COMPANY_WEBSITE } from '../../Components/Menu/MenuItems'
@@ -19,6 +20,7 @@ import translate from '../../i18n/translate'
 import WebsiteService from '../../Services/WebsiteService'
 import Utils from '../../Services/Utils'
 import IWebsite, { WEBSITE_SLUG_PATTERN } from '../../Types/Website/IWebsite'
+import { COMPANY_WEBSITE_TEMPLATES_URL } from '../../UrlMap'
 
 // The Website area's first page (specs/001-website-builder, US1, T019): create the website by choosing its address
 // name, or change the name, and see the public address and whether the site is published.
@@ -37,10 +39,7 @@ const initState: iState = { loading: false, slug: '', saving: false, isStale: fa
 
 // Where visitors see the site, on the Reader. Null when the Reader's address is not configured, rather than a wrong
 // link on the admin's own address.
-export const getPublicUrl = (slug: string) => {
-  const readerUrl = `${process.env.REACT_APP_FRONT_END_URL || ''}`.trim().replace(/\/$/, '')
-  return readerUrl === '' ? null : `${readerUrl}/s/${slug}`
-}
+export const getPublicUrl = (slug: string) => WebsiteService.getReaderUrl(`/s/${slug}`)
 
 // The API's own words for a name another website has.
 const NAME_TAKEN = 'That name is taken.'
@@ -212,6 +211,7 @@ const WebsiteOverviewPage = () => {
                 <BoxTitleDiv>{translate('website-status')}</BoxTitleDiv>
                 {getStatus(website)}
               </FormInputWrapper>
+              <Link to={COMPANY_WEBSITE_TEMPLATES_URL}>{translate('website-templates-choose')}</Link>
             </>
           ) : null}
         </Space>
