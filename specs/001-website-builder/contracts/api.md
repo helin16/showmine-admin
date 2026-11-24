@@ -39,7 +39,7 @@ The `theme` and `seo` keys sent are merged over the saved ones.
 | `PUT /website/pages/:id` | `{ slug?, title?, sections?, seo?, updatedAt }` | 200 page | 400; 404; 409 slug or stale |
 | `DELETE /website/pages/:id` | | 200 | 404 |
 | `PUT /website/pages/order` | `{ ids }` (exactly the active pages) | 200 `[page]` | 400 |
-| `POST /website/preview` | | 200 `{ url, expiresAt }` (30 min) | 404 no website |
+| `POST /website/preview` | | 200 `{ url, expiresAt }` (30 min). A new link ends the same admin's earlier one | 404 no website |
 
 ## Templates (US4)
 
@@ -71,6 +71,6 @@ before the file is read.
 
 | Route | Auth | Success | Errors |
 |---|---|---|---|
-| `GET /publicWebsite/:slug?preview=<token>` | App token | 200 published copy (data-model "Published copy"); the draft in the same shape with a valid preview token | 404 for each of: unknown, unpublished, switch off, inactive company, bad or expired token |
+| `GET /publicWebsite/:slug?preview=<token>` | App token | 200 published copy (data-model "Published copy") plus `companyId`; the draft in the same shape, with `isPreview: true` and `Cache-Control: no-store`, with a valid preview token | 404 for each of: unknown, unpublished, switch off, inactive company, bad or expired token |
 | `POST /publicWebsite/:slug/pageView` | **Server key** (`X-SHM-SERVER-KEY`) | 204; ignored when `pageSlug` is not in the published copy | 401 without the server key |
 | `GET /website/pageViews?from=YYYY-MM-DD&to=YYYY-MM-DD` | Editing guards | 200 `{ from, to, updatedAt, days: [{ date, pageSlug, count }] }` (empty `days` when none) | 400 when the range is over 366 days or the dates are invalid |

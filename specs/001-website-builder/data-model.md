@@ -22,7 +22,7 @@ All tables are in `showmine-api`, created by Sequelize migrations. Each migratio
 | `companyId` | UUID → companies, not null | Partial unique `WHERE isActive` | US1 |
 | `slug` | VARCHAR(40), not null | `^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])$`, not reserved, partial unique `WHERE isActive` | US1 |
 | `theme` | JSON | `{ primaryColor: #rrggbb, fontPair: modern \| classic \| friendly }` | US1 |
-| `seo` | JSON | `{ title ≤70, description ≤160, imageAssetId? }`. `imageAssetId` is added with US5 | US1, US6 |
+| `seo` | JSON | `{ title ≤70, description ≤160, imageAssetId? }`. `imageAssetId` is an active website image of the company, or null (added with US3) | US1, US3, US6 |
 | `templateId`, `templateVersion` | VARCHAR, INT, null | Set by initialise | US4 |
 | `publishedSnapshot` | JSON, null | Copy shown to the public (below). Null means unpublished | US1 (column), US3 |
 | `publishedAt`, `publishedById` | DATE, UUID, null | | US1 (column), US3 |
@@ -52,7 +52,7 @@ Reserved slugs (exact list in the API): `admin`, `api`, `app`, `assets`, `auth`,
 | `title` | VARCHAR(80) | Required |
 | `position` | INT | The lowest active page is the home page |
 | `sections` | JSON array | ≤ 30 sections; serialised page ≤ 200 KB; see Section |
-| `seo` | JSON | `{ title ≤70, description ≤160 }` |
+| `seo` | JSON | `{ title ≤70, description ≤160, imageAssetId? }`, as the website's |
 
 ## Section (inside `websitePages.sections`; US2)
 
@@ -73,9 +73,17 @@ Every asset id must be an active asset of type `WEBSITE` in the same company, wi
 
 ```text
 { version: 1, publishedAt, slug, theme, seo,
-  company: { name, logoUrl?, phone?, email?, address? },   // only the fields a contact section shows
-  pages: [{ slug, title, seo, sections }] }                 // active pages in order; image ids replaced by URLs
+  company: { name, logoUrl?, phone?, email?, address? },   // only the fields a contact section shows; null when empty
+  pages: [{ slug, title, seo, sections }] }                 // active pages in order
 ```
+
+Images keep their id, and their address is added beside it: `imageAssetId` gains `imageUrl` (hero, site and page
+SEO), `assetId` gains `url` (image section, gallery items). The ids stay so that the delete check and asset clean-up
+(US5) still see images that only the published site uses. An image that is no longer usable has no address. Changed
+during SMN-63 with Lin's approval; the copy first said ids were replaced by URLs.
+
+`GET /publicWebsite/:slug` also returns `companyId` (not stored in the copy), which the Reader uses to load an articles
+section, and `isPreview: true` for a preview.
 
 ## Template (code, `src/templates/website/*.ts`; US4)
 
