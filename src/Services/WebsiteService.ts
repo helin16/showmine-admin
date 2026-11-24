@@ -1,5 +1,11 @@
 import AppService, { iConfigParams } from './AppService'
-import IWebsite, { IImageUse, IWebsitePage, IWebsiteSection, IWebsiteTemplate } from '../Types/Website/IWebsite'
+import IWebsite, {
+  IImageUse,
+  IWebsitePage,
+  IWebsiteSection,
+  IWebsiteSeo,
+  IWebsiteTemplate,
+} from '../Types/Website/IWebsite'
 import IAsset, { ASSET_TYPE_WEBSITE } from '../Types/Asset/IAsset'
 import IResList from '../Types/IResList'
 
@@ -39,7 +45,13 @@ const createPage = async (params: { slug: string; title: string }): Promise<IWeb
 
 const updatePage = async (
   id: string,
-  params: { slug?: string; title?: string; sections?: IWebsiteSection[]; updatedAt: Date | string | undefined },
+  params: {
+    slug?: string
+    title?: string
+    sections?: IWebsiteSection[]
+    seo?: IWebsiteSeo
+    updatedAt: Date | string | undefined
+  },
 ): Promise<IWebsitePage> => AppService.put(`${pagesEndPoint}/${id}`, params).then((resp) => resp.data)
 
 const deletePage = async (id: string) => AppService.delete(`${pagesEndPoint}/${id}`).then((resp) => resp.data)

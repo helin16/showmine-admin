@@ -1,14 +1,32 @@
 import IBaseModel from '../IBaseModel'
 
+// Search and sharing details of the site or a page; an empty one falls back to the site's, then the company's.
+export type IWebsiteSeo = { title?: string; description?: string; imageAssetId?: string | null }
+
 // A company's website as GET /website returns it (specs/001-website-builder, data-model "Website").
 type IWebsite = IBaseModel & {
   companyId: string
   slug: string
   theme?: { primaryColor?: string; fontPair?: string } | null
-  seo?: { title?: string; description?: string; imageAssetId?: string | null } | null
+  seo?: IWebsiteSeo | null
   publishedAt?: string | null
   hasUnpublishedChanges: boolean
+  // Recorded and checked only; nothing serves them yet (US6).
+  subdomain?: string | null
+  subdomainStatus?: 'none' | 'pending' | 'live'
+  customDomain?: string | null
+  customDomainStatus?: 'none' | 'pending' | 'verified' | 'failed'
 }
+
+// The API's limits on SEO text.
+export const SEO_TITLE_MAX = 70
+export const SEO_DESCRIPTION_MAX = 160
+
+// The API's rule for a custom domain: a lower-case host name such as www.example.com; an international one in
+// punycode (xn--...). The API also refuses ShowMine's own domain.
+export const CUSTOM_DOMAIN_PATTERN =
+  /^(?=.{4,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+(?:[a-z]{2,63}|xn--[a-z0-9-]{1,59}[a-z0-9])$/
+export const CUSTOM_DOMAIN_STATUSES = ['pending', 'verified', 'failed'] as const
 
 // The API's rule for a website's address name: 3 to 40 lower-case letters, digits or hyphens, not starting or ending
 // with a hyphen. Reserved names are left to the API.
@@ -32,6 +50,7 @@ export type IWebsitePage = IBaseModel & {
   title: string
   position: number
   sections?: IWebsiteSection[] | null
+  seo?: IWebsiteSeo | null
   hasUnpublishedChanges: boolean
 }
 

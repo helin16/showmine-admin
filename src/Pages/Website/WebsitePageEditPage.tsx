@@ -21,16 +21,24 @@ import SectionEditor, {
   getImageIds,
   newSection,
 } from '../../Components/Website/SectionEditors'
+import SeoFields from '../../Components/Website/SeoFields'
+import Collapse from '../../Components/Form/Collapse'
 import IAsset from '../../Types/Asset/IAsset'
 import translate from '../../i18n/translate'
 import WebsiteService from '../../Services/WebsiteService'
 import Utils from '../../Services/Utils'
-import IWebsite, { IFieldError, IWebsitePage, IWebsiteSection, PAGE_SLUG_PATTERN } from '../../Types/Website/IWebsite'
+import IWebsite, {
+  IFieldError,
+  IWebsitePage,
+  IWebsiteSection,
+  IWebsiteSeo,
+  PAGE_SLUG_PATTERN,
+} from '../../Types/Website/IWebsite'
 import { COMPANY_WEBSITE_PAGES_URL } from '../../UrlMap'
 
 // Edits one page and its sections (specs/001-website-builder, US2, T035). One Save sends the whole page with the
 // updatedAt it was loaded with; Preview opens the saved draft on the Reader; the publish bar publishes it.
-type iDraft = { title: string; slug: string; sections: IWebsiteSection[] }
+type iDraft = { title: string; slug: string; sections: IWebsiteSection[]; seo: IWebsiteSeo }
 type iState = {
   loading: boolean
   page?: IWebsitePage
@@ -69,7 +77,12 @@ const STALE_PAGE = 'The page was changed by someone else. Reload and try again.'
 // The API's limit on sections per page.
 const MAX_SECTIONS = 30
 
-const toDraft = (page: IWebsitePage): iDraft => ({ title: page.title, slug: page.slug, sections: page.sections || [] })
+const toDraft = (page: IWebsitePage): iDraft => ({
+  title: page.title,
+  slug: page.slug,
+  sections: page.sections || [],
+  seo: page.seo || {},
+})
 const isSame = (a?: iDraft, b?: iDraft) => JSON.stringify(a) === JSON.stringify(b)
 
 const WebsitePageEditPage = () => {
@@ -78,6 +91,7 @@ const WebsitePageEditPage = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const [state, setState] = useState(initState)
+  const [isSeoOpen, setIsSeoOpen] = useState(false)
   const companyIdRef = useRef(company?.id)
   companyIdRef.current = company?.id
   // The admin's own version, kept across a reload when they chose to keep it after someone else's change.
@@ -99,7 +113,11 @@ const WebsitePageEditPage = () => {
             ? { ...s, page, website, draft: kept ?? toDraft(page) }
             : { ...s, page: undefined, draft: undefined, notFound: true },
         )
-        const ids = getImageIds((kept ?? (page ? toDraft(page) : undefined))?.sections || [])
+        const shown = kept ?? (page ? toDraft(page) : undefined)
+        const ids = [
+          ...getImageIds(shown?.sections || []),
+          ...(shown?.seo.imageAssetId ? [shown.seo.imageAssetId] : []),
+        ]
         if (ids.length > 0) {
           // Thumbnails only: a failure leaves them loading, and saving or publishing still works.
           WebsiteService.getImages(1, ids)
@@ -247,6 +265,12 @@ const WebsitePageEditPage = () => {
     }
   }
 
+  const addImages = (assets: IAsset[]) =>
+    setState((s) => ({
+      ...s,
+      images: { ...s.images, ...Object.fromEntries(assets.map((asset) => [`${asset.id}`, asset])) },
+    }))
+
   const sectionErrors = (index: number) =>
     Object.fromEntries(
       Object.entries(state.errors)
@@ -306,12 +330,7 @@ const WebsitePageEditPage = () => {
           section={section}
           errors={sectionErrors(index)}
           images={state.images}
-          onImagesPicked={(assets) =>
-            setState((s) => ({
-              ...s,
-              images: { ...s.images, ...Object.fromEntries(assets.map((asset) => [`${asset.id}`, asset])) },
-            }))
-          }
+          onImagesPicked={addImages}
           onChange={(changed) => setSections(sections.map((s) => (s.id === section.id ? changed : s)))}
         />
       </Card>
@@ -341,6 +360,11 @@ const WebsitePageEditPage = () => {
     if (!draft) {
       return null
     }
+    const seoErrors = Object.fromEntries(
+      Object.entries(state.errors)
+        .filter(([path]) => path.startsWith('seo.'))
+        .map(([path, problem]) => [path.slice(4), problem]),
+    )
     const fieldError = (path: string) =>
       state.errors[path] ? (
         <div id={`page-${path}-error`} role={'alert'} className={'ant-form-item-explain-error'}>
@@ -393,6 +417,28 @@ const WebsitePageEditPage = () => {
             ))}
           </Space>
         </Card>
+        <Collapse
+          items={[
+            {
+              key: 'seo',
+              label: translate('website-seo'),
+              // Open while it has a problem, so the message is seen.
+              children: (
+                <SeoFields
+                  idPrefix={'page-seo'}
+                  seo={draft.seo}
+                  help={translate('website-seo-page-help')}
+                  errors={seoErrors}
+                  images={state.images}
+                  onImagesPicked={addImages}
+                  onChange={(seo) => setDraft({ seo })}
+                />
+              ),
+            },
+          ]}
+          activeKey={isSeoOpen || Object.keys(seoErrors).length > 0 ? ['seo'] : []}
+          onChange={(keys) => setIsSeoOpen(([] as string[]).concat(keys).includes('seo'))}
+        />
         {draft.sections.map(getSection)}
         {draft.sections.length === 0 ? <Alert type={'info'} message={translate('website-sections-none')} /> : null}
         {getPageProblems().length > 0 ? (

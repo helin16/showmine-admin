@@ -109,6 +109,7 @@ describe('WebsitePageEditPage', () => {
       title: 'Welcome',
       slug: 'home',
       sections: [hero, text],
+      seo: {},
       updatedAt: 'page-time',
     })
     await waitFor(() => expect(message.success).toHaveBeenCalledWith('Saved.'))
@@ -401,5 +402,60 @@ describe('WebsitePageEditPage', () => {
     fireEvent.click(saveBtn())
     expect(await screen.findByText('Choose an image.')).toBeInTheDocument()
     expect(WebsiteService.updatePage).not.toHaveBeenCalled()
+  })
+
+  describe('page SEO', () => {
+    const openSeo = async () => fireEvent.click(await screen.findByRole('button', { name: /Search and sharing/ }))
+
+    test('is folded away until opened, and saves what was typed', async () => {
+      await loaded()
+      expect(screen.queryByLabelText('Search title')).not.toBeInTheDocument()
+      await openSeo()
+      fireEvent.change(screen.getByLabelText('Search title'), { target: { value: 'Fresh bread' } })
+      fireEvent.change(screen.getByLabelText('Search description'), { target: { value: 'Baked daily' } })
+      vi.mocked(WebsiteService.updatePage).mockResolvedValue(page({ seo: { title: 'Fresh bread' } }) as never)
+      fireEvent.click(saveBtn())
+      await waitFor(() =>
+        expect(WebsiteService.updatePage).toHaveBeenCalledWith(
+          'p-1',
+          expect.objectContaining({ seo: { title: 'Fresh bread', description: 'Baked daily' } }),
+        ),
+      )
+    })
+
+    test('shows its sharing image, and removing it sends null', async () => {
+      vi.mocked(WebsiteService.getPages).mockResolvedValue([page({ seo: { imageAssetId: 's1' } })] as never)
+      vi.mocked(WebsiteService.get).mockResolvedValue(website as never)
+      vi.mocked(WebsiteService.getImages).mockResolvedValue({
+        data: [{ id: 's1', url: 'https://cdn.test/s1.png', fileName: 's1.png' }],
+      } as never)
+      renderPage()
+      await screen.findByDisplayValue('Hello')
+      expect(WebsiteService.getImages).toHaveBeenCalledWith(1, ['s1'])
+      await openSeo()
+      const group = screen.getByRole('group', { name: 'Sharing image' })
+      expect(await within(group).findByRole('img', { name: 's1.png' })).toBeInTheDocument()
+      fireEvent.click(within(group).getByRole('button', { name: 'Remove image' }))
+      expect(within(group).getByText('No image')).toBeInTheDocument()
+      vi.mocked(WebsiteService.updatePage).mockResolvedValue(page({ seo: { imageAssetId: null } }) as never)
+      fireEvent.click(saveBtn())
+      await waitFor(() =>
+        expect(WebsiteService.updatePage).toHaveBeenCalledWith(
+          'p-1',
+          expect.objectContaining({ seo: { imageAssetId: null } }),
+        ),
+      )
+    })
+
+    test('SEO problems from the API open the panel and show on their fields', async () => {
+      await loaded()
+      fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Changed' } })
+      vi.mocked(WebsiteService.updatePage).mockRejectedValue(
+        httpError(400, { errors: [{ path: 'seo.description', message: 'Text of at most 160 characters.' }] }),
+      )
+      fireEvent.click(saveBtn())
+      expect(await screen.findByText('Text of at most 160 characters.')).toBeInTheDocument()
+      expect(screen.getByLabelText('Search description')).toHaveAttribute('aria-invalid', 'true')
+    })
   })
 })

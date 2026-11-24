@@ -223,14 +223,14 @@ description: "Task list for the Website Builder (SMN-53, Sprint 3)"
 
 ### Tests
 
-- [ ] T063 [P] [US6] Tests for subdomain and custom domain validation, uniqueness 409, `customDomainStatus` set only by a super admin, and page and site SEO limits, in `api:tests/controllers/Website/WebsiteDomains.test.ts`
-- [ ] T064 [P] [US6] Admin settings page test in `admin:src/__tests__/pages/Website/WebsiteSettingsPage.test.tsx`
+- [x] T063 [P] [US6] Tests for subdomain and custom domain validation, uniqueness 409, `customDomainStatus` set only by a super admin, and page and site SEO limits, in `api:tests/controllers/Website/WebsiteDomains.test.ts`
+- [x] T064 [P] [US6] Admin settings page test in `admin:src/__tests__/pages/Website/WebsiteSettingsPage.test.tsx`
 
 ### Implementation
 
-- [ ] T065 [US6] Migration `api:migrations/20261122000003-add-website-domains.js`: `subdomain`, `subdomainStatus`, `customDomain` and `customDomainStatus`, each with a partial unique index, and a `down`
-- [ ] T066 [US6] Domain and SEO image handling in `api:src/controllers/Website/WebsiteController.ts`
-- [ ] T067 [US6] Settings page `admin:src/Pages/Website/WebsiteSettingsPage.tsx` (SEO, subdomain status, domain status), with strings
+- [x] T065 [US6] Migration `api:migrations/20261122000003-add-website-domains.js`: `subdomain`, `subdomainStatus`, `customDomain` and `customDomainStatus`, each with a partial unique index, and a `down`
+- [x] T066 [US6] Domain and SEO image handling in `api:src/controllers/Website/WebsiteController.ts`
+- [x] T067 [US6] Settings page `admin:src/Pages/Website/WebsiteSettingsPage.tsx` (SEO, subdomain status, domain status), with strings
 
 ---
 

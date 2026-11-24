@@ -88,7 +88,7 @@ type iSectionEditor = {
 }
 
 // An image of a section: its thumbnail, or a note that it is missing.
-const Thumbnail = ({ id, images }: { id: string; images: { [assetId: string]: IAsset | null } }) => {
+export const Thumbnail = ({ id, images }: { id: string; images: { [assetId: string]: IAsset | null } }) => {
   const image = images[id]
   if (image === undefined) return <span>{translate('website-image-loading')}</span>
   if (image === null) return <span className={'ant-form-item-explain-error'}>{translate('website-image-missing')}</span>
