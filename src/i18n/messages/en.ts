@@ -358,7 +358,8 @@ const LanguageEN = {
     'website-create-title': 'Create your website',
     'website-create-help': 'Choose the name used in your website address. You can change it later.',
     'website-slug': 'Address name',
-    'website-slug-invalid': 'Use 3 to 40 lower-case letters, digits or hyphens, not starting or ending with a hyphen.',
+    'website-slug-help': 'Use 3 to 40 lower-case letters, digits or hyphens, not starting or ending with a hyphen.',
+    'website-slug-bad': 'This name does not follow the rule above.',
     'website-slug-taken': 'This name is taken. Try another.',
     'website-create': 'Create website',
     'website-save': 'Save',
@@ -370,6 +371,7 @@ const LanguageEN = {
     'website-not-published': 'Not published',
     'website-published': 'Published {date}',
     'website-unpublished-changes': 'Published {date}, with changes not yet published',
+    'website-address-unknown': 'Not available: the Reader address is not configured.',
     'website-load-failed': 'The website could not be loaded: {message}',
   },
 }

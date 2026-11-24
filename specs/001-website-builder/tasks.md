@@ -62,11 +62,11 @@ description: "Task list for the Website Builder (SMN-53, Sprint 3)"
   - missing or stale `updatedAt`; a removed website frees its name.
 - [ ] T010 [P] [US1] Tests that `address` is ≤500 characters or null, and that `websiteBuilderEnabled` is dropped for an admin and saved for a super admin, in `api:tests/controllers/Settings/CompanyWebsiteFields.test.ts`
 - [ ] T011 [P] [US1] Add `GET /website`, `POST /website` and `PUT /website` to `api:tests/controllers/RouteMatrix.test.ts`. The matrix proves sign-in, other-company and member refusals
-- [ ] T012 [P] [US1] Admin tests in `admin:src/__tests__/pages/Website/WebsiteOverviewPage.test.tsx`:
+- [x] T012 [P] [US1] Admin tests in `admin:src/__tests__/pages/Website/WebsiteOverviewPage.test.tsx`:
   - menu hidden when the switch is off or for a member;
   - create a site name; field errors shown;
   - 409 shows "taken"; a stale save asks to reload.
-- [ ] T013 [P] [US1] Admin test for the address field in `admin:src/__tests__/components/Company/CompanyEditor.test.tsx`
+- [x] T013 [P] [US1] Admin test for the address field, with the other company editor tests in `admin:src/__tests__/components/Account/companyEditing.test.tsx`
 
 ### Implementation
 
@@ -76,12 +76,12 @@ description: "Task list for the Website Builder (SMN-53, Sprint 3)"
   - SEO title ≤70, description ≤160;
   - `updatedAt` check; unique-index violation answered 409.
 - [ ] T015 [US1] Address validation (string ≤500 or null, else 400) in `api:src/controllers/Settings/CompanyController.ts`
-- [ ] T016 [P] [US1] Types in `admin:src/Types/Website/IWebsite.ts`; `address` and `websiteBuilderEnabled` in `admin:src/Types/Company/ICompany.ts`
-- [ ] T017 [P] [US1] `admin:src/Services/WebsiteService.ts` (get, create, update), modelled on `CompanyService`
-- [ ] T018 [US1] URL constants in `admin:src/UrlMap.ts`, routes in `CompanyAdminRoute` in `admin:src/Router.tsx`, and the "Website" item in "my company" in `admin:src/Components/Menu/MenuItems.tsx`, shown only when `company.websiteBuilderEnabled`
-- [ ] T019 [US1] Overview page `admin:src/Pages/Website/WebsiteOverviewPage.tsx`: create or edit the name, show the address and publish state, link to the other pages
-- [ ] T020 [US1] Address field, multi-line, ≤500, in `admin:src/Components/Company/CompanyEditor.tsx`
-- [ ] T021 [P] [US1] Strings in `admin:src/i18n/messages/en.ts` and `admin:src/i18n/messages/cn.ts`
+- [x] T016 [P] [US1] Types in `admin:src/Types/Website/IWebsite.ts`; `address` and `websiteBuilderEnabled` in `admin:src/Types/Company/ICompany.ts`
+- [x] T017 [P] [US1] `admin:src/Services/WebsiteService.ts` (get, create, update), modelled on `CompanyService`
+- [x] T018 [US1] URL constants in `admin:src/UrlMap.ts`, routes in `CompanyAdminRoute` in `admin:src/Router.tsx`, and the "Website" item in "my company" in `admin:src/Components/Menu/MenuItems.tsx`, shown only when `company.websiteBuilderEnabled`
+- [x] T019 [US1] Overview page `admin:src/Pages/Website/WebsiteOverviewPage.tsx`: create or edit the name, show the address and publish state, link to the other pages
+- [x] T020 [US1] Address field, multi-line, ≤500, in `admin:src/Components/Company/CompanyEditor.tsx`
+- [x] T021 [P] [US1] Strings in `admin:src/i18n/messages/en.ts` and `admin:src/i18n/messages/cn.ts`
 
 **Checkpoint**: US1 works for the test company (quickstart step 2).
 

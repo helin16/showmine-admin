@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import moment from 'moment'
 import { RootState } from '../../Redux/makeReduxStore'
@@ -35,20 +35,36 @@ type iState = {
 }
 const initState: iState = { loading: false, slug: '', saving: false, isStale: false, count: 0 }
 
-// Where visitors see the site, on the Reader.
-export const getPublicUrl = (slug: string) =>
-  `${`${process.env.REACT_APP_FRONT_END_URL || ''}`.trim().replace(/\/$/, '')}/s/${slug}`
+// Where visitors see the site, on the Reader. Null when the Reader's address is not configured, rather than a wrong
+// link on the admin's own address.
+export const getPublicUrl = (slug: string) => {
+  const readerUrl = `${process.env.REACT_APP_FRONT_END_URL || ''}`.trim().replace(/\/$/, '')
+  return readerUrl === '' ? null : `${readerUrl}/s/${slug}`
+}
+
+// The API's own words for a name another website has.
+const NAME_TAKEN = 'That name is taken.'
 
 const WebsiteOverviewPage = () => {
   const { company } = useSelector((s: RootState) => s.auth)
   const isOn = company?.websiteBuilderEnabled === true
   const [state, setState] = useState(initState)
+  // The company the page shows; answers that arrive after a switch of company are for the old one and are dropped.
+  const companyIdRef = useRef(company?.id)
+  companyIdRef.current = company?.id
 
   useEffect(() => {
     if (!isOn) return
-    // A switch of company while loading must not show the old company's website.
     let isCurrent = true
-    setState((s) => ({ ...s, loading: true, loadError: undefined, isStale: false, slugError: undefined }))
+    setState((s) => ({
+      ...s,
+      loading: true,
+      website: undefined,
+      slug: '',
+      loadError: undefined,
+      isStale: false,
+      slugError: undefined,
+    }))
     WebsiteService.get()
       .then((website) => isCurrent && setState((s) => ({ ...s, website, slug: website.slug })))
       .catch((err) => {
@@ -71,26 +87,30 @@ const WebsiteOverviewPage = () => {
   const save = () => {
     const slug = state.slug.trim()
     if (!WEBSITE_SLUG_PATTERN.test(slug)) {
-      setState((s) => ({ ...s, slugError: translate('website-slug-invalid') }))
+      setState((s) => ({ ...s, slugError: translate('website-slug-bad') }))
       return
     }
     const { website } = state
+    const companyId = company?.id
+    const isSameCompany = () => companyIdRef.current === companyId
     setState((s) => ({ ...s, saving: true, slugError: undefined }))
     const request = website ? WebsiteService.update({ slug, updatedAt: website.updatedAt }) : WebsiteService.create(slug)
     request
       .then((saved) => {
+        if (!isSameCompany()) return
         setState((s) => ({ ...s, website: saved, slug: saved.slug }))
         message.success(translate('website-saved'))
       })
       .catch((err) => {
+        if (!isSameCompany()) return
         const { status, data } = err?.response || {}
         const fieldError = (data?.errors || []).find((error: { path: string }) => error.path === 'slug')?.message
         if (fieldError) {
           setState((s) => ({ ...s, slugError: fieldError }))
-        } else if (status === 409 && /taken/i.test(`${data?.message || ''}`)) {
+        } else if (status === 409 && data?.message === NAME_TAKEN) {
           setState((s) => ({ ...s, slugError: translate('website-slug-taken') }))
         } else if (status === 409) {
-          // Another admin saved first: their change is kept, and this one waits for a reload.
+          // Another admin saved or created first: their change is kept, and this one waits for a reload.
           setState((s) => ({ ...s, isStale: true }))
         } else {
           message.error(Utils.getErrorMessage(err))
@@ -125,7 +145,7 @@ const WebsiteOverviewPage = () => {
       return null
     }
     const { website } = state
-    const publicUrl = website ? getPublicUrl(website.slug) : ''
+    const publicUrl = website ? getPublicUrl(website.slug) : null
     return (
       <Card>
         <Space orientation={'vertical'} style={{ width: '100%' }} size={'large'}>
@@ -153,7 +173,7 @@ const WebsiteOverviewPage = () => {
                 maxLength={40}
                 status={state.slugError ? 'error' : undefined}
                 aria-invalid={state.slugError ? true : undefined}
-                aria-describedby={state.slugError ? 'website-slug-error' : undefined}
+                aria-describedby={state.slugError ? 'website-slug-help website-slug-error' : 'website-slug-help'}
                 onChange={(e) => setState((s) => ({ ...s, slug: e.target.value, slugError: undefined }))}
                 onPressEnter={save}
                 disabled={state.saving || state.isStale}
@@ -167,6 +187,7 @@ const WebsiteOverviewPage = () => {
                 {translate(website ? 'website-save' : 'website-create')}
               </Button>
             </Space>
+            <div id={'website-slug-help'}>{translate('website-slug-help')}</div>
             {state.slugError ? (
               <div id={'website-slug-error'} role={'alert'} className={'ant-form-item-explain-error'}>
                 {state.slugError}
@@ -177,7 +198,9 @@ const WebsiteOverviewPage = () => {
             <>
               <FormInputWrapper>
                 <BoxTitleDiv>{translate('website-address')}</BoxTitleDiv>
-                {website.publishedAt ? (
+                {publicUrl === null ? (
+                  <span>{translate('website-address-unknown')}</span>
+                ) : website.publishedAt ? (
                   <a href={publicUrl} target={'_blank'} rel={'noopener noreferrer'}>
                     {publicUrl}
                   </a>

@@ -450,6 +450,14 @@ describe('CompanyEditor', () => {
       await waitFor(() => expect(onSaved).toHaveBeenCalledWith(saved))
     })
 
+    test('saves it without spaces at either end', () => {
+      vi.mocked(CompanyService.update).mockResolvedValue(saved as never)
+      renderEditor()
+      fireEvent.change(address(), { target: { value: '  3 Side St  ' } })
+      fireEvent.blur(address())
+      expect(CompanyService.update).toHaveBeenCalledExactlyOnceWith('co-1', { address: '3 Side St' })
+    })
+
     test('clearing it saves null', () => {
       vi.mocked(CompanyService.update).mockResolvedValue(saved as never)
       renderEditor(vi.fn(), { ...(company as object), address: '1 Old St' } as never)

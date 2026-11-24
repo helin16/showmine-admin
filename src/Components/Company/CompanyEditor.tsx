@@ -157,7 +157,7 @@ const CompanyEditor = ({ company, onSaved }: { company: ICompany; onSaved?: (new
                       autoSize={{ minRows: 2, maxRows: 4 }}
                       placeholder={translate('company-address')}
                       onBlur={(e) => {
-                        const address = e.target.value.trim() === '' ? null : e.target.value
+                        const address = e.target.value.trim() === '' ? null : e.target.value.trim()
                         if (address !== (company.address || null)) {
                           companyUpdated('address', address, onSaved)
                         }

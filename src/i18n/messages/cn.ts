@@ -357,7 +357,8 @@ const LanguageCN = {
     'website-create-title': '创建你的网站',
     'website-create-help': '选择网站网址里使用的名称，以后可以修改。',
     'website-slug': '网址名称',
-    'website-slug-invalid': '请使用 3 到 40 个小写字母、数字或连字符，不能以连字符开头或结尾。',
+    'website-slug-help': '请使用 3 到 40 个小写字母、数字或连字符，不能以连字符开头或结尾。',
+    'website-slug-bad': '这个名称不符合上面的规则。',
     'website-slug-taken': '这个名称已被占用，请换一个。',
     'website-create': '创建网站',
     'website-save': '保存',
@@ -369,6 +370,7 @@ const LanguageCN = {
     'website-not-published': '未发布',
     'website-published': '{date} 已发布',
     'website-unpublished-changes': '{date} 已发布，有尚未发布的修改',
+    'website-address-unknown': '无法显示：没有配置 Reader 的网址。',
     'website-load-failed': '无法加载网站：{message}',
   },
 }

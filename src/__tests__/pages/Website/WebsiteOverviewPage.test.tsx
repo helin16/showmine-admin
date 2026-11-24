@@ -1,9 +1,10 @@
 import React from 'react'
-import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor } from '@testing-library/react'
 import { vi } from 'vitest'
 import WebsiteOverviewPage, { getPublicUrl } from '../../../Pages/Website/WebsiteOverviewPage'
 import WebsiteService from '../../../Services/WebsiteService'
 import message from '../../../Components/Form/message'
+import { changeCompany } from '../../../Redux/reduxers/auth.slice'
 import { renderWithProviders } from '../../testUtils'
 import { stubMatchMedia } from '../../components/Access/domHelpers'
 
@@ -74,7 +75,7 @@ describe('WebsiteOverviewPage', () => {
       setName(name)
       fireEvent.click(screen.getByRole('button', { name: 'Create website' }))
 
-      expect(screen.getByRole('alert')).toHaveTextContent('Use 3 to 40 lower-case letters')
+      expect(screen.getByRole('alert')).toHaveTextContent('This name does not follow the rule above.')
       expect(nameBox()).toHaveAttribute('aria-invalid', 'true')
       expect(WebsiteService.create).not.toHaveBeenCalled()
     })
@@ -90,6 +91,38 @@ describe('WebsiteOverviewPage', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Create website' }))
 
       expect(await screen.findByRole('alert')).toHaveTextContent('This name is reserved.')
+    })
+
+    test('the name rule is always shown, and the field points to it', async () => {
+      renderPage()
+      await screen.findByText('Create your website')
+      expect(screen.getByText(/Use 3 to 40 lower-case letters/)).toBeInTheDocument()
+      expect(nameBox()).toHaveAttribute('aria-describedby', 'website-slug-help')
+    })
+
+    test('another admin creating the website at the same time asks to reload', async () => {
+      vi.mocked(WebsiteService.create).mockRejectedValue(httpError(409, { message: 'This company already has a website.' }))
+      renderPage()
+      await screen.findByText('Create your website')
+
+      setName('acme')
+      fireEvent.click(screen.getByRole('button', { name: 'Create website' }))
+
+      expect(await screen.findByText(/Someone else changed the website/)).toBeInTheDocument()
+      expect(screen.queryByText('This name is taken. Try another.')).not.toBeInTheDocument()
+    })
+
+    test('the race message that also mentions "taken" is not shown as a taken name', async () => {
+      vi.mocked(WebsiteService.create).mockRejectedValue(
+        httpError(409, { message: 'That name is taken, or the company already has a website.' })
+      )
+      renderPage()
+      await screen.findByText('Create your website')
+
+      setName('acme')
+      fireEvent.click(screen.getByRole('button', { name: 'Create website' }))
+
+      expect(await screen.findByText(/Someone else changed the website/)).toBeInTheDocument()
     })
 
     test('409 for a taken name says so', async () => {
@@ -172,6 +205,33 @@ describe('WebsiteOverviewPage', () => {
 
       await waitFor(() => expect(message.error).toHaveBeenCalledWith('Server down'))
     })
+  })
+
+  test('a save that ends after a switch of company changes nothing on the new one', async () => {
+    let finish!: (website: object) => void
+    vi.mocked(WebsiteService.get).mockRejectedValue(httpError(404, { message: 'none' }))
+    vi.mocked(WebsiteService.create).mockReturnValue(new Promise((resolve) => (finish = resolve)) as never)
+    const { store } = renderPage()
+    await screen.findByText('Create your website')
+    setName('acme')
+    fireEvent.click(screen.getByRole('button', { name: 'Create website' }))
+
+    await act(async () => {
+      store.dispatch(changeCompany({ company: { id: 'co-2', name: 'Other', websiteBuilderEnabled: true } }))
+    })
+    await act(async () => finish(website()))
+
+    expect(screen.queryByText('https://reader.test/s/acme')).not.toBeInTheDocument()
+    expect(message.success).not.toHaveBeenCalled()
+    expect(nameBox()).toHaveValue('')
+  })
+
+  test('without the Reader address configured, no public address is shown', async () => {
+    delete process.env.REACT_APP_FRONT_END_URL
+    vi.mocked(WebsiteService.get).mockResolvedValue(website({ publishedAt: '2026-11-20T00:00:00.000Z' }) as never)
+    renderPage()
+    expect(await screen.findByText('Not available: the Reader address is not configured.')).toBeInTheDocument()
+    expect(screen.queryByRole('link')).not.toBeInTheDocument()
   })
 
   test('a failed load says why and can be tried again', async () => {
