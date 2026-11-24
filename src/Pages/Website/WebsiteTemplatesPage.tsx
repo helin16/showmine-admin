@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
 import { RootState } from '../../Redux/makeReduxStore'
@@ -38,6 +38,7 @@ type iState = {
 const initState: iState = { loading: false, hasNoWebsite: false, count: 0 }
 
 const NO_WEBSITE = 'This company has no website yet.'
+const NO_TEMPLATE = 'This template does not exist.'
 
 const WebsiteTemplatesPage = () => {
   const { company } = useSelector((s: RootState) => s.auth)
@@ -46,11 +47,21 @@ const WebsiteTemplatesPage = () => {
   const isChinese = `${locale?.locale || ''}`.startsWith('zh')
   const navigate = useNavigate()
   const [state, setState] = useState(initState)
+  // The company the page shows; answers that arrive after a switch of company are for the old one and are dropped.
+  const companyIdRef = useRef(company?.id)
+  companyIdRef.current = company?.id
 
   useEffect(() => {
     if (!isOn) return
     let isCurrent = true
-    setState((s) => ({ ...s, loading: true, loadError: undefined }))
+    setState((s) => ({
+      ...s,
+      loading: true,
+      loadError: undefined,
+      hasNoWebsite: false,
+      confirming: undefined,
+      usingId: undefined,
+    }))
     WebsiteService.getTemplates()
       .then((templates) => isCurrent && setState((s) => ({ ...s, templates })))
       .catch(
@@ -67,6 +78,8 @@ const WebsiteTemplatesPage = () => {
   const getName = (template: IWebsiteTemplate) => (isChinese ? template.name.zh : template.name.en)
 
   const applyTemplate = (template: IWebsiteTemplate, pageCount?: number) => {
+    const companyId = company?.id
+    const isSameCompany = () => companyIdRef.current === companyId
     setState((s) => ({ ...s, usingId: template.id, confirming: undefined }))
     WebsiteService.initialise({
       templateId: template.id,
@@ -74,24 +87,29 @@ const WebsiteTemplatesPage = () => {
       ...(pageCount === undefined ? {} : { replace: true, pageCount }),
     })
       .then(() => {
+        if (!isSameCompany()) return
         message.success(translate('website-template-used', { name: getName(template) }))
         navigate(COMPANY_WEBSITE_URL)
       })
       .catch((err) => {
+        if (!isSameCompany()) return
         const { status, data } = err?.response || {}
         if (status === 409 && Number.isInteger(data?.pageCount)) {
           // Pages exist, or more were added since the admin agreed: ask again with the current count.
           setState((s) => ({ ...s, confirming: { template, pageCount: data.pageCount } }))
-        } else if (status === 409) {
+        } else if (status === 409 || (status === 404 && data?.message === NO_TEMPLATE)) {
+          // The template changed or was withdrawn since the list was loaded.
           message.error(translate('website-template-updated'))
           reload()
         } else if (status === 404 && data?.message === NO_WEBSITE) {
           setState((s) => ({ ...s, hasNoWebsite: true }))
+        } else if (status === 403) {
+          message.error(translate('website-template-plan-limit'))
         } else {
           message.error(Utils.getErrorMessage(err))
         }
       })
-      .finally(() => setState((s) => ({ ...s, usingId: undefined })))
+      .finally(() => isSameCompany() && setState((s) => ({ ...s, usingId: undefined })))
   }
 
   const getCard = (template: IWebsiteTemplate) => {
@@ -148,13 +166,6 @@ const WebsiteTemplatesPage = () => {
     }
     return (
       <Space orientation={'vertical'} style={{ width: '100%' }}>
-        {state.hasNoWebsite ? (
-          <Alert
-            type={'warning'}
-            message={translate('website-templates-no-website')}
-            action={<Link to={COMPANY_WEBSITE_URL}>{translate('website-templates-create-first')}</Link>}
-          />
-        ) : null}
         <Alert type={'info'} message={translate('website-template-theme-note')} />
         {WebsiteService.getReaderUrl('') === null ? (
           <Alert type={'warning'} message={translate('website-address-unknown')} />
@@ -170,7 +181,20 @@ const WebsiteTemplatesPage = () => {
       selectedMenu={MENU_KEY_COMPANY_WEBSITE}
       ContentHeader={<BackendPageContentTitle title={translate('website-templates')} />}
     >
-      {isOn ? <Spin spinning={state.loading}>{getContent()}</Spin> : <InvalidAccessPanel />}
+      {isOn ? (
+        <Spin spinning={state.loading}>
+          {state.hasNoWebsite ? (
+            <Alert
+              type={'warning'}
+              message={translate('website-templates-no-website')}
+              action={<Link to={COMPANY_WEBSITE_URL}>{translate('website-templates-create-first')}</Link>}
+            />
+          ) : null}
+          {getContent()}
+        </Spin>
+      ) : (
+        <InvalidAccessPanel />
+      )}
       {confirming ? (
         <Modal
           open

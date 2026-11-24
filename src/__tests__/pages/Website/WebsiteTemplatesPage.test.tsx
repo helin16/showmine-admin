@@ -1,11 +1,12 @@
 import React from 'react'
-import { fireEvent, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { Route, Routes } from 'react-router-dom'
 import { vi } from 'vitest'
 import Locale from '../../../Components/Form/Locale'
 import WebsiteTemplatesPage from '../../../Pages/Website/WebsiteTemplatesPage'
 import WebsiteService from '../../../Services/WebsiteService'
 import message from '../../../Components/Form/message'
+import { changeCompany } from '../../../Redux/reduxers/auth.slice'
 import { COMPANY_WEBSITE_TEMPLATES_URL, COMPANY_WEBSITE_URL } from '../../../UrlMap'
 import { renderWithProviders } from '../../testUtils'
 import { stubMatchMedia } from '../../components/Access/domHelpers'
@@ -51,7 +52,8 @@ const renderPage = (state: object = { auth: { company } }) =>
     </Routes>,
     { state, route: COMPANY_WEBSITE_TEMPLATES_URL },
   )
-const cardOf = async (name: string) => (await screen.findByRole('heading', { name })).closest('.ant-card') as HTMLElement
+const cardOf = async (name: string) =>
+  (await screen.findByRole('heading', { name })).closest('.ant-card') as HTMLElement
 const useBtn = async (name: string) => within(await cardOf(name)).getByRole('button', { name: 'Use this template' })
 
 describe('WebsiteTemplatesPage', () => {
@@ -174,13 +176,19 @@ describe('WebsiteTemplatesPage', () => {
 
     fireEvent.click(await useBtn('shop en'))
 
-    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Your plan allows 1 page.'))
+    await waitFor(() =>
+      expect(message.error).toHaveBeenCalledWith(
+        'Your plan does not allow this many pages. Choose a smaller template or change your plan.',
+      ),
+    )
     expect(screen.queryByText('overview page')).not.toBeInTheDocument()
   })
 
   test('an updated template reloads the list', async () => {
     vi.mocked(WebsiteService.getTemplates).mockResolvedValue(templates as never)
-    vi.mocked(WebsiteService.initialise).mockRejectedValue(httpError(409, { message: 'This template has been updated.' }))
+    vi.mocked(WebsiteService.initialise).mockRejectedValue(
+      httpError(409, { message: 'This template has been updated.' }),
+    )
     renderPage()
 
     fireEvent.click(await useBtn('shop en'))
@@ -189,9 +197,52 @@ describe('WebsiteTemplatesPage', () => {
     await waitFor(() => expect(WebsiteService.getTemplates).toHaveBeenCalledTimes(2))
   })
 
+  test('a template withdrawn since loading reloads the list', async () => {
+    vi.mocked(WebsiteService.getTemplates).mockResolvedValue(templates as never)
+    vi.mocked(WebsiteService.initialise).mockRejectedValue(httpError(404, { message: 'This template does not exist.' }))
+    renderPage()
+
+    fireEvent.click(await useBtn('shop en'))
+
+    await waitFor(() => expect(WebsiteService.getTemplates).toHaveBeenCalledTimes(2))
+    expect(message.error).toHaveBeenCalledWith(expect.stringMatching(/has been updated/))
+  })
+
+  test('other cards wait while one template is being applied', async () => {
+    vi.mocked(WebsiteService.getTemplates).mockResolvedValue(templates as never)
+    vi.mocked(WebsiteService.initialise).mockReturnValue(new Promise(() => undefined) as never)
+    renderPage()
+
+    fireEvent.click(await useBtn('shop en'))
+
+    expect(await useBtn('simple en')).toBeDisabled()
+    expect(WebsiteService.initialise).toHaveBeenCalledTimes(1)
+  })
+
+  test('an answer arriving after a switch of company is dropped', async () => {
+    let fail!: (err: unknown) => void
+    vi.mocked(WebsiteService.getTemplates).mockResolvedValue(templates as never)
+    vi.mocked(WebsiteService.initialise).mockReturnValue(new Promise((_, reject) => (fail = reject)) as never)
+    const { store } = renderPage()
+    fireEvent.click(await useBtn('shop en'))
+
+    await act(async () => {
+      store.dispatch(changeCompany({ company: { id: 'co-2', name: 'Other', websiteBuilderEnabled: true } }))
+    })
+    await act(async () => fail(httpError(409, { message: 'Pages', pageCount: 4 })))
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    // Nothing is left waiting on the old request.
+    const card = await cardOf('shop en')
+    await waitFor(() => expect(within(card).getByText('Use this template').closest('button')).not.toBeDisabled())
+    expect(message.error).not.toHaveBeenCalled()
+  })
+
   test('without a website, links to the overview to create one', async () => {
     vi.mocked(WebsiteService.getTemplates).mockResolvedValue(templates as never)
-    vi.mocked(WebsiteService.initialise).mockRejectedValue(httpError(404, { message: 'This company has no website yet.' }))
+    vi.mocked(WebsiteService.initialise).mockRejectedValue(
+      httpError(404, { message: 'This company has no website yet.' }),
+    )
     renderPage()
 
     fireEvent.click(await useBtn('shop en'))

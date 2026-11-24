@@ -387,6 +387,7 @@ const LanguageCN = {
     'website-template-use': '使用这个模板',
     'website-template-used': '已使用{name}模板。',
     'website-template-updated': '这个模板已更新，列表已刷新，请再试一次。',
+    'website-template-plan-limit': '你的套餐不允许这么多页面。请选择页面较少的模板，或更换套餐。',
     'website-template-replace-title': '要替换现有页面吗？',
     'website-template-replace': '这会用模板的页面替换你现有的 {count} 个页面。重新发布之前，访客看到的仍是已发布的网站。',
     'website-template-replace-ok': '替换页面',

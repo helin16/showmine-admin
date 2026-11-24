@@ -388,6 +388,7 @@ const LanguageEN = {
     'website-template-use': 'Use this template',
     'website-template-used': 'The {name} template was applied.',
     'website-template-updated': 'This template has been updated. The list has been reloaded; please try again.',
+    'website-template-plan-limit': 'Your plan does not allow this many pages. Choose a smaller template or change your plan.',
     'website-template-replace-title': 'Replace your pages?',
     'website-template-replace': 'This replaces your {count, plural, one {# page} other {# pages}} with the pages of the template. Visitors keep seeing the published site until you publish again.',
     'website-template-replace-ok': 'Replace pages',
