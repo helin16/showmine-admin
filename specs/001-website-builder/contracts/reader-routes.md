@@ -7,7 +7,7 @@ Both routes are server-rendered and use the same section components. Server call
 | `/s/<slug>` | `GET /publicWebsite/<slug>` | Home page (lowest position) | Normal. Counts a page view (server side) |
 | `/s/<slug>/<page>` | same | That page; not-found if absent | Normal. Counts a page view |
 | `/s/<slug>?preview=<token>` and `/s/<slug>/<page>?preview=<token>` | same, with `preview` | The draft | `Cache-Control: no-store`, `noindex`, `Referrer-Policy: no-referrer`; not counted |
-| `/t/<templateId>` and `/t/<templateId>/<page>` | `GET /publicTemplate/<id>` | Template with sample content | `no-store`, `noindex`; not counted |
+| `/t/<templateId>` and `/t/<templateId>/<page>` | `GET /publicTemplate/<id>` | Template with sample content | `no-store`, `noindex`, `no-referrer`; not counted |
 
 Each page:
 - has navigation listing the pages;
