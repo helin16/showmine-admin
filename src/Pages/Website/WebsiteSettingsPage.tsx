@@ -23,6 +23,7 @@ import IWebsite, {
   IFieldError,
   IWebsiteSeo,
   WEBSITE_SLUG_PATTERN,
+  toSeo,
 } from '../../Types/Website/IWebsite'
 
 // The website's settings (specs/001-website-builder, US6, T067): the site's SEO, a ShowMine subdomain and a custom
@@ -46,8 +47,18 @@ const initState: iState = { loading: false, errors: {}, saving: false, isStale: 
 const SUBDOMAIN_TAKEN = 'That subdomain is taken.'
 const DOMAIN_TAKEN = 'That domain is taken.'
 
+// The fields that show their own problems.
+const SHOWN_PATHS = [
+  'seo.title',
+  'seo.description',
+  'seo.imageAssetId',
+  'subdomain',
+  'customDomain',
+  'customDomainStatus',
+]
+
 const toForm = (website: IWebsite): iForm => ({
-  seo: website.seo || {},
+  seo: toSeo(website.seo),
   subdomain: website.subdomain || '',
   customDomain: website.customDomain || '',
   customDomainStatus: website.customDomainStatus,
@@ -89,13 +100,26 @@ const WebsiteSettingsPage = () => {
     }
   }, [isOn, company?.id, state.count])
 
+  const isDirty = !!state.form && !!state.website && !isSame(state.form, toForm(state.website))
+
+  // Closing or reloading the tab with unsaved changes asks first.
+  useEffect(() => {
+    if (!isDirty) return
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', warn)
+    return () => window.removeEventListener('beforeunload', warn)
+  }, [isDirty])
+
   const reload = () => setState((s) => ({ ...s, count: s.count + 1 }))
   const setForm = (changes: Partial<iForm>) => setState((s) => (s.form ? { ...s, form: { ...s.form, ...changes } } : s))
 
   const save = () => {
     const { form, website } = state
     if (!form || !website) return
-    const subdomain = form.subdomain.trim()
+    const subdomain = form.subdomain.trim().toLowerCase()
     const customDomain = form.customDomain.trim().toLowerCase()
     const errors: { [path: string]: string } = {
       ...(subdomain === '' || WEBSITE_SLUG_PATTERN.test(subdomain)
@@ -114,18 +138,22 @@ const WebsiteSettingsPage = () => {
     setState((s) => ({ ...s, saving: true, errors: {} }))
     WebsiteService.update({
       // Sent only when changed: an SEO change counts as something to publish.
-      ...(isSame(form.seo, website.seo || {}) ? {} : { seo: form.seo }),
+      ...(isSame(form.seo, toSeo(website.seo)) ? {} : { seo: form.seo }),
       subdomain: subdomain || null,
       customDomain: customDomain || null,
-      // Only staff may send it, and only a change: the API refuses it from anyone else.
-      ...(isSuperAdmin && form.customDomainStatus !== website.customDomainStatus && customDomain !== ''
+      // Only staff may send it, only a change, and only for the saved domain: a new domain is pending until checked.
+      ...(isSuperAdmin &&
+      form.customDomainStatus !== website.customDomainStatus &&
+      customDomain !== '' &&
+      customDomain === website.customDomain
         ? { customDomainStatus: form.customDomainStatus }
         : {}),
       updatedAt: website.updatedAt,
     })
       .then((saved) => {
         if (!isSameCompany()) return
-        setState((s) => ({ ...s, website: saved, form: toForm(saved) }))
+        // Typing that went on during the save is kept: the saved settings replace the form only if it is unchanged.
+        setState((s) => ({ ...s, website: saved, form: isSame(s.form, form) ? toForm(saved) : s.form }))
         message.success(translate('website-saved'))
       })
       .catch((err) => {
@@ -134,6 +162,11 @@ const WebsiteSettingsPage = () => {
         const fieldErrors = Object.fromEntries(((data?.errors || []) as IFieldError[]).map((e) => [e.path, e.message]))
         if (Object.keys(fieldErrors).length > 0) {
           setState((s) => ({ ...s, errors: fieldErrors }))
+          // A problem with no field on the page is said out loud instead.
+          const unshown = Object.entries(fieldErrors).filter(([path]) => !SHOWN_PATHS.includes(path))
+          if (unshown.length > 0) {
+            message.error(unshown.map(([, problem]) => problem).join(' '))
+          }
         } else if (status === 409 && data?.message === SUBDOMAIN_TAKEN) {
           setState((s) => ({ ...s, errors: { subdomain: translate('website-subdomain-taken') } }))
         } else if (status === 409 && data?.message === DOMAIN_TAKEN) {
@@ -241,12 +274,7 @@ const WebsiteSettingsPage = () => {
           </Space>
         </Card>
         <Card>
-          <Button
-            type={'primary'}
-            onClick={save}
-            loading={state.saving}
-            disabled={state.isStale || isSame(form, toForm(website))}
-          >
+          <Button type={'primary'} onClick={save} loading={state.saving} disabled={state.isStale || !isDirty}>
             {translate('website-save')}
           </Button>
         </Card>

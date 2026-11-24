@@ -33,6 +33,7 @@ import IWebsite, {
   IWebsiteSection,
   IWebsiteSeo,
   PAGE_SLUG_PATTERN,
+  toSeo,
 } from '../../Types/Website/IWebsite'
 import { COMPANY_WEBSITE_PAGES_URL } from '../../UrlMap'
 
@@ -81,7 +82,7 @@ const toDraft = (page: IWebsitePage): iDraft => ({
   title: page.title,
   slug: page.slug,
   sections: page.sections || [],
-  seo: page.seo || {},
+  seo: toSeo(page.seo),
 })
 const isSame = (a?: iDraft, b?: iDraft) => JSON.stringify(a) === JSON.stringify(b)
 

@@ -18,6 +18,14 @@ type IWebsite = IBaseModel & {
   customDomainStatus?: 'none' | 'pending' | 'verified' | 'failed'
 }
 
+// The same SEO always looks the same, so an emptied field or another key order is not taken for a change. All three
+// keys are sent, as the API keeps a key that is left out.
+export const toSeo = (seo?: IWebsiteSeo | null): IWebsiteSeo => ({
+  title: seo?.title || '',
+  description: seo?.description || '',
+  imageAssetId: seo?.imageAssetId || null,
+})
+
 // The API's limits on SEO text.
 export const SEO_TITLE_MAX = 70
 export const SEO_DESCRIPTION_MAX = 160

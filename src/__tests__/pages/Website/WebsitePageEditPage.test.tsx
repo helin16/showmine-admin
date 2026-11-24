@@ -109,7 +109,7 @@ describe('WebsitePageEditPage', () => {
       title: 'Welcome',
       slug: 'home',
       sections: [hero, text],
-      seo: {},
+      seo: { title: '', description: '', imageAssetId: null },
       updatedAt: 'page-time',
     })
     await waitFor(() => expect(message.success).toHaveBeenCalledWith('Saved.'))
@@ -418,9 +418,18 @@ describe('WebsitePageEditPage', () => {
       await waitFor(() =>
         expect(WebsiteService.updatePage).toHaveBeenCalledWith(
           'p-1',
-          expect.objectContaining({ seo: { title: 'Fresh bread', description: 'Baked daily' } }),
+          expect.objectContaining({ seo: { title: 'Fresh bread', description: 'Baked daily', imageAssetId: null } }),
         ),
       )
+    })
+
+    test('typing in a field and emptying it again is not a change', async () => {
+      await loaded()
+      await openSeo()
+      fireEvent.change(screen.getByLabelText('Search title'), { target: { value: 'x' } })
+      expect(saveBtn()).toBeEnabled()
+      fireEvent.change(screen.getByLabelText('Search title'), { target: { value: '' } })
+      expect(saveBtn()).toBeDisabled()
     })
 
     test('shows its sharing image, and removing it sends null', async () => {
@@ -442,7 +451,7 @@ describe('WebsitePageEditPage', () => {
       await waitFor(() =>
         expect(WebsiteService.updatePage).toHaveBeenCalledWith(
           'p-1',
-          expect.objectContaining({ seo: { imageAssetId: null } }),
+          expect.objectContaining({ seo: { title: '', description: '', imageAssetId: null } }),
         ),
       )
     })

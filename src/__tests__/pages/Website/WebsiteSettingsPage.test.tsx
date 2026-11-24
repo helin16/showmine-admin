@@ -95,7 +95,7 @@ describe('WebsiteSettingsPage', () => {
   test('saves the SEO and addresses, tidied, with the updatedAt it was loaded with', async () => {
     await loaded()
     type('Search title', 'Acme Bakery')
-    type('ShowMine subdomain', ' acme-shop ')
+    type('ShowMine subdomain', ' Acme-Shop ')
     type('Your own domain', ' WWW.Acme.com ')
     vi.mocked(WebsiteService.update).mockResolvedValue(
       website({ seo: { title: 'Acme Bakery', description: 'Bread' }, subdomain: 'acme-shop' }) as never,
@@ -103,7 +103,7 @@ describe('WebsiteSettingsPage', () => {
     fireEvent.click(saveBtn())
 
     expect(WebsiteService.update).toHaveBeenCalledWith({
-      seo: { title: 'Acme Bakery', description: 'Bread' },
+      seo: { title: 'Acme Bakery', description: 'Bread', imageAssetId: null },
       subdomain: 'acme-shop',
       customDomain: 'www.acme.com',
       updatedAt: 'w-time',
@@ -118,6 +118,33 @@ describe('WebsiteSettingsPage', () => {
     fireEvent.click(saveBtn())
 
     expect(WebsiteService.update).toHaveBeenCalledWith({ subdomain: null, customDomain: null, updatedAt: 'w-time' })
+  })
+
+  test('typing during a save is kept', async () => {
+    await loaded()
+    type('Search title', 'First')
+    let finish: (value: unknown) => void = () => undefined
+    vi.mocked(WebsiteService.update).mockReturnValue(new Promise((resolve) => (finish = resolve)) as never)
+    fireEvent.click(saveBtn())
+    type('Search title', 'Second')
+    await act(async () => finish(website({ seo: { title: 'First', description: 'Bread' } })))
+    expect(screen.getByLabelText('Search title')).toHaveValue('Second')
+    expect(saveBtn()).toBeEnabled()
+  })
+
+  test('emptying a field typed in is not a change, and unsaved changes warn before leaving', async () => {
+    await loaded()
+    const leaving = () => {
+      const event = new Event('beforeunload', { cancelable: true })
+      window.dispatchEvent(event)
+      return event.defaultPrevented
+    }
+    expect(leaving()).toBe(false)
+    type('Search description', 'Bread and cakes')
+    expect(leaving()).toBe(true)
+    type('Search description', 'Bread')
+    expect(saveBtn()).toBeDisabled()
+    expect(leaving()).toBe(false)
   })
 
   test('chooses and removes the sharing image', async () => {
@@ -138,7 +165,7 @@ describe('WebsiteSettingsPage', () => {
     vi.mocked(WebsiteService.update).mockResolvedValue(website() as never)
     fireEvent.click(saveBtn())
     expect(WebsiteService.update).toHaveBeenCalledWith(
-      expect.objectContaining({ seo: { title: 'Acme', imageAssetId: null } }),
+      expect.objectContaining({ seo: { title: 'Acme', description: '', imageAssetId: null } }),
     )
   })
 
@@ -187,6 +214,16 @@ describe('WebsiteSettingsPage', () => {
     expect(await screen.findByText('Text of at most 70 characters.')).toBeInTheDocument()
     expect(screen.getByLabelText('Search title')).toHaveAttribute('aria-invalid', 'true')
     expect(screen.getByText('Not one of our own addresses.')).toBeInTheDocument()
+  })
+
+  test('a problem with no field on the page is reported', async () => {
+    await loaded()
+    type('Search title', 'Changed')
+    vi.mocked(WebsiteService.update).mockRejectedValue(
+      httpError(400, { errors: [{ path: 'updatedAt', message: 'The updatedAt the website was loaded with.' }] }),
+    )
+    fireEvent.click(saveBtn())
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('The updatedAt the website was loaded with.'))
   })
 
   test('a save after someone else saved asks for a reload, which loads their version', async () => {
@@ -241,6 +278,20 @@ describe('WebsiteSettingsPage', () => {
         updatedAt: 'w-time',
       })
       expect(await screen.findByText('State: verified')).toBeInTheDocument()
+    })
+
+    test('a new domain is sent without the state, so it waits to be checked', async () => {
+      await loaded({ customDomain: 'acme.com', customDomainStatus: 'pending' }, staff)
+      fireEvent.mouseDown(screen.getByLabelText('Domain state (ShowMine staff)'))
+      fireEvent.click(await screen.findByTitle('verified'))
+      type('Your own domain', 'shop.acme.com')
+      vi.mocked(WebsiteService.update).mockResolvedValue(website() as never)
+      fireEvent.click(saveBtn())
+      expect(WebsiteService.update).toHaveBeenCalledWith({
+        subdomain: null,
+        customDomain: 'shop.acme.com',
+        updatedAt: 'w-time',
+      })
     })
 
     test('has no state selector while no domain is recorded', async () => {
