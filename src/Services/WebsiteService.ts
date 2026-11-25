@@ -86,8 +86,6 @@ const getImageUsage = async (ids: string[]): Promise<{ [assetId: string]: IImage
 // Where the upload control sends a file (multipart field `file`).
 const getImageUploadUrl = () => `${process.env.REACT_APP_REST_END_POINT || ''}${endPoint}/images`
 
-const deleteImage = async (id: string) => AppService.delete(`/asset/${id}`).then((resp) => resp.data)
-
 // Page views per day and page, for a period of up to 366 UTC days.
 const getPageViews = async (from: string, to: string): Promise<IWebsitePageViews> =>
   AppService.get(`${endPoint}/pageViews`, { from, to }).then((resp) => resp.data)
@@ -97,7 +95,6 @@ const WebsiteService = {
   getImages,
   getImageUsage,
   getImageUploadUrl,
-  deleteImage,
   get,
   create,
   update,

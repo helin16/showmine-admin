@@ -125,14 +125,11 @@ describe('WebsiteService', () => {
       expect(url.searchParams.get('perPage')).toBe('2')
     })
 
-    test('getImageUsage, the upload address and deleteImage', async () => {
+    test('getImageUsage and the upload address', async () => {
       vi.mocked(axios.get).mockResolvedValue({ data: { a1: [] } })
       await expect(WebsiteService.getImageUsage(['a1', 'a2'])).resolves.toStrictEqual({ a1: [] })
       expect(vi.mocked(axios.get).mock.calls[0][0]).toBe(`${API}/website/images/usage?ids=a1%2Ca2`)
       expect(WebsiteService.getImageUploadUrl()).toBe(`${API}/website/images`)
-      vi.mocked(axios.delete).mockResolvedValue({ data: {} })
-      await WebsiteService.deleteImage('a1')
-      expect(vi.mocked(axios.delete).mock.calls[0][0]).toBe(`${API}/asset/a1`)
     })
   })
 })

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { useSelector } from 'react-redux'
 import MenuItems, { MENU_ACCESS_LEVEL_COMPANY_ADMIN, MENU_ACCESS_LEVEL_SUPER_ADMIN } from '../Components/Menu/MenuItems'
@@ -47,10 +47,17 @@ const BackendPageSideMenu = () => {
           icon: subItem.icon,
         }
 
-  // The submenu that holds the selected page starts open.
-  const openKeys = MenuItems.flatMap((item) => (item.items || []) as iMenuEntry[])
-    .filter((subItem) => (subItem.children || []).some((child) => child.key === selectedMenuKey))
-    .map((subItem) => subItem.key)
+  // The submenu that holds the selected page opens with it. The page sets its key after the menu mounts, so it is
+  // followed rather than read once; opening and closing by hand still works.
+  const parentsOf = (key?: string) =>
+    MenuItems.flatMap((item) => (item.items || []) as iMenuEntry[])
+      .filter((subItem) => (subItem.children || []).some((child) => child.key === key))
+      .map((subItem) => subItem.key)
+  const [openKeys, setOpenKeys] = useState<string[]>(parentsOf(selectedMenuKey))
+  useEffect(() => {
+    const parents = parentsOf(selectedMenuKey)
+    if (parents.length > 0) setOpenKeys((open) => Array.from(new Set([...open, ...parents])))
+  }, [selectedMenuKey])
 
   const getMenuItems = () => {
     return MenuItems.map((item) => {
@@ -82,7 +89,8 @@ const BackendPageSideMenu = () => {
         theme='dark'
         mode='inline'
         selectedKeys={selectedMenuKey ? [selectedMenuKey] : undefined}
-        defaultOpenKeys={openKeys}
+        openKeys={openKeys}
+        onOpenChange={setOpenKeys}
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         items={getMenuItems()}

@@ -86,13 +86,7 @@ const MediaListContent = ({ keyword }: iMediaList) => {
         data: pageNo === 1 ? res.data : [...(assetList?.data || []), ...res.data]
       });
       // The list works without these, so they load after it.
-      const ids = res.data.map(({ id }) => `${id}`);
-      if (isWebsiteOn && ids.length > 0) {
-        WebsiteService.getImageUsage(ids)
-          .then((found) => !isCanceled && setWebsiteUses((known) => ({ ...known, ...found })))
-          .catch(() => undefined);
-      }
-      return AssetService.getArticles(ids).then((found) => {
+      return AssetService.getArticles(res.data.map(({ id }) => `${id}`)).then((found) => {
         if (isCanceled) return;
         setArticles((known) => ({ ...known, ...found }));
       });
@@ -105,7 +99,23 @@ const MediaListContent = ({ keyword }: iMediaList) => {
     return () => {
       isCanceled = true;
     }
-  }, [keyword, pageNo, isWebsiteOn]);
+  }, [keyword, pageNo]);
+
+  // Where the website uses the images shown, asked once per image in batches of 100 (the API's limit). The list works
+  // without it, so a failure is left quiet.
+  useEffect(() => {
+    if (!isWebsiteOn) return;
+    let isCanceled = false;
+    const ids = (assetList?.data || []).map(({ id }) => `${id}`).filter((id) => !(id in websiteUses));
+    for (let i = 0; i < ids.length; i += 100) {
+      WebsiteService.getImageUsage(ids.slice(i, i + 100))
+        .then((found) => !isCanceled && setWebsiteUses((known) => ({ ...known, ...found })))
+        .catch(() => undefined);
+    }
+    return () => {
+      isCanceled = true;
+    };
+  }, [assetList, isWebsiteOn]);
 
   /**
    *

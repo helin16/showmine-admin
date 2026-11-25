@@ -160,6 +160,16 @@ describe('MediaList', () => {
       expect(screen.getAllByText(/^Used in:/)).toHaveLength(1)
     })
 
+    test('asks for usage in batches of 100, the API limit', async () => {
+      const many = Array.from({ length: 150 }, (_, i) => ({ ...asset, id: `as-${i}`, comments: `Pic ${i}` }))
+      service.getAll.mockResolvedValue(listOf(many as IAsset[]))
+      vi.mocked(WebsiteService.getImageUsage).mockResolvedValue({})
+      renderWithProviders(<MediaList />, withWebsite as never)
+
+      await waitFor(() => expect(WebsiteService.getImageUsage).toHaveBeenCalledTimes(2))
+      expect(vi.mocked(WebsiteService.getImageUsage).mock.calls.map(([ids]) => ids.length)).toEqual([100, 50])
+    })
+
     test('a failed usage check leaves the list as it is', async () => {
       service.getAll.mockResolvedValue(listOf([asset]))
       vi.mocked(WebsiteService.getImageUsage).mockRejectedValue(new Error('down'))

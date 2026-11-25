@@ -60,7 +60,7 @@ describe('ImageLibrary', () => {
   test('no images yet says so', async () => {
     vi.mocked(WebsiteService.getImages).mockResolvedValue(page([]) as never)
     renderWithProviders(<ImageLibrary />, { state: auth })
-    expect(await screen.findByText('No website images yet. Upload one above.')).toBeInTheDocument()
+    expect(await screen.findByText('No images yet. Upload one above.')).toBeInTheDocument()
   })
 
   test('a failed load can be tried again', async () => {
@@ -216,26 +216,6 @@ describe('after review', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Load more' }))
     expect(await screen.findByRole('img', { name: 'a2.png' })).toBeInTheDocument()
     expect(screen.getAllByRole('img', { name: 'a1.png' })).toHaveLength(1)
-  })
-
-  test('after a delete the list starts again from the first page', async () => {
-    vi.mocked(WebsiteService.getImages).mockResolvedValue(page([image('a1'), image('a2')]) as never)
-    const Host = () => {
-      const [removedIds, setRemovedIds] = React.useState<string[]>([])
-      return (
-        <>
-          <ImageLibrary removedIds={removedIds} />
-          <button onClick={() => setRemovedIds(['a1'])}>deleted</button>
-        </>
-      )
-    }
-    renderWithProviders(<Host />, { state: auth })
-    await screen.findByRole('img', { name: 'a1.png' })
-    expect(WebsiteService.getImages).toHaveBeenCalledTimes(1)
-    fireEvent.click(screen.getByRole('button', { name: 'deleted' }))
-    await waitFor(() => expect(WebsiteService.getImages).toHaveBeenCalledTimes(2))
-    expect(WebsiteService.getImages).toHaveBeenLastCalledWith(1)
-    expect(screen.queryByRole('img', { name: 'a1.png' })).not.toBeInTheDocument()
   })
 
   test('another company never sees the old images, nor an upload that finishes after the switch', async () => {

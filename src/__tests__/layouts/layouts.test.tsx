@@ -1,5 +1,5 @@
 import React from 'react'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { vi } from 'vitest'
 import { stubMatchMedia } from '../components/Access/domHelpers'
 import { renderWithProviders } from '../testUtils'
@@ -11,6 +11,7 @@ import BackendPageSideMenu from '../../Layouts/BackendPageSideMenu'
 import FullPageWrapper from '../../Layouts/FullPageWrapper'
 import { ROLE_ADMIN, ROLE_NON_ADMIN } from '../../Types/Company/ICompanyUser'
 import { MENU_KEY_ARTICLES, MENU_KEY_COMPANY_ADMIN, MENU_KEY_WEBSITE_PAGES } from '../../Components/Menu/MenuItems'
+import { selectMenu } from '../../Redux/reduxers/backendPage.slice'
 import { ARTICLE_LIST_URL, COMPANY_WEBSITE_PAGES_URL, COMPANY_WEBSITE_URL, MY_PROFILE_URL } from '../../UrlMap'
 
 vi.mock('../../Services/AuthService', () => ({ default: { updateMe: vi.fn() } }))
@@ -126,6 +127,20 @@ describe('BackendPageSideMenu', () => {
       expect.arrayContaining(['Pages', 'Page views', 'Publish and address', 'Templates', 'Website settings']),
     )
     expect(screen.getByRole('link', { name: 'Publish and address' })).toHaveAttribute('href', COMPANY_WEBSITE_URL)
+  })
+
+  test('opens the submenu when a website page is selected after the menu is shown, as on a reload', () => {
+    const { store } = renderWithProviders(<BackendPageSideMenu />, {
+      state: {
+        auth: { company: { ...acme, websiteBuilderEnabled: true }, companyUsers: [admin] },
+        backendPage: { selectedMenuKey: MENU_KEY_ARTICLES },
+      },
+    })
+    expect(screen.queryByRole('link', { name: 'Pages' })).not.toBeInTheDocument()
+    act(() => {
+      store.dispatch(selectMenu({ selectedMenuKey: MENU_KEY_WEBSITE_PAGES }))
+    })
+    expect(screen.getByRole('link', { name: 'Pages' })).toBeInTheDocument()
   })
 
   test('a member gets the pages and page views only, and no company admin section', () => {

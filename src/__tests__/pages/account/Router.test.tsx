@@ -28,6 +28,11 @@ import {
   RESET_PASSWORD_URL,
   CONFIRM_EMAIL_URL,
   WIZARD_URL,
+  COMPANY_WEBSITE_URL,
+  COMPANY_WEBSITE_TEMPLATES_URL,
+  COMPANY_WEBSITE_SETTINGS_URL,
+  COMPANY_WEBSITE_PAGES_URL,
+  COMPANY_WEBSITE_ANALYTICS_URL,
 } from '../../../UrlMap'
 
 vi.mock('../../../Services/AuthService', async (importOriginal) => {
@@ -63,6 +68,12 @@ vi.mock('../../../Pages/Channel/CompanyNewChannelPage', () => page('new channel'
 vi.mock('../../../Pages/User/WizardPage', () => page('wizard'))
 vi.mock('../../../Pages/Article/ArticleListPage', () => page('articles'))
 vi.mock('../../../Pages/Article/ArticleDetailsPage', () => page('article details'))
+vi.mock('../../../Pages/Website/WebsiteOverviewPage', () => page('website publish'))
+vi.mock('../../../Pages/Website/WebsiteTemplatesPage', () => page('website templates'))
+vi.mock('../../../Pages/Website/WebsiteSettingsPage', () => page('website settings'))
+vi.mock('../../../Pages/Website/WebsitePagesPage', () => page('website pages'))
+vi.mock('../../../Pages/Website/WebsitePageEditPage', () => page('website page'))
+vi.mock('../../../Pages/Website/WebsiteAnalyticsPage', () => page('website analytics'))
 
 const acme = { id: 'co-1', name: 'Acme' }
 const adminMember = { companyId: 'co-1', isActive: true, isPending: false, role: ROLE_ADMIN }
@@ -128,6 +139,32 @@ describe('Router', () => {
       renderAt(MEDIA_LIST_URL, { auth: { user: { id: 'u-1', isSuperAdmin: true } } })
       expect(await screen.findByText('page: media')).toBeInTheDocument()
     })
+  })
+
+  // SMN-80: members edit pages and see page views; the rest of the website stays with admins.
+  describe('the website', () => {
+    const NOT_ALLOWED = 'Sorry, you are not authorized to access this page.'
+
+    test.each([
+      [COMPANY_WEBSITE_PAGES_URL, 'website pages'],
+      [`${COMPANY_WEBSITE_PAGES_URL}/p-1`, 'website page'],
+      [COMPANY_WEBSITE_ANALYTICS_URL, 'website analytics'],
+    ])('a member reaches %s', async (path, name) => {
+      renderAt(path, member)
+      expect(await screen.findByText(`page: ${name}`)).toBeInTheDocument()
+    })
+
+    test.each([[COMPANY_WEBSITE_URL], [COMPANY_WEBSITE_TEMPLATES_URL], [COMPANY_WEBSITE_SETTINGS_URL]])(
+      'a member is refused %s, an admin reaches it',
+      async (path) => {
+        const { unmount } = renderAt(path, member)
+        expect(await screen.findByText(NOT_ALLOWED)).toBeInTheDocument()
+        expect(screen.queryByText(/^page:/)).not.toBeInTheDocument()
+        unmount()
+        renderAt(path, companyAdmin)
+        expect(await screen.findByText(/^page: website/)).toBeInTheDocument()
+      },
+    )
   })
 
   test('unknown paths get the 404 page', () => {

@@ -47,22 +47,10 @@ type iImageLibrary = {
   // Selected image ids, in the order chosen; given when images can be picked.
   selectedIds?: string[]
   onToggle?: (asset: IAsset) => void
-  // More for each image, such as where it is used.
-  renderExtra?: (asset: IAsset) => React.ReactNode
-  onImagesChange?: (images: IAsset[]) => void
-  // Images deleted by the page, no longer shown.
-  removedIds?: string[]
   onUploaded?: (asset: IAsset) => void
 }
 
-export const ImageLibrary = ({
-  selectedIds,
-  onToggle,
-  renderExtra,
-  onImagesChange,
-  removedIds = [],
-  onUploaded,
-}: iImageLibrary) => {
+export const ImageLibrary = ({ selectedIds, onToggle, onUploaded }: iImageLibrary) => {
   const { company } = useSelector((s: RootState) => s.auth)
   const [images, setImages] = useState<IAsset[]>([])
   const [page, setPage] = useState({ current: 1, pages: 1 })
@@ -95,15 +83,9 @@ export const ImageLibrary = ({
     setPage({ current: 1, pages: 1 })
   }, [company?.id])
 
-  // A delete shifts the later pages back by one, so the list starts again from the first page.
   useEffect(() => {
     load(1)
-  }, [company?.id, count, removedIds.length])
-
-  const shown = images.filter((image) => !removedIds.includes(`${image.id}`))
-  useEffect(() => {
-    onImagesChange?.(shown)
-  }, [images, removedIds.join(',')])
+  }, [company?.id, count])
 
   // Checked here first, so a wrong file is never sent; the API checks again.
   const beforeUpload = (file: File) => {
@@ -162,11 +144,11 @@ export const ImageLibrary = ({
         />
       ) : null}
       <Spin spinning={loading}>
-        {shown.length === 0 && !loading && !loadError ? (
+        {images.length === 0 && !loading && !loadError ? (
           <Empty description={translate('website-images-none')} />
         ) : (
           <Row gutter={[12, 12]}>
-            {shown.map((image) => {
+            {images.map((image) => {
               const order = selectedIds ? selectedIds.indexOf(`${image.id}`) : -1
               return (
                 <Col xs={12} sm={8} md={6} key={image.id}>
@@ -192,7 +174,6 @@ export const ImageLibrary = ({
                     <div>
                       {image.fileName} · {formatSize(image.fileSize)}
                     </div>
-                    {renderExtra ? renderExtra(image) : null}
                   </div>
                 </Col>
               )
