@@ -259,20 +259,29 @@ describe('WebsiteOverviewPage', () => {
     expect(screen.queryByRole('link', { name: /reader/ })).not.toBeInTheDocument()
   })
 
-  test('shows the ShowMine address, not open yet, and the address in WeChat', async () => {
+  test('shows the ShowMine address, not open yet, and the Reader address', async () => {
     vi.mocked(WebsiteService.get).mockResolvedValue(
       website({ addresses: { subdomain: 'https://acme-ab12cd.showmine.com.au', reader: null } }) as never,
     )
     renderPage()
     expect(await screen.findByText(/https:\/\/acme-ab12cd\.showmine\.com\.au/)).toHaveTextContent('not open yet')
     expect(screen.getByText('ShowMine address')).toBeInTheDocument()
-    expect(screen.getByText('Address in WeChat')).toBeInTheDocument()
+    expect(screen.getByText('Reader address')).toBeInTheDocument()
+  })
+
+  test('uses the Reader address the API gives over this app setting', async () => {
+    vi.mocked(WebsiteService.get).mockResolvedValue(
+      website({ addresses: { subdomain: null, reader: 'https://r.showmine66.com/s/acme' } }) as never,
+    )
+    renderPage()
+    expect(await screen.findByText('https://r.showmine66.com/s/acme')).toBeInTheDocument()
+    expect(screen.queryByText('https://reader.test/s/acme')).not.toBeInTheDocument()
   })
 
   test('without a ShowMine address configured, that line is left out', async () => {
     vi.mocked(WebsiteService.get).mockResolvedValue(website({ addresses: { subdomain: null, reader: null } }) as never)
     renderPage()
-    await screen.findByText('Address in WeChat')
+    await screen.findByText('Reader address')
     expect(screen.queryByText('ShowMine address')).not.toBeInTheDocument()
   })
 

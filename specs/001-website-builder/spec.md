@@ -30,13 +30,13 @@ A company admin completes the business profile: name, description, contact detai
 
 **Why this priority**: Every other story needs a website record and the business details it shows.
 
-**Independent Test**: With the builder turned on for a test company, an admin fills in the profile, creates a website with a free address name, reloads, and sees everything kept. A member of the same company cannot see or change any of it.
+**Independent Test**: With the builder turned on for a test company, an admin fills in the profile, finds the website created and named after the company, renames it, reloads, and sees everything kept. A member of the same company cannot see or change any of it.
 
 **Acceptance Scenarios**:
 
-1. **Given** the builder is on and the company has no website, **When** an admin enters a free address name, **Then** the website is created, unpublished, at that address.
-2. **Given** another company uses the name `my-shop`, **When** an admin picks `my-shop`, **Then** they are told it is taken and nothing is created.
-3. **Given** an admin enters a name with capitals, spaces or a reserved word, **When** they save, **Then** each problem is named next to its field.
+1. **Given** a company with no website, **When** a super admin turns the builder on, **Then** the website is created, unpublished, named after the company, at an address made from the name and a code (SMN-81).
+2. **Given** another company with the same name, **Then** the two websites get different addresses, by their codes.
+3. **Given** an admin enters a name with spaces, symbols or Chinese, **When** they save, **Then** it is kept as entered and the address is made from its letters and digits; an empty or over-long name is named as the problem.
 4. **Given** a company member who is not an admin, **When** they open the Website area or call it directly, **Then** they are refused.
 5. **Given** the builder is off for a company, **When** anyone in that company looks, **Then** the Website area does not exist for them.
 6. **Given** two admins have the settings open, **When** the second saves after the first, **Then** the second is told to reload, and the first admin's change is kept.
@@ -133,7 +133,7 @@ An admin sets the site's and each page's title, description and sharing image. *
 **Acceptance Scenarios**:
 
 1. **Given** SEO text over its limit, **When** saved, **Then** the limit is shown.
-2. **Given** a subdomain or custom domain another website holds, **When** saved, **Then** it is refused as taken.
+2. **Given** a custom domain another website holds, **When** saved, **Then** it is refused as taken. (The ShowMine subdomain is made from the website name, SMN-81.)
 3. **Given** a recorded custom domain, **Then** its state (pending, verified or failed) is shown, and only ShowMine staff can change it.
 4. **Given** published SEO settings, **When** a page is shared or crawled, **Then** the page's own title and description are used, falling back to the site's, then the company's.
 

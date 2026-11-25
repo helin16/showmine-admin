@@ -368,7 +368,7 @@ const LanguageEN = {
     'website-saved': 'Saved.',
     'website-stale': 'Someone else changed the website. Reload to see their change, then try again.',
     'website-reload': 'Reload',
-    'website-address': 'Address in WeChat',
+    'website-address': 'Reader address',
     'website-status': 'Status',
     'website-not-published': 'Not published',
     'website-published': 'Published {date}',

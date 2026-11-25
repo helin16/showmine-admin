@@ -367,7 +367,7 @@ const LanguageCN = {
     'website-saved': '已保存。',
     'website-stale': '其他人修改了网站。请刷新查看他们的修改，然后再试。',
     'website-reload': '刷新',
-    'website-address': '在微信里打开的网址',
+    'website-address': 'Reader 网址',
     'website-status': '状态',
     'website-not-published': '未发布',
     'website-published': '{date} 已发布',

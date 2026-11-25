@@ -139,7 +139,9 @@ const WebsiteOverviewPage = () => {
       return null
     }
     const { website } = state
-    const publicUrl = website ? getPublicUrl(website.slug) : null
+    // The API's Reader address first (SMN-81), as it is what the Reader is configured with; this app's own setting
+    // otherwise.
+    const publicUrl = website ? website.addresses?.reader || getPublicUrl(website.slug) : null
     return (
       <Card>
         <Space orientation={'vertical'} style={{ width: '100%' }} size={'large'}>
