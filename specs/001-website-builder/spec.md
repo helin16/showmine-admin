@@ -43,6 +43,8 @@ A company admin completes the business profile: name, description, contact detai
 
 ### User Story 2 - Edit pages and sections without publishing (Priority: P1)
 
+*Amended 2026-11-25 (SMN-80):* any member of the company does this, except deleting pages, which stays with admins. The admin menu shows Website under Components, after Media: Pages and Page views for everyone; Publish and address, Templates and Settings for admins.
+
 An admin adds, renames, reorders and removes pages. On each page they add, edit, reorder and remove sections: hero, text, image, gallery, contact details and latest articles. They preview the draft at any time, and saving never makes it public. Jira: SMN-59, SMN-60.
 
 **Why this priority**: Pages and sections are the website's content.
@@ -80,6 +82,8 @@ An admin publishes. Visitors on a phone or a computer see the published pages, w
 
 ### User Story 4 - Start from a template (Priority: P2)
 
+*Amended 2026-11-25 (SMN-80):* templates replace the whole site (theme and pages), so only admins apply them.
+
 An admin browses templates, each shown with its name, a thumbnail and a description, and opens a full preview before choosing one. Choosing a template creates its starting pages. If pages already exist, the admin is warned before anything is replaced. Jira: SMN-57, SMN-58.
 
 **Why this priority**: Templates make the first site quick to build, but a site can be built without one.
@@ -99,6 +103,8 @@ An admin browses templates, each shown with its name, a thumbnail and a descript
 ### User Story 5 - Manage website images (Priority: P2)
 
 An admin uploads images, watching upload progress, then picks them for sections. They see each image's preview, size and where it is used, and remove images that are not used. Jira: SMN-61, SMN-62.
+
+*Amended 2026-11-25 (SMN-80):* there is one image library. The picker lists every JPEG, PNG, WebP or GIF image in Media, members may upload, and Media shows where the website uses an image and refuses to delete it. The separate "Website images" page is gone.
 
 **Why this priority**: Sites need the business's own pictures. Text-only sites work without this.
 
@@ -161,7 +167,7 @@ An admin picks a period of up to a year and sees page views per day and per page
 ### Functional Requirements
 
 - **FR-001**: ShowMine staff MUST be able to turn the builder on or off per company. When off, the company sees no Website area, editing is refused, and its public site shows not-found.
-- **FR-002**: Only the company's approved admins (and ShowMine staff) MUST be able to view or change its website, pages, images, settings and analytics.
+- **FR-002**: Only the company's approved members (and ShowMine staff) MUST be able to view or change its website. Any member MAY view the website, add, edit and reorder pages and sections, preview the draft, upload images and see page views. Only its admins MAY delete pages, publish or unpublish, change the address name, apply a template and change the settings (SEO and addresses). *(Amended 2026-11-25, SMN-80; was admins only.)*
 - **FR-003**: The business profile MUST be the company's existing profile plus an address of at most 500 characters.
 - **FR-004**: Each company MUST have at most one active website, with an address name of 3 to 40 lower-case letters, digits or hyphens. The name must not start or end with a hyphen, must not be a reserved name, and must be unique among active websites.
 - **FR-005**: Admins MUST be able to create, rename, reorder and delete pages. Each page MUST have a name unique within its website, and the first page MUST be the home page.
@@ -175,10 +181,10 @@ An admin picks a period of up to a year and sees page views per day and per page
 - **FR-013**: Admins MUST be able to preview the draft in a new tab through a link that expires after 30 minutes and is hidden from search engines.
 - **FR-014**: The system MUST offer three templates with name, thumbnail, description and a full preview. Choosing one MUST create its pages once and warn before replacing existing pages.
 - **FR-015**: The number of pages MUST be limited by plan: Free 5, Starter 20, Unlimited no limit. Companies with no plan have no limit.
-- **FR-016**: Website images MUST be JPEG, PNG, WebP or GIF of at most 10 MB each, MUST count toward the plan's storage, and MUST belong to the company that uses them.
-- **FR-017**: An image used by a draft or the published site MUST NOT be deletable. The library MUST show where each image is used.
+- **FR-016**: Website images MUST be JPEG, PNG, WebP or GIF, MUST belong to the company that uses them, and MAY be any such image in the company's Media library, not only website uploads (one image library, SMN-80). Uploads from the website MUST be at most 10 MB each and count toward the plan's storage. The published copy MUST take each image's address from its stored file, never from an address saved with it.
+- **FR-017**: An image used by a draft or the published site MUST NOT be deletable, nor have its file changed, through Media. Media MUST show where the website uses each image.
 - **FR-018**: A failed upload MUST NOT leave a stored file without a library entry, or the reverse.
-- **FR-019**: Asset clean-up MUST treat images used by any website as in use.
+- **FR-019**: Asset clean-up MUST treat images used by any website as in use, whatever their type.
 - **FR-020**: Visitors MUST see published pages with navigation, the not-found page for anything else, and a layout that works from phone to desktop.
 - **FR-021**: Each public page MUST provide a title, description and sharing image, falling back from the page to the site to the company.
 - **FR-022**: Admins MUST be able to set site and page SEO (title up to 70 characters, description up to 160), and to record a subdomain and a custom domain, each unique. Subdomains show their availability. Custom domains show pending, verified or failed, and only staff set that state.

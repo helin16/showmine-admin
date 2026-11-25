@@ -14,7 +14,6 @@ import {
   COMPANY_WEBSITE_TEMPLATES_URL,
   COMPANY_WEBSITE_PAGES_URL,
   COMPANY_WEBSITE_PAGE_URL,
-  COMPANY_WEBSITE_IMAGES_URL,
   COMPANY_WEBSITE_SETTINGS_URL,
   COMPANY_WEBSITE_ANALYTICS_URL,
   COMPANY_CHANNEL_NEW_URL,
@@ -54,7 +53,6 @@ const WebsiteOverviewPage = lazy(() => import('./Pages/Website/WebsiteOverviewPa
 const WebsiteTemplatesPage = lazy(() => import('./Pages/Website/WebsiteTemplatesPage'))
 const WebsitePagesPage = lazy(() => import('./Pages/Website/WebsitePagesPage'))
 const WebsitePageEditPage = lazy(() => import('./Pages/Website/WebsitePageEditPage'))
-const WebsiteMediaPage = lazy(() => import('./Pages/Website/WebsiteMediaPage'))
 const WebsiteSettingsPage = lazy(() => import('./Pages/Website/WebsiteSettingsPage'))
 const WebsiteAnalyticsPage = lazy(() => import('./Pages/Website/WebsiteAnalyticsPage'))
 const CompanyUsersPage = lazy(() => import('./Pages/Company/CompanyUsersPage'))
@@ -182,9 +180,7 @@ const Router = () => {
                   path={COMPANY_WEBSITE_PAGES_URL}
                   element={
                     <ProtectedRoute>
-                      <CompanyAdminRoute>
-                        <WebsitePagesPage />
-                      </CompanyAdminRoute>
+                      <WebsitePagesPage />
                     </ProtectedRoute>
                   }
                 />
@@ -192,19 +188,7 @@ const Router = () => {
                   path={COMPANY_WEBSITE_PAGE_URL}
                   element={
                     <ProtectedRoute>
-                      <CompanyAdminRoute>
-                        <WebsitePageEditPage />
-                      </CompanyAdminRoute>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path={COMPANY_WEBSITE_IMAGES_URL}
-                  element={
-                    <ProtectedRoute>
-                      <CompanyAdminRoute>
-                        <WebsiteMediaPage />
-                      </CompanyAdminRoute>
+                      <WebsitePageEditPage />
                     </ProtectedRoute>
                   }
                 />
@@ -222,9 +206,7 @@ const Router = () => {
                   path={COMPANY_WEBSITE_ANALYTICS_URL}
                   element={
                     <ProtectedRoute>
-                      <CompanyAdminRoute>
-                        <WebsiteAnalyticsPage />
-                      </CompanyAdminRoute>
+                      <WebsiteAnalyticsPage />
                     </ProtectedRoute>
                   }
                 />

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
 import { RootState } from '../../Redux/makeReduxStore'
-import { MENU_KEY_COMPANY_WEBSITE } from '../../Components/Menu/MenuItems'
+import { MENU_KEY_WEBSITE_TEMPLATES } from '../../Components/Menu/MenuItems'
 import BackendPage from '../../Layouts/BackendPage'
 import BackendPageContentTitle from '../../Layouts/BackendPageContentTitle'
 import InvalidAccessPanel from '../../Components/Error/InvalidAccessPanel'
@@ -178,7 +178,7 @@ const WebsiteTemplatesPage = () => {
   const { confirming } = state
   return (
     <BackendPage
-      selectedMenu={MENU_KEY_COMPANY_WEBSITE}
+      selectedMenu={MENU_KEY_WEBSITE_TEMPLATES}
       ContentHeader={<BackendPageContentTitle title={translate('website-templates')} />}
     >
       {isOn ? (

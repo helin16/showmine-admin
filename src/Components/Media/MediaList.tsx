@@ -16,6 +16,12 @@ import {APP_WIDTHS} from '../../Constants';
 import {OP_LIKE, OP_OR} from '../../Helpers/ServiceHelper';
 import { ARTICLE_DETAILS_URL, getUrl } from '../../UrlMap';
 import Utils from '../../Services/Utils'
+import { useSelector } from 'react-redux'
+import { RootState } from '../../Redux/makeReduxStore'
+import WebsiteService from '../../Services/WebsiteService'
+import describeUses from '../Website/describeUses'
+import translate from '../../i18n/translate'
+import { IImageUse } from '../../Types/Website/IWebsite'
 
 export const MediaListWrapper = styled.div`
   .media-list-item {
@@ -55,6 +61,9 @@ const MediaListContent = ({ keyword }: iMediaList) => {
   const [pageNo, setPageNo] = useState(1);
   const [assetList, setAssetList] = useState<IResList<IAsset> | null>(null);
   const [articles, setArticles] = useState<iAssetArticles>({});
+  // Where the company's website uses each image (SMN-80: one image library for articles and the website).
+  const [websiteUses, setWebsiteUses] = useState<{ [assetId: string]: IImageUse[] }>({});
+  const isWebsiteOn = useSelector((s: RootState) => s.auth.company?.websiteBuilderEnabled === true);
   /**
    * when keyword changed
    */
@@ -77,7 +86,13 @@ const MediaListContent = ({ keyword }: iMediaList) => {
         data: pageNo === 1 ? res.data : [...(assetList?.data || []), ...res.data]
       });
       // The list works without these, so they load after it.
-      return AssetService.getArticles(res.data.map(({ id }) => `${id}`)).then((found) => {
+      const ids = res.data.map(({ id }) => `${id}`);
+      if (isWebsiteOn && ids.length > 0) {
+        WebsiteService.getImageUsage(ids)
+          .then((found) => !isCanceled && setWebsiteUses((known) => ({ ...known, ...found })))
+          .catch(() => undefined);
+      }
+      return AssetService.getArticles(ids).then((found) => {
         if (isCanceled) return;
         setArticles((known) => ({ ...known, ...found }));
       });
@@ -90,7 +105,7 @@ const MediaListContent = ({ keyword }: iMediaList) => {
     return () => {
       isCanceled = true;
     }
-  }, [keyword, pageNo]);
+  }, [keyword, pageNo, isWebsiteOn]);
 
   /**
    *
@@ -104,6 +119,13 @@ const MediaListContent = ({ keyword }: iMediaList) => {
         (assetList?.data || []).splice(index, 1);
       })
       .catch((err) => {
+        const { status, data } = err?.response || {};
+        if (status === 409 && Array.isArray(data?.usedBy)) {
+          // The website uses it: say where, as the API refuses it.
+          setWebsiteUses((known) => ({ ...known, [assetId]: data.usedBy }));
+          message.error(translate('website-image-in-use', { places: describeUses(data.usedBy) }));
+          return;
+        }
         message.error(`Failed to delete selected media: ${Utils.getErrorMessage(err)}`);
       })
       .finally(() => {
@@ -170,6 +192,9 @@ const MediaListContent = ({ keyword }: iMediaList) => {
                         </Button>
                       </div>
                     ))}
+                    {(websiteUses[`${asset.id}`] || []).length > 0 ? (
+                      <div>{translate('website-image-used-in', { places: describeUses(websiteUses[`${asset.id}`]) })}</div>
+                    ) : null}
                     <div>type: {asset.type}</div>
                     <div>size: {fileSize}</div>
                   </div>

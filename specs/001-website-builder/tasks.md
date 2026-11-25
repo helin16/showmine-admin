@@ -258,6 +258,17 @@ description: 'Task list for the Website Builder (SMN-53, Sprint 3)'
 
 ---
 
+## Phase 9a: Members, menu and one image library (SMN-80, added 2026-11-25)
+
+**Goal**: Members edit pages; the website sits under Components; the website uses any image in Media.
+
+- [x] T079 [SMN-80] Member and admin guards in `api:src/controllers/Website/` (contracts/api.md), with tests in `api:tests/controllers/Website/WebsiteMembers.test.ts` and the route matrix
+- [x] T080 [SMN-80] One image library in `api:src/helpers/WebsiteHelper.ts`, `api:src/controllers/Assets/AssetController.ts` and `api:src/queue/processor/AssetCleanUp.ts`, with tests
+- [x] T081 [SMN-80] Website submenu under Components in `admin:src/Components/Menu/MenuItems.tsx` and `admin:src/Layouts/BackendPageSideMenu.tsx`; member routes in `admin:src/Router.tsx`
+- [x] T082 [SMN-80] Pages and editor for members (no delete, no publish bar); picker lists all Media images; Media shows website use; "Website images" page removed
+
+---
+
 ## Phase 10: Polish & Cross-Cutting
 
 - [x] T075 [P] Run `yarn lint`, `yarn test` and `yarn build` in each repository for each slice, in the MAOS agent container. The API and Reader constitutions say `npm run`; these are the same package scripts run through Yarn, which the repositories pin

@@ -3,7 +3,8 @@ import { useSelector } from 'react-redux'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Input, Select } from 'antd'
 import { RootState } from '../../Redux/makeReduxStore'
-import { MENU_KEY_COMPANY_WEBSITE } from '../../Components/Menu/MenuItems'
+import { MENU_KEY_WEBSITE_PAGES } from '../../Components/Menu/MenuItems'
+import { useIsCompanyAdmin } from '../../Components/Route/CompanyAdminRoute'
 import BackendPage from '../../Layouts/BackendPage'
 import BackendPageContentTitle from '../../Layouts/BackendPageContentTitle'
 import InvalidAccessPanel from '../../Components/Error/InvalidAccessPanel'
@@ -87,6 +88,7 @@ const toDraft = (page: IWebsitePage): iDraft => ({
 const isSame = (a?: iDraft, b?: iDraft) => JSON.stringify(a) === JSON.stringify(b)
 
 const WebsitePageEditPage = () => {
+  const isAdmin = useIsCompanyAdmin()
   const { company } = useSelector((s: RootState) => s.auth)
   const isOn = company?.websiteBuilderEnabled === true
   const { id } = useParams()
@@ -389,7 +391,8 @@ const WebsitePageEditPage = () => {
         <div aria-live={'polite'} className={'sr-only'} style={{ position: 'absolute', left: -10000 }}>
           {state.announcement}
         </div>
-        {website ? (
+        {/* Publishing is for admins only (SMN-80); a member saves and previews. */}
+        {website && isAdmin ? (
           <Card>
             <PublishBar
               website={website}
@@ -500,7 +503,7 @@ const WebsitePageEditPage = () => {
 
   return (
     <BackendPage
-      selectedMenu={MENU_KEY_COMPANY_WEBSITE}
+      selectedMenu={MENU_KEY_WEBSITE_PAGES}
       ContentHeader={
         <BackendPageContentTitle
           title={state.page ? state.page.title : translate('website-pages')}

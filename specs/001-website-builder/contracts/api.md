@@ -5,9 +5,13 @@ Every route is additive. Consumers: `showmine-admin` (editing) and `showmine-rea
 **Editing routes** need, in this order:
 - the app token (`X-SHM-TOKEN`);
 - a signed-in user;
-- the `comid` header company;
-- `validateCompanyRole(ROLE_ADMIN)`, which returns **401** when refused (a super admin passes);
+- the `comid` header company (an approved member);
+- for admin routes only, `validateCompanyRole(ROLE_ADMIN)`, which returns **401** when refused (a super admin passes);
 - the switch, which returns **403** `{ message: 'The website builder is not turned on for this company.' }` when off.
+
+**Member routes** (SMN-80, any member): `GET /website`, `GET /website/pageViews`, `POST /website/preview`,
+`GET` and `POST /website/pages`, `PUT /website/pages/order`, `PUT /website/pages/:id`, `POST /website/images`,
+`GET /website/images/usage`. Every other website route is an admin route.
 
 Data is always the header company's. Another company's ids return 404. Each route reads only the body fields listed; other fields are ignored.
 
@@ -51,8 +55,11 @@ The `theme` and `seo` keys sent are merged over the saved ones.
 
 ## Images (US5)
 
-Website images have their own routes, with the same guards as `/website` (company admin, switch on). The guards run
-before the file is read.
+Website images have their own routes, with the member guards (SMN-80). The guards run before the file is read.
+Sections and SEO may use any active JPEG, PNG, WebP or GIF asset of the company under its folder, not only `WEBSITE`
+uploads; the published copy builds each address from the asset's key. `DELETE /asset/:id` answers 409 `{ message,
+usedBy }` for any asset the website uses, and `PUT /asset/:id` answers 409 when it would change such an asset's
+`url`, `externalAssetId`, `fileType` or `type`.
 
 - `POST /website/images`, multipart field `file`: 200 with the new asset (`type: WEBSITE`).
   - 400 when the file is not jpeg, png, webp or gif, judged by its first bytes and its extension;

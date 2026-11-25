@@ -5,7 +5,7 @@ import MenuItems, { MENU_ACCESS_LEVEL_COMPANY_ADMIN, MENU_ACCESS_LEVEL_SUPER_ADM
 import { RootState } from '../Redux/makeReduxStore'
 import Menu from '../Components/Form/Menu'
 import { Link } from 'react-router-dom'
-import {ROLE_ADMIN} from '../Types/Company/ICompanyUser';
+import { useIsCompanyAdmin } from '../Components/Route/CompanyAdminRoute'
 
 const SideMenuWrapper = styled.div`
   .ant-menu-item {
@@ -20,14 +20,41 @@ const SideMenuWrapper = styled.div`
     text-overflow: ellipsis;
   }
 `
+type iMenuEntry = { key: string; name: React.ReactNode; url?: string; icon?: React.ReactNode; adminOnly?: boolean; needsWebsiteBuilder?: boolean; children?: iMenuEntry[] }
+
 const BackendPageSideMenu = () => {
-  const { user, company, companyUsers } = useSelector((s: RootState) => s.auth);
+  const { user, company } = useSelector((s: RootState) => s.auth);
   const { selectedMenuKey } = useSelector((s: RootState) => s.backendPage)
+  const isCompanyAdmin = useIsCompanyAdmin()
+
+  // An entry with children is a submenu: its admin-only children are left out for members (SMN-80).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const toMenuItem = (subItem: iMenuEntry): any =>
+    subItem.children
+      ? {
+          label: subItem.name,
+          key: subItem.key,
+          icon: subItem.icon,
+          children: subItem.children.filter((child) => child.adminOnly !== true || isCompanyAdmin).map(toMenuItem),
+        }
+      : {
+          label: (
+            <Link type={'link'} to={`${subItem.url}`}>
+              {subItem.name}
+            </Link>
+          ),
+          key: subItem.key,
+          icon: subItem.icon,
+        }
+
+  // The submenu that holds the selected page starts open.
+  const openKeys = MenuItems.flatMap((item) => (item.items || []) as iMenuEntry[])
+    .filter((subItem) => (subItem.children || []).some((child) => child.key === selectedMenuKey))
+    .map((subItem) => subItem.key)
 
   const getMenuItems = () => {
-    const isCurrentCompanyAdmin = (companyUsers || []).filter(companyUser => companyUser.companyId === company?.id && companyUser.isActive === true && companyUser.isPending === false && companyUser.role === ROLE_ADMIN).length > 0;
     return MenuItems.map((item) => {
-      if (isCurrentCompanyAdmin !== true && user?.isSuperAdmin !== true && item.access === MENU_ACCESS_LEVEL_COMPANY_ADMIN) {
+      if (isCompanyAdmin !== true && item.access === MENU_ACCESS_LEVEL_COMPANY_ADMIN) {
         return undefined;
       }
       if (user?.isSuperAdmin !== true && item.access === MENU_ACCESS_LEVEL_SUPER_ADMIN) {
@@ -44,15 +71,7 @@ const BackendPageSideMenu = () => {
         type: 'group',
         label: <div className={'group-div'}>{item.name}</div>,
         key: item.key,
-        children: item.items.filter((subItem) => !('needsWebsiteBuilder' in subItem) || company?.websiteBuilderEnabled === true).map((subItem) => ({
-          label: (
-            <Link type={'link'} to={subItem.url}>
-              {subItem.name}
-            </Link>
-          ),
-          key: subItem.key,
-          icon: subItem.icon,
-        })),
+        children: (item.items as iMenuEntry[]).filter((subItem) => subItem.needsWebsiteBuilder !== true || company?.websiteBuilderEnabled === true).map(toMenuItem),
       }
     }).filter((item) => item !== undefined)
   }
@@ -61,7 +80,9 @@ const BackendPageSideMenu = () => {
     <SideMenuWrapper>
       <Menu
         theme='dark'
+        mode='inline'
         selectedKeys={selectedMenuKey ? [selectedMenuKey] : undefined}
+        defaultOpenKeys={openKeys}
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         items={getMenuItems()}

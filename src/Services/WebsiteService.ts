@@ -7,7 +7,7 @@ import IWebsite, {
   IWebsiteSeo,
   IWebsiteTemplate,
 } from '../Types/Website/IWebsite'
-import IAsset, { ASSET_TYPE_WEBSITE } from '../Types/Asset/IAsset'
+import IAsset, { WEBSITE_IMAGE_TYPES } from '../Types/Asset/IAsset'
 import IResList from '../Types/IResList'
 
 // The company's website (specs/001-website-builder, contracts/api.md "Website").
@@ -70,10 +70,11 @@ const publish = async (updatedAt: Date | string | undefined): Promise<IWebsite> 
 
 const unpublish = async (): Promise<IWebsite> => AppService.post(`${endPoint}/unpublish`, {}).then((resp) => resp.data)
 
-// The company's website images, newest first; or the ones with these ids.
+// The company's images in Media that a website can show, newest first; or the ones with these ids. One image library
+// since SMN-80: article and website uploads alike.
 const getImages = async (currentPage = 1, ids?: string[]): Promise<IResList<IAsset>> =>
   AppService.get('/asset', {
-    where: JSON.stringify({ isActive: true, type: ASSET_TYPE_WEBSITE, ...(ids ? { id: ids } : {}) }),
+    where: JSON.stringify({ isActive: true, fileType: WEBSITE_IMAGE_TYPES, ...(ids ? { id: ids } : {}) }),
     sort: 'createdAt:DESC',
     currentPage,
     ...(ids ? { perPage: Math.max(ids.length, 1) } : {}),

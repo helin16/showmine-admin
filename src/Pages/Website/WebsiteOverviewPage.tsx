@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { RootState } from '../../Redux/makeReduxStore'
-import { MENU_KEY_COMPANY_WEBSITE } from '../../Components/Menu/MenuItems'
+import { MENU_KEY_WEBSITE_PUBLISH } from '../../Components/Menu/MenuItems'
 import BackendPage from '../../Layouts/BackendPage'
 import BackendPageContentTitle from '../../Layouts/BackendPageContentTitle'
 import InvalidAccessPanel from '../../Components/Error/InvalidAccessPanel'
@@ -19,7 +19,6 @@ import WebsiteService from '../../Services/WebsiteService'
 import Utils from '../../Services/Utils'
 import IWebsite, { WEBSITE_SLUG_PATTERN } from '../../Types/Website/IWebsite'
 import {
-  COMPANY_WEBSITE_IMAGES_URL,
   COMPANY_WEBSITE_PAGES_URL,
   COMPANY_WEBSITE_SETTINGS_URL,
   COMPANY_WEBSITE_ANALYTICS_URL,
@@ -213,7 +212,6 @@ const WebsiteOverviewPage = () => {
               <Space wrap>
                 <Link to={COMPANY_WEBSITE_PAGES_URL}>{translate('website-pages-edit')}</Link>
                 <Link to={COMPANY_WEBSITE_TEMPLATES_URL}>{translate('website-templates-choose')}</Link>
-                <Link to={COMPANY_WEBSITE_IMAGES_URL}>{translate('website-images')}</Link>
                 <Link to={COMPANY_WEBSITE_SETTINGS_URL}>{translate('website-settings')}</Link>
                 <Link to={COMPANY_WEBSITE_ANALYTICS_URL}>{translate('website-analytics')}</Link>
               </Space>
@@ -226,7 +224,7 @@ const WebsiteOverviewPage = () => {
 
   return (
     <BackendPage
-      selectedMenu={MENU_KEY_COMPANY_WEBSITE}
+      selectedMenu={MENU_KEY_WEBSITE_PUBLISH}
       ContentHeader={<BackendPageContentTitle title={translate('website')} />}
     >
       {isOn ? <Spin spinning={state.loading}>{getContent()}</Spin> : <InvalidAccessPanel />}

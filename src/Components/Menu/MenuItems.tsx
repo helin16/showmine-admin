@@ -24,6 +24,10 @@ import {
   COMPANY_CHANNELS_URL,
   COMPANY_LIST_URL,
   COMPANY_WEBSITE_URL,
+  COMPANY_WEBSITE_PAGES_URL,
+  COMPANY_WEBSITE_ANALYTICS_URL,
+  COMPANY_WEBSITE_TEMPLATES_URL,
+  COMPANY_WEBSITE_SETTINGS_URL,
 } from '../../UrlMap'
 
 export const MENU_KEY_DASHBOARD = 'dashboard'
@@ -34,7 +38,13 @@ export const MENU_KEY_COMPANY_ADMIN = 'company-admin'
 export const MENU_KEY_COMPANY_BILLING = 'company-billing'
 export const MENU_KEY_COMPANY_CHANNELS = 'company-channels'
 export const MENU_KEY_COMPANY_USERS = 'company-users'
-export const MENU_KEY_COMPANY_WEBSITE = 'company-website'
+// The website, under Components (SMN-80): pages and page views for every member, the rest for its admins.
+export const MENU_KEY_WEBSITE = 'website'
+export const MENU_KEY_WEBSITE_PAGES = 'website-pages'
+export const MENU_KEY_WEBSITE_ANALYTICS = 'website-analytics'
+export const MENU_KEY_WEBSITE_PUBLISH = 'website-publish'
+export const MENU_KEY_WEBSITE_TEMPLATES = 'website-templates'
+export const MENU_KEY_WEBSITE_SETTINGS = 'website-settings'
 export const MENU_ACCESS_LEVEL_COMPANY_ADMIN = 'access-company-admin'
 export const defaultSelectedKey = MENU_KEY_DASHBOARD
 export const MENU_ACCESS_LEVEL_SUPER_ADMIN = 'access-super-admin'
@@ -68,6 +78,43 @@ const MenuItems = [
         url: MEDIA_LIST_URL,
         icon: <PictureOutlined />,
       },
+      {
+        key: MENU_KEY_WEBSITE,
+        name: <FormattedMessage id='website' />,
+        icon: <GlobalOutlined />,
+        // Only for companies a super admin has turned the website builder on for.
+        needsWebsiteBuilder: true,
+        children: [
+          {
+            key: MENU_KEY_WEBSITE_PAGES,
+            name: <FormattedMessage id='website-menu-pages' />,
+            url: COMPANY_WEBSITE_PAGES_URL,
+          },
+          {
+            key: MENU_KEY_WEBSITE_ANALYTICS,
+            name: <FormattedMessage id='website-analytics' />,
+            url: COMPANY_WEBSITE_ANALYTICS_URL,
+          },
+          {
+            key: MENU_KEY_WEBSITE_PUBLISH,
+            name: <FormattedMessage id='website-menu-publish' />,
+            url: COMPANY_WEBSITE_URL,
+            adminOnly: true,
+          },
+          {
+            key: MENU_KEY_WEBSITE_TEMPLATES,
+            name: <FormattedMessage id='website-menu-templates' />,
+            url: COMPANY_WEBSITE_TEMPLATES_URL,
+            adminOnly: true,
+          },
+          {
+            key: MENU_KEY_WEBSITE_SETTINGS,
+            name: <FormattedMessage id='website-settings' />,
+            url: COMPANY_WEBSITE_SETTINGS_URL,
+            adminOnly: true,
+          },
+        ],
+      },
     ],
   },
 
@@ -98,14 +145,6 @@ const MenuItems = [
         name: <FormattedMessage id='users' />,
         url: COMPANY_USERS_URL,
         icon: <UsergroupAddOutlined />,
-      },
-      {
-        key: MENU_KEY_COMPANY_WEBSITE,
-        name: <FormattedMessage id='website' />,
-        url: COMPANY_WEBSITE_URL,
-        icon: <GlobalOutlined />,
-        // Only for companies a super admin has turned the website builder on for.
-        needsWebsiteBuilder: true,
       },
     ],
   },

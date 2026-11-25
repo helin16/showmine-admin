@@ -103,12 +103,16 @@ describe('WebsiteService', () => {
   })
 
   describe('images', () => {
-    test('getImages asks for active website images, newest first, by page', async () => {
+    // SMN-80: one image library, so every image in Media that a website can show.
+    test('getImages asks for active images of the website types, newest first, by page', async () => {
       vi.mocked(axios.get).mockResolvedValue({ data: body })
       await WebsiteService.getImages(2)
       const url = new URL(vi.mocked(axios.get).mock.calls[0][0] as string)
       expect(url.pathname).toBe('/asset')
-      expect(JSON.parse(`${url.searchParams.get('where')}`)).toStrictEqual({ isActive: true, type: 'WEBSITE' })
+      expect(JSON.parse(`${url.searchParams.get('where')}`)).toStrictEqual({
+        isActive: true,
+        fileType: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+      })
       expect(url.searchParams.get('sort')).toBe('createdAt:DESC')
       expect(url.searchParams.get('currentPage')).toBe('2')
     })

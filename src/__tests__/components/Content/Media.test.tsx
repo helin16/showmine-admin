@@ -5,6 +5,7 @@ import message from '../../../Components/Form/message'
 import CompanyMediaUsage from '../../../Components/Media/CompanyMediaUsage'
 import MediaList from '../../../Components/Media/MediaList'
 import AssetService from '../../../Services/AssetService'
+import WebsiteService from '../../../Services/WebsiteService'
 import IAsset from '../../../Types/Asset/IAsset'
 import { renderWithProviders } from '../../testUtils'
 import { FIXED_DATE, deferred, httpError, listOf } from '../Article/fixtures'
@@ -15,6 +16,7 @@ vi.mock('../../../Services/AssetService', async (importOriginal) => {
     default: { getAll: vi.fn(), getArticles: vi.fn(), getTotalSize: vi.fn(), deactivate: vi.fn(), formatFileSize: actual.default.formatFileSize },
   }
 })
+vi.mock('../../../Services/WebsiteService', () => ({ default: { getImageUsage: vi.fn() } }))
 vi.mock('../../../Components/Form/message', async (importOriginal) => ({
   ...(await importOriginal<object>()),
   default: { success: vi.fn(), error: vi.fn() },
@@ -141,6 +143,57 @@ describe('MediaList', () => {
 
     await waitFor(() => expect(message.error).toHaveBeenCalledWith('Failed to delete selected media: denied'))
     expect(screen.getByText('A picture')).toBeInTheDocument()
+  })
+
+  // SMN-80: one image library, so Media says where the website uses an image and why it can't be deleted.
+  describe('with the website builder on', () => {
+    const withWebsite = { state: { auth: { company: { id: 'co-1', websiteBuilderEnabled: true } } } }
+    const uses = [{ pageId: 'p-1', pageTitle: 'Home', published: false }, { published: true }]
+
+    test('shows where the website uses each image', async () => {
+      service.getAll.mockResolvedValue(listOf([asset, other]))
+      vi.mocked(WebsiteService.getImageUsage).mockResolvedValue({ 'as-1': uses, 'as-2': [] })
+      renderWithProviders(<MediaList />, withWebsite as never)
+
+      expect(await screen.findByText('Used in: Home, the published website')).toBeInTheDocument()
+      expect(WebsiteService.getImageUsage).toHaveBeenCalledWith(['as-1', 'as-2'])
+      expect(screen.getAllByText(/^Used in:/)).toHaveLength(1)
+    })
+
+    test('a failed usage check leaves the list as it is', async () => {
+      service.getAll.mockResolvedValue(listOf([asset]))
+      vi.mocked(WebsiteService.getImageUsage).mockRejectedValue(new Error('down'))
+      renderWithProviders(<MediaList />, withWebsite as never)
+
+      expect(await screen.findByText('A picture')).toBeInTheDocument()
+      expect(message.error).not.toHaveBeenCalled()
+    })
+
+    test('a delete the API refuses because the website uses the image says where, and keeps it', async () => {
+      service.getAll.mockResolvedValue(listOf([asset]))
+      vi.mocked(WebsiteService.getImageUsage).mockResolvedValue({ 'as-1': [] })
+      service.deactivate.mockRejectedValue(
+        Object.assign(new Error('status 409'), { response: { status: 409, data: { usedBy: uses } } }),
+      )
+      renderWithProviders(<MediaList />, withWebsite as never)
+      await screen.findByText('A picture')
+      await removeFirst()
+
+      await waitFor(() =>
+        expect(message.error).toHaveBeenCalledWith(
+          'This image is in use (Home, the published website), so it was not deleted.',
+        ),
+      )
+      expect(screen.getByText('A picture')).toBeInTheDocument()
+      expect(screen.getByText('Used in: Home, the published website')).toBeInTheDocument()
+    })
+  })
+
+  test('without the website builder, no website usage is asked for', async () => {
+    service.getAll.mockResolvedValue(listOf([asset]))
+    renderWithProviders(<MediaList />)
+    await screen.findByText('A picture')
+    expect(WebsiteService.getImageUsage).not.toHaveBeenCalled()
   })
 
   test('ignores delete for an asset that has no id', async () => {

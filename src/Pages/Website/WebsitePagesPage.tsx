@@ -3,7 +3,8 @@ import { useSelector } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
 import { Input } from 'antd'
 import { RootState } from '../../Redux/makeReduxStore'
-import { MENU_KEY_COMPANY_WEBSITE } from '../../Components/Menu/MenuItems'
+import { MENU_KEY_WEBSITE_PAGES } from '../../Components/Menu/MenuItems'
+import { useIsCompanyAdmin } from '../../Components/Route/CompanyAdminRoute'
 import BackendPage from '../../Layouts/BackendPage'
 import BackendPageContentTitle from '../../Layouts/BackendPageContentTitle'
 import InvalidAccessPanel from '../../Components/Error/InvalidAccessPanel'
@@ -39,6 +40,7 @@ type iState = {
 const initState: iState = { loading: false, hasNoWebsite: false, working: false, count: 0 }
 
 const WebsitePagesPage = () => {
+  const isAdmin = useIsCompanyAdmin()
   const { company } = useSelector((s: RootState) => s.auth)
   const isOn = company?.websiteBuilderEnabled === true
   const navigate = useNavigate()
@@ -189,21 +191,24 @@ const WebsitePagesPage = () => {
               >
                 ↓
               </Button>
-              <PopConfirm
-                title={translate('website-page-delete-confirm', { title: page.title })}
-                okText={translate('website-delete')}
-                cancelText={translate('cancel')}
-                okButtonProps={{ danger: true }}
-                onConfirm={() => remove(page)}
-              >
-                <Button
-                  danger
-                  disabled={state.working}
-                  aria-label={translate('website-delete-named', { name: page.title })}
+              {/* Deleting a page is for admins only (SMN-80); members add, edit and reorder. */}
+              {isAdmin ? (
+                <PopConfirm
+                  title={translate('website-page-delete-confirm', { title: page.title })}
+                  okText={translate('website-delete')}
+                  cancelText={translate('cancel')}
+                  okButtonProps={{ danger: true }}
+                  onConfirm={() => remove(page)}
                 >
-                  {translate('website-delete')}
-                </Button>
-              </PopConfirm>
+                  <Button
+                    danger
+                    disabled={state.working}
+                    aria-label={translate('website-delete-named', { name: page.title })}
+                  >
+                    {translate('website-delete')}
+                  </Button>
+                </PopConfirm>
+              ) : null}
             </Space>
           ),
         },
@@ -217,7 +222,7 @@ const WebsitePagesPage = () => {
         <Alert
           type={'warning'}
           message={translate('website-templates-no-website')}
-          action={<Link to={COMPANY_WEBSITE_URL}>{translate('website-templates-create-first')}</Link>}
+          action={isAdmin ? <Link to={COMPANY_WEBSITE_URL}>{translate('website-templates-create-first')}</Link> : null}
         />
       )
     }
@@ -243,7 +248,7 @@ const WebsitePagesPage = () => {
             >
               {translate('website-page-add')}
             </Button>
-            <Link to={COMPANY_WEBSITE_TEMPLATES_URL}>{translate('website-templates-choose')}</Link>
+            {isAdmin ? <Link to={COMPANY_WEBSITE_TEMPLATES_URL}>{translate('website-templates-choose')}</Link> : null}
           </Space>
           {state.pages.length === 0 ? <Empty description={translate('website-pages-none')} /> : getTable(state.pages)}
         </Space>
@@ -254,7 +259,7 @@ const WebsitePagesPage = () => {
   const { adding } = state
   return (
     <BackendPage
-      selectedMenu={MENU_KEY_COMPANY_WEBSITE}
+      selectedMenu={MENU_KEY_WEBSITE_PAGES}
       ContentHeader={<BackendPageContentTitle title={translate('website-pages')} />}
     >
       {isOn ? <Spin spinning={state.loading}>{getContent()}</Spin> : <InvalidAccessPanel />}

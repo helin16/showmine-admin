@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Input, Select } from 'antd'
 import { RootState } from '../../Redux/makeReduxStore'
-import { MENU_KEY_COMPANY_WEBSITE } from '../../Components/Menu/MenuItems'
+import { MENU_KEY_WEBSITE_ANALYTICS } from '../../Components/Menu/MenuItems'
 import BackendPage from '../../Layouts/BackendPage'
 import BackendPageContentTitle from '../../Layouts/BackendPageContentTitle'
 import InvalidAccessPanel from '../../Components/Error/InvalidAccessPanel'
@@ -176,7 +176,7 @@ const WebsiteAnalyticsPage = () => {
 
   return (
     <BackendPage
-      selectedMenu={MENU_KEY_COMPANY_WEBSITE}
+      selectedMenu={MENU_KEY_WEBSITE_ANALYTICS}
       ContentHeader={<BackendPageContentTitle title={translate('website-analytics')} />}
     >
       {isOn ? <Spin spinning={state.loading}>{getContent()}</Spin> : <InvalidAccessPanel />}

@@ -56,7 +56,9 @@ const page = (extra = {}) => ({
 const httpError = (status: number, data: object) =>
   Object.assign(new Error(`status ${status}`), { response: { status, data } })
 
-const renderPage = (auth: object = { company }) =>
+// An admin of the company; members get no delete or publish (SMN-80).
+const adminOf = (role = 'ADMIN') => [{ companyId: 'co-1', isActive: true, isPending: false, role }]
+const renderPage = (auth: object = { company, companyUsers: adminOf() }) =>
   renderWithProviders(
     <Routes>
       <Route path={COMPANY_WEBSITE_PAGE_URL} element={<WebsitePageEditPage />} />
@@ -64,10 +66,10 @@ const renderPage = (auth: object = { company }) =>
     </Routes>,
     { state: { auth }, route: '/b/company/website/pages/p-1' },
   )
-const loaded = async () => {
+const loaded = async (auth?: object) => {
   vi.mocked(WebsiteService.getPages).mockResolvedValue([page()] as never)
   vi.mocked(WebsiteService.get).mockResolvedValue(website as never)
-  const result = renderPage()
+  const result = renderPage(auth)
   await screen.findByDisplayValue('Hello')
   return result
 }
@@ -87,6 +89,13 @@ describe('WebsitePageEditPage', () => {
     expect(screen.getByText('2. Text')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Publish' })).toBeInTheDocument()
     expect(saveBtn()).toBeDisabled()
+  })
+
+  test('a member edits and previews, with no publish bar', async () => {
+    await loaded({ company, companyUsers: adminOf('NORMAL') })
+    expect(screen.getByLabelText('Title')).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Preview' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Publish' })).toBeNull()
   })
 
   test('a page of another website, or a removed one, is not found', async () => {

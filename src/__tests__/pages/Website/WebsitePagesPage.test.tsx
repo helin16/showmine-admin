@@ -42,7 +42,9 @@ const pages = [
 const httpError = (status: number, data: object) =>
   Object.assign(new Error(`status ${status}`), { response: { status, data } })
 
-const renderPage = (auth: object = { company }) =>
+// An admin of the company; members get no delete or publish (SMN-80).
+const adminOf = (role = 'ADMIN') => [{ companyId: 'co-1', isActive: true, isPending: false, role }]
+const renderPage = (auth: object = { company, companyUsers: adminOf() }) =>
   renderWithProviders(
     <Routes>
       <Route path={COMPANY_WEBSITE_PAGES_URL} element={<WebsitePagesPage />} />
@@ -111,6 +113,17 @@ describe('WebsitePagesPage', () => {
     await waitFor(() => expect(message.success).toHaveBeenCalledWith('Page About us deleted.'))
   })
 
+  test('a member edits, adds and reorders, but gets no delete or template link', async () => {
+    vi.mocked(WebsiteService.getPages).mockResolvedValue(pages as never)
+    renderPage({ company, companyUsers: adminOf('NORMAL') })
+
+    expect(await screen.findByRole('button', { name: 'Add page' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Move About us down' })).toBeEnabled()
+    expect(screen.getByRole('link', { name: 'About us' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Delete About us' })).toBeNull()
+    expect(screen.queryByRole('link', { name: 'Choose a template' })).toBeNull()
+  })
+
   describe('adding a page', () => {
     const openForm = async () => {
       fireEvent.click(await screen.findByRole('button', { name: 'Add page' }))
@@ -176,6 +189,15 @@ describe('WebsitePagesPage', () => {
       'href',
       '/b/company/website',
     )
+  })
+
+  test('without a website, a member is told so but gets no link to create it', async () => {
+    vi.mocked(WebsiteService.getPages).mockRejectedValue(
+      httpError(404, { message: 'This company has no website yet.' }),
+    )
+    renderPage({ company, companyUsers: adminOf('NORMAL') })
+    expect(await screen.findByText('Create your website first, then choose a template.')).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Create the website' })).toBeNull()
   })
 
   test('no pages yet says so', async () => {

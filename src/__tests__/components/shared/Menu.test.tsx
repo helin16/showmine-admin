@@ -10,12 +10,34 @@ import MenuItems, {
   MENU_KEY_COMPANY_LIST,
   MENU_KEY_COMPANY_USERS,
   MENU_KEY_DASHBOARD,
+  MENU_KEY_MEDIA,
+  MENU_KEY_WEBSITE,
+  MENU_KEY_WEBSITE_ANALYTICS,
+  MENU_KEY_WEBSITE_PAGES,
+  MENU_KEY_WEBSITE_PUBLISH,
+  MENU_KEY_WEBSITE_SETTINGS,
+  MENU_KEY_WEBSITE_TEMPLATES,
 } from '../../../Components/Menu/MenuItems'
 import { messages } from '../../../i18n/messages'
-import { BACK_END_URL, COMPANY_LIST_URL, COMPANY_USERS_URL } from '../../../UrlMap'
+import {
+  BACK_END_URL,
+  COMPANY_LIST_URL,
+  COMPANY_USERS_URL,
+  COMPANY_WEBSITE_ANALYTICS_URL,
+  COMPANY_WEBSITE_PAGES_URL,
+  COMPANY_WEBSITE_SETTINGS_URL,
+  COMPANY_WEBSITE_TEMPLATES_URL,
+  COMPANY_WEBSITE_URL,
+} from '../../../UrlMap'
 
 type Item = (typeof MenuItems)[number]
-const links = MenuItems.flatMap((section: Item) => ('items' in section ? (section.items as Item[]) : [section]))
+type Entry = { key: string; url?: string; icon?: unknown; adminOnly?: boolean; children?: Entry[] }
+const entries = MenuItems.flatMap((section: Item) =>
+  'items' in section ? (section.items as Entry[]) : [section as Entry],
+)
+// The pages a menu entry opens: a submenu's children stand for it (SMN-80).
+const links = entries.flatMap((entry: Entry) => entry.children || [entry]) as Item[]
+const website = entries.find((entry) => entry.key === MENU_KEY_WEBSITE)
 const sectionOf = (key: string) =>
   MenuItems.find((section: Item) => 'items' in section && section.items?.some((item) => item.key === key))
 
@@ -41,13 +63,26 @@ describe('MenuItems', () => {
     expect(links[0]).toMatchObject({ key: MENU_KEY_DASHBOARD, url: BACK_END_URL })
   })
 
-  test('every link has a unique key, a url and an icon', () => {
-    const keys = links.map((link: Item) => link.key)
+  test('every link has a unique key and a url, and every top entry an icon', () => {
+    const keys = [...entries.filter((entry) => entry.children), ...links].map((link) => link.key)
     expect(new Set(keys).size).toBe(keys.length)
-    links.forEach((link: Item) => {
-      expect(link.url).toEqual(expect.stringMatching(/^\//))
-      expect(link.icon).toBeTruthy()
-    })
+    links.forEach((link: Item) => expect(link.url).toEqual(expect.stringMatching(/^\//)))
+    entries.forEach((entry) => expect(entry.icon).toBeTruthy())
+  })
+
+  // SMN-80: the website sits under Components, after Media; pages and page views for every member.
+  test('the website is a submenu under Components, after Media, with admin-only items marked', () => {
+    expect(sectionOf(MENU_KEY_MEDIA)?.items?.map((item) => item.key)).toEqual(
+      expect.arrayContaining([MENU_KEY_MEDIA, MENU_KEY_WEBSITE]),
+    )
+    expect(sectionOf(MENU_KEY_MEDIA)?.access).toBeUndefined()
+    expect(website?.children?.map(({ key, url, adminOnly }) => [key, url, adminOnly === true])).toEqual([
+      [MENU_KEY_WEBSITE_PAGES, COMPANY_WEBSITE_PAGES_URL, false],
+      [MENU_KEY_WEBSITE_ANALYTICS, COMPANY_WEBSITE_ANALYTICS_URL, false],
+      [MENU_KEY_WEBSITE_PUBLISH, COMPANY_WEBSITE_URL, true],
+      [MENU_KEY_WEBSITE_TEMPLATES, COMPANY_WEBSITE_TEMPLATES_URL, true],
+      [MENU_KEY_WEBSITE_SETTINGS, COMPANY_WEBSITE_SETTINGS_URL, true],
+    ])
   })
 
   test('company pages need company admin access', () => {
