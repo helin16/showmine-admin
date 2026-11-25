@@ -13,6 +13,15 @@
 - **Ceiling**: two copies of the markup. A test in each repository pins the class names each block uses; a shared package if the copies drift.
 - **Alternatives**: embedding the Reader preview in a frame (rejected by Lin: slow, needs cross-window messages); copying the styles into the admin (two stylesheets to keep in step).
 - **Dependency**: `REACT_APP_FRONT_END_URL` must be set on the admin (it already must, for preview links). Without it the canvas shows unstyled blocks and says so.
+- **Content Security Policy**: the admin's `vercel.json` allows styles only from itself and TinyMCE; the Reader's origin is added to `style-src` (and nothing else), in the same slice, with a test that reads `vercel.json`.
+- **Caching**: the Reader serves `/website.css` with a short cache (`Cache-Control: public, max-age=300`) set in its `next.config.js`, so the canvas and the site never differ for long after a style change. The file is plain CSS: the four nested rules (`&.site-font-*`) are written out.
+- **Device widths**: the canvas narrows a container, it does not change the window, so the site styles must keep using container-independent layout (today: grid `auto-fill`, no `@media` rules). New header and footer styles follow the same rule; a test in the Reader fails on `@media` in `website.css`.
+
+## R2a. Unsaved content on the canvas
+
+- **Decision**: the canvas shows unsaved text through `DOMPurify` (new admin dependency, a version at least two weeks old), with the same allow-list the API applies on save (001 FR-008), and canvas links do nothing when clicked (no navigation, `javascript:` and other schemes dropped).
+- **Rationale**: the canvas renders HTML typed in the admin before the API has cleaned it, inside the signed-in admin. Admin constitution V.
+- **Alternatives**: a hand-written cleaner (riskier); rendering text blocks as plain text (not what you see is what you get).
 
 ## R3. Storing the layout and page templates
 
@@ -30,6 +39,15 @@
 - **Decision**: shared blocks' images count as used by the website: `getImageUsage`, the publish checks and the clean-up (`TEXT_REFERENCES`) read `websites.layout` too. Page templates hold no images.
 - **Rationale**: 001 FR-017 and FR-019, and SMN-80's one image library.
 
+## R5a. Saving the layout without false stale errors
+
+- **Decision**: `websites.layoutUpdatedAt` versions the layout alone. `PUT /website` with `layout` needs `layoutUpdatedAt` as loaded; an absent `layout` leaves it unchanged; `layout: null` resets it to the default. Other website saves (settings, SEO, address, publishing) neither need nor move it, so they cannot make a layout save stale, and the reverse.
+- **Rationale**: `websites.updatedAt` moves on every website save; using it would refuse layout saves after unrelated edits.
+
+## R5b. Limits
+
+- **Decision**: a page keeps 001's limit of 30 own blocks; the layout has at most 10 shared blocks in all (above and below). Both are checked when saved, so a page never fails at publish because of shared blocks. The canvas shows "n of 30" for the page's own blocks.
+
 ## R6. Who may change what
 
 - **Decision**: `PUT /website` (admin guards) takes `layout`; `PUT /website/pages/:id` (member guards) takes `template`. No new routes.
@@ -42,5 +60,10 @@
 3. Drag and drop (admin only; the new dependency).
 4. Layout (API, then Reader, then admin).
 5. Page templates (API, then Reader, then admin).
+
+Slice 4 also makes the starter templates set a layout (spec edge case), since applying one replaces the layout.
+The theme is edited in the Layout editor only; today no admin screen edits it (starter templates set it).
+
+Note: the Reader constitution names Next.js 15 and React 18; the Reader runs Next.js 16.4 and React 19.3. Amending it is Lin's decision; this plan follows the code.
 
 Each slice is behind the website switch, has its own PRs, checks, mutation checks and one independent review, and needs Lin's approval to start and to merge.

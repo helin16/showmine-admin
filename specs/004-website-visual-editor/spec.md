@@ -68,7 +68,7 @@ The palette lists the block types (hero, text, image, gallery, contact details, 
 2. **Given** the palette, **When** a block type is clicked, **Then** it is added after the selected block, or at the end when none is selected.
 3. **Given** a block on the canvas, **When** it is dragged to another place, **Then** it moves there.
 4. **Given** keyboard use only, **Then** blocks can be added from the palette, selected, moved and removed, with each change announced.
-5. **Given** a page at its plan's limits (sections per page, page size), **When** another block is added, **Then** the member is told why it cannot be.
+5. **Given** a page with 30 blocks of its own (the layout's shared blocks have their own limit of 10), **When** another block is added, **Then** the member is told why it cannot be.
 
 ---
 

@@ -421,6 +421,8 @@ const LanguageEN = {
     'website-page-slug-help': 'The part of the address after the website name, for example about.',
     'website-page-slug-taken': 'Another page has this address name.',
     'website-page-delete': 'Delete page',
+    'website-page-editing': 'Editing: {title}',
+    'website-page-delete-confirm-unsaved': 'Delete the page {title}? Its unsaved changes go too.',
     'website-page-delete-confirm': 'Delete the page {title}? Its address name can then be used again.',
     'website-page-not-found': 'This page does not exist.',
     'website-page-stale': 'Someone else changed this page. Reload to see their change and drop yours, or keep your version: saving it then replaces theirs.',

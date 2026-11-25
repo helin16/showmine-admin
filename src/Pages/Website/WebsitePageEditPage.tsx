@@ -97,6 +97,13 @@ const WebsitePageEditPage = () => {
   const navigate = useNavigate()
   const [state, setState] = useState(initState)
   const [isOptionsOpen, setIsOptionsOpen] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  // A problem with a field kept in Options opens it, each time, so the message is seen.
+  const openOptionsFor = (errors: { [path: string]: string }) => {
+    if (Object.keys(errors).some((path) => path === 'title' || path === 'slug' || path.startsWith('seo.'))) {
+      setIsOptionsOpen(true)
+    }
+  }
   const companyIdRef = useRef(company?.id)
   companyIdRef.current = company?.id
   // The admin's own version, kept across a reload when they chose to keep it after someone else's change.
@@ -107,6 +114,7 @@ const WebsitePageEditPage = () => {
     if (!isOn) return
     let isCurrent = true
     setState((s) => ({ ...s, loading: true, loadError: undefined, notFound: false, isStale: false, errors: {} }))
+    setIsOptionsOpen(false)
     Promise.all([WebsiteService.getPages(), WebsiteService.get()])
       .then(([pages, website]) => {
         if (!isCurrent) return
@@ -204,6 +212,7 @@ const WebsitePageEditPage = () => {
     )
     if (Object.keys(errors).length > 0) {
       setState((s) => ({ ...s, errors }))
+      openOptionsFor(errors)
       message.error(translate('website-page-has-problems'))
       return Promise.resolve(false)
     }
@@ -226,11 +235,13 @@ const WebsitePageEditPage = () => {
         const fieldErrors = Object.fromEntries(((data?.errors || []) as IFieldError[]).map((e) => [e.path, e.message]))
         if (Object.keys(fieldErrors).length > 0) {
           setState((s) => ({ ...s, errors: fieldErrors }))
+          openOptionsFor(fieldErrors)
           message.error(translate('website-page-has-problems'))
         } else if (status === 409 && data?.message === STALE_PAGE) {
           setState((s) => ({ ...s, isStale: true }))
         } else if (status === 409) {
           setState((s) => ({ ...s, errors: { slug: translate('website-page-slug-taken') } }))
+          setIsOptionsOpen(true)
         } else {
           message.error(Utils.getErrorMessage(err))
         }
@@ -353,22 +364,23 @@ const WebsitePageEditPage = () => {
         {state.errors[path]}
       </div>
     ) : null
-  // A problem with a field kept in Options opens it, so the message is seen.
-  const hasOptionsProblem = !!state.errors.title || !!state.errors.slug || Object.keys(seoErrors).length > 0
-  useEffect(() => {
-    if (hasOptionsProblem) setIsOptionsOpen(true)
-  }, [hasOptionsProblem])
 
   // Delete page, in Options, for admins: the page goes, and so does any unsaved change.
   const deletePage = () => {
     const { page } = state
+    // The button is disabled while saving and busy while deleting, so neither can overlap.
     if (!page) return
+    const companyId = company?.id
+    const isSameCompany = () => companyIdRef.current === companyId
+    setDeleting(true)
     WebsiteService.deletePage(`${page.id}`)
       .then(() => {
+        if (!isSameCompany()) return
         message.success(translate('website-page-deleted', { title: page.title }))
         navigate(COMPANY_WEBSITE_PAGES_URL)
       })
-      .catch((err) => message.error(Utils.getErrorMessage(err)))
+      .catch((err) => isSameCompany() && message.error(Utils.getErrorMessage(err)))
+      .finally(() => setDeleting(false))
   }
 
   // The page's settings, out of the way of its content (specs/004-website-visual-editor, US1).
@@ -407,13 +419,17 @@ const WebsitePageEditPage = () => {
           </div>
           {isAdmin ? (
             <PopConfirm
-              title={translate('website-page-delete-confirm', { title: page.title })}
+              title={translate(isDirty ? 'website-page-delete-confirm-unsaved' : 'website-page-delete-confirm', {
+                title: page.title,
+              })}
               okText={translate('website-delete')}
               cancelText={translate('cancel')}
               okButtonProps={{ danger: true }}
               onConfirm={deletePage}
             >
-              <Button danger>{translate('website-page-delete')}</Button>
+              <Button danger loading={deleting} disabled={state.saving}>
+                {translate('website-page-delete')}
+              </Button>
             </PopConfirm>
           ) : null}
         </Space>
@@ -460,7 +476,7 @@ const WebsitePageEditPage = () => {
             onStale={reload}
           />
         ) : null}
-        <Button icon={<Icons.SettingOutlined />} onClick={() => setIsOptionsOpen(true)}>
+        <Button icon={<Icons.SettingOutlined aria-hidden />} onClick={() => setIsOptionsOpen(true)}>
           {translate('options')}
         </Button>
       </Space>
@@ -554,7 +570,9 @@ const WebsitePageEditPage = () => {
       selectedMenu={MENU_KEY_WEBSITE_PAGES}
       ContentHeader={
         <BackendPageContentTitle
-          title={state.page ? `${translate('editing')}: ${state.page.title}` : translate('website-pages')}
+          title={
+            state.page ? translate('website-page-editing', { title: state.page.title }) : translate('website-pages')
+          }
           controls={getControls()}
         />
       }

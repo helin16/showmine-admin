@@ -17,7 +17,7 @@ site and shown by the Reader. Delivered in five slices (research R7).
 **Language/Version**: TypeScript; admin React 19 with Vite; Reader Next.js 16; API Node with Express and Sequelize
 
 **Primary Dependencies**: admin: Ant Design 6, react-intl, Redux Toolkit; new `@dnd-kit/core` 6.3.1 and
-`@dnd-kit/sortable` 10.0.0 (research R1). API and Reader: none new.
+`@dnd-kit/sortable` 10.0.0 (research R1) and `dompurify` (R2a). API and Reader: none new.
 
 **Storage**: Postgres (SQLite in API tests): `websites.layout` and `websitePages.template`, JSON text (data-model.md)
 
@@ -44,10 +44,10 @@ per-company website switch; no E2E (admin and Reader suites target production)
 | Authorization and tenant boundaries | canvas shows Layout read-only to members; API decides | Layout admin guards, template member guards (R6); tests for both | public copy only | Pass |
 | Cross-repository contracts | consumes new optional fields | additive fields, old clients unaffected | reads `layout`, falls back when absent | Pass |
 | Every repository assessed | spec Repository Impact | same | same | Pass |
-| Browser configuration safe | `REACT_APP_FRONT_END_URL` is public already | n/a | n/a | Pass |
+| Browser configuration safe | `REACT_APP_FRONT_END_URL` is public already; unsaved HTML cleaned on the canvas with DOMPurify, links inert (R2a) | n/a | n/a | Pass |
 | Accessible and localized | keyboard drag, announcements, en/cn strings | messages as today | landmark roles for header/footer | Pass |
 | Verify observable behaviour | tests per slice, functions coverage 90% | tests per route and rule | tests for the effective layout | Pass |
-| Vercel deployment | new admin routes load on direct navigation | n/a | static `/website.css` | Pass |
+| Vercel deployment | new admin routes load on direct navigation; `vercel.json` `style-src` gains the Reader origin (R2) | n/a | static `/website.css` with a short cache (R2) | Pass |
 
 ## Project Structure
 
@@ -72,7 +72,7 @@ specs/004-website-visual-editor/
 showmine-admin/src/
 ├── Pages/Website/WebsitePageEditPage.tsx        # slice 1: title row + Options; slice 2: canvas layout
 ├── Pages/Website/WebsiteLayoutPage.tsx          # slice 4: the Layout editor (admins)
-├── Components/Website/PageOptions.tsx           # slice 1: title, address name, SEO, (5) template, delete
+├── Components/Website/PageOptions.tsx           # slice 5: Options moved here with the template (slice 1 keeps it in the page)
 ├── Components/Website/Canvas/
 │   ├── SiteCanvas.tsx                           # slice 2: effective layout + blocks, device widths, selection
 │   ├── canvasBlocks.tsx                         # slice 2: block markup copied from the Reader (class names pinned)
@@ -99,4 +99,5 @@ showmine-reader/
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |---|---|---|
 | New dependency (dnd-kit) | FR-004 and SC-004: keyboard and touch drag with announcements | Browser drag and drop has neither; writing both by hand is larger and riskier |
+| New dependency (DOMPurify) | The canvas shows unsaved HTML inside the signed-in admin (R2a) | A hand-written cleaner is riskier; plain text is not what you see is what you get |
 | Block markup in two repositories | Spec: draw in the admin, not embed the Reader | Embedding was rejected by Lin; a shared package is more than two small copies need now |

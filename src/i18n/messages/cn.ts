@@ -420,6 +420,8 @@ const LanguageCN = {
     'website-page-slug-help': '网址中网站名称后面的部分，例如 about。',
     'website-page-slug-taken': '另一个页面已使用这个网址名称。',
     'website-page-delete': '删除页面',
+    'website-page-editing': '编辑中：{title}',
+    'website-page-delete-confirm-unsaved': '删除页面 {title}？没保存的修改也会丢掉。',
     'website-page-delete-confirm': '要删除页面 {title} 吗？删除后它的网址名称可以再用。',
     'website-page-not-found': '这个页面不存在。',
     'website-page-stale': '其他人修改了这个页面。刷新会显示他们的修改并丢弃你的；也可以保留你的版本，保存后会覆盖他们的修改。',

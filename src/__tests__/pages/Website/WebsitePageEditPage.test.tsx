@@ -77,7 +77,7 @@ const loaded = async (auth?: object) => {
 const saveBtn = () => screen.getByRole('button', { name: 'Save' })
 // The page's title, address name and SEO sit in Options (spec 004, US1): opened first when closed.
 const optionsField = (label: string) => {
-  if (!screen.queryByLabelText(label)) fireEvent.click(screen.getByRole('button', { name: /Options/ }))
+  if (!screen.queryByLabelText(label)) fireEvent.click(screen.getByRole('button', { name: 'Options' }))
   return screen.getByLabelText(label)
 }
 
@@ -111,7 +111,7 @@ describe('WebsitePageEditPage', () => {
   test('an admin deletes the page from Options after confirming, and goes back to the pages', async () => {
     vi.mocked(WebsiteService.deletePage).mockResolvedValue({} as never)
     await loaded()
-    fireEvent.click(screen.getByRole('button', { name: /Options/ }))
+    fireEvent.click(screen.getByRole('button', { name: 'Options' }))
     fireEvent.click(screen.getByRole('button', { name: 'Delete page' }))
     expect(WebsiteService.deletePage).not.toHaveBeenCalled()
     fireEvent.click(within(await screen.findByRole('tooltip')).getByRole('button', { name: 'Delete' }))
@@ -134,10 +134,34 @@ describe('WebsitePageEditPage', () => {
     await waitFor(() => expect(document.querySelector('.ant-drawer-open')).not.toBeNull())
   })
 
+  test('an empty title opens Options on every save, even after it was closed', async () => {
+    await loaded()
+    fireEvent.change(optionsField('Title'), { target: { value: ' ' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }))
+    await waitFor(() => expect(document.querySelector('.ant-drawer-open')).toBeNull())
+    fireEvent.click(saveBtn())
+    await waitFor(() => expect(document.querySelector('.ant-drawer-open')).not.toBeNull())
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }))
+    await waitFor(() => expect(document.querySelector('.ant-drawer-open')).toBeNull())
+    fireEvent.click(saveBtn())
+    await waitFor(() => expect(document.querySelector('.ant-drawer-open')).not.toBeNull())
+    expect(WebsiteService.updatePage).not.toHaveBeenCalled()
+  })
+
+  test('deleting with unsaved changes says they go too, and Delete waits while saving', async () => {
+    vi.mocked(WebsiteService.updatePage).mockReturnValue(new Promise(() => undefined) as never)
+    await loaded()
+    fireEvent.change(optionsField('Title'), { target: { value: 'Changed' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Delete page' }))
+    expect(await screen.findByText(/Its unsaved changes go too/)).toBeInTheDocument()
+    fireEvent.click(saveBtn())
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Delete page' })).toBeDisabled())
+  })
+
   test('a failed delete says why and stays', async () => {
     vi.mocked(WebsiteService.deletePage).mockRejectedValue(new Error('Server down'))
     await loaded()
-    fireEvent.click(screen.getByRole('button', { name: /Options/ }))
+    fireEvent.click(screen.getByRole('button', { name: 'Options' }))
     fireEvent.click(screen.getByRole('button', { name: 'Delete page' }))
     fireEvent.click(within(await screen.findByRole('tooltip')).getByRole('button', { name: 'Delete' }))
     await waitFor(() => expect(message.error).toHaveBeenCalledWith('Server down'))
@@ -149,7 +173,7 @@ describe('WebsitePageEditPage', () => {
     expect(optionsField('Title')).toBeEnabled()
     expect(screen.getByRole('button', { name: 'Preview' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Publish' })).toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: /Options/ }))
+    fireEvent.click(screen.getByRole('button', { name: 'Options' }))
     expect(screen.queryByRole('button', { name: 'Delete page' })).toBeNull()
   })
 
@@ -462,7 +486,7 @@ describe('WebsitePageEditPage', () => {
     vi.mocked(WebsiteService.getPages).mockResolvedValue([page({ sections: [{ id: 'i1', type: 'image' }] })] as never)
     vi.mocked(WebsiteService.get).mockResolvedValue(website as never)
     renderPage()
-    fireEvent.click(await screen.findByRole('button', { name: /Options/ }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Options' }))
     fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Changed' } })
     fireEvent.click(saveBtn())
     expect(await screen.findByText('Choose an image.')).toBeInTheDocument()
@@ -470,7 +494,7 @@ describe('WebsitePageEditPage', () => {
   })
 
   describe('page SEO', () => {
-    const openSeo = async () => fireEvent.click(await screen.findByRole('button', { name: /Options/ }))
+    const openSeo = async () => fireEvent.click(await screen.findByRole('button', { name: 'Options' }))
 
     test('is folded away until opened, and saves what was typed', async () => {
       await loaded()

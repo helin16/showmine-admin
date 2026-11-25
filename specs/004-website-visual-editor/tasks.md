@@ -34,7 +34,7 @@ approval.
 **Independent Test**: spec US1.
 
 - [x] T002 [P] [US1] Tests in `admin:src/__tests__/pages/Website/WebsitePageEditPage.test.tsx`: title row reads "Editing: <title>"; Save, Preview, Options for a member; Publish and Delete page for an admin; title, address name and SEO edited in Options are saved with the same checks; unsaved changes warn before leaving
-- [x] T003 [US1] `admin:src/Components/Website/PageOptions.tsx`: a drawer opened from Options with title, address name, SEO (existing `SeoFields`) and, for admins, Delete page with confirmation
+- [x] T003 [US1] Options drawer in `admin:src/Pages/Website/WebsitePageEditPage.tsx` (kept in the page for now; moved to `admin:src/Components/Website/PageOptions.tsx` in T022 when the template joins it): title, address name, SEO (existing `SeoFields`) and, for admins, Delete page with confirmation
 - [x] T004 [US1] `admin:src/Pages/Website/WebsitePageEditPage.tsx`: title row via `BackendPageContentTitle` controls, as `ArticleDetailsPage`; publish moves into the title row for admins; strings in en/cn
 
 **Checkpoint**: the page editor works as today, rearranged.
@@ -47,9 +47,9 @@ approval.
 
 **Independent Test**: spec US2.
 
-- [ ] T005 [US2] `reader:public/website.css`: the site styles moved from `reader:src/styles/website.scss` as plain CSS, linked by the website pages; test that each block's class names are styled (`reader:src/__tests__/components/Website/`)
+- [ ] T005 [US2] `reader:public/website.css`: the site styles moved from `reader:src/styles/website.scss` as plain CSS (nested rules written out), linked by the website pages, served with `Cache-Control: public, max-age=300` (`reader:next.config.js`); tests that each block's class names are styled and that the file has no `@media` rule (research R2)
 - [ ] T006 [P] [US2] Tests in `admin:src/__tests__/components/Website/Canvas/SiteCanvas.test.tsx`: blocks in order with the Reader's class names, theme variables, device widths, selection, toolbar up/down/delete, problems marked; 30 blocks redraw within budget (SC-003)
-- [ ] T007 [US2] `admin:src/Components/Website/Canvas/{SiteCanvas,canvasBlocks,BlockPanel,BlockPalette}.tsx`: canvas linking `${REACT_APP_FRONT_END_URL}/website.css`, a note when it is not set; panel reusing `SectionEditors`; palette adds by click
+- [ ] T007 [US2] `admin:src/Components/Website/Canvas/{SiteCanvas,canvasBlocks,BlockPanel,BlockPalette}.tsx`: canvas linking `${REACT_APP_FRONT_END_URL}/website.css`, a note when it is not set; unsaved HTML through `DOMPurify` with the API's allow-list and inert links (research R2a; new dependency); panel reusing `SectionEditors`; palette adds by click. `admin:vercel.json`: the Reader's origin in `style-src` only, with a test
 - [ ] T008 [US2] `admin:src/Pages/Website/WebsitePageEditPage.tsx`: canvas in the main area, panel on the right, folding below on narrow screens
 
 ---
@@ -61,7 +61,7 @@ approval.
 **Independent Test**: spec US3.
 
 - [ ] T009 [US3] Add `@dnd-kit/core` 6.3.1 and `@dnd-kit/sortable` 10.0.0 to `admin:package.json` (research R1)
-- [ ] T010 [P] [US3] Tests: drop from the palette at a position, reorder by drag, keyboard add/move/remove with announcements (SC-004), plan limits refused with the reason
+- [ ] T010 [P] [US3] Tests: keyboard add/move/remove with announcements (SC-004) and the 30-block limit refused with the reason; drag with a pointer cannot run in jsdom, so it is checked by hand (quickstart step 3)
 - [ ] T011 [US3] Drag sources in `BlockPalette`, sortable blocks and drop placeholders in `SiteCanvas`, announcements in en/cn
 
 ---
@@ -72,12 +72,13 @@ approval.
 
 **Independent Test**: spec US4.
 
-- [ ] T012 [P] [US4] API tests: `PUT /website` `layout` for admins (members 401), field checks and paths, shared blocks checked as sections, images in shared blocks in use (usage, delete 409, clean-up), published copy carries `layout`, `contentChangedAt` set; migration up and down
-- [ ] T013 [US4] `api:migrations/2026112200000N-add-website-layout.js` (`websites.layout`, `websitePages.template`), model fields, checks in `api:src/helpers/WebsiteHelper.ts`, `PUT /website`, publish copy, image use, clean-up
+- [ ] T012 [P] [US4] API tests: `PUT /website` `layout` for admins (members 401), `layoutUpdatedAt` stale checks independent of other website saves, absent vs null `layout`, field checks and paths, at most 10 shared blocks, shared blocks checked as sections, images in shared blocks in use (usage, delete 409, clean-up), published copy carries `layout`, `contentChangedAt` set; migration up and down
+- [ ] T013 [US4] `api:migrations/2026112200000N-add-website-layout.js` (`websites.layout`, `websites.layoutUpdatedAt`, and `websitePages.template`, which stays unused until T019), model fields, checks in `api:src/helpers/WebsiteHelper.ts`, `PUT /website`, publish copy, image use, clean-up
 - [ ] T014 [P] [US4] Reader tests: effective header (logo, hidden pages), footer, shared blocks above and below; a copy without `layout` shows as today (SC-005)
 - [ ] T015 [US4] `reader:src/components/Website/{Site,Nav,Footer}.tsx`
 - [ ] T016 [P] [US4] Admin tests: Layout page for admins, read-only canvas for members, menu entry
-- [ ] T017 [US4] `admin:src/Pages/Website/WebsiteLayoutPage.tsx` (header, footer, theme, shared blocks on the canvas), menu Website > Layout (admins), route
+- [ ] T017 [US4] `admin:src/Pages/Website/WebsiteLayoutPage.tsx` (header, footer, theme, shared blocks on the canvas; the only place the theme is edited), `admin:src/UrlMap.ts`, route in `admin:src/Router.tsx` behind the admin route, menu Website > Layout (admins)
+- [ ] T017a [US4] Starter templates set a layout (`api:src/templates/website/`), shown by the Reader template preview (`/t/<id>`); applying one replaces the layout (spec edge case)
 
 ---
 
@@ -97,9 +98,8 @@ approval.
 
 ## Phase 7: Polish
 
-- [ ] T023 Starter templates set a layout (`api:src/templates/website/`), with the Reader template preview (`/t/<id>`)
-- [ ] T024 Update `api:README.md` (layout and template fields) and `specs/001-website-builder` cross-references
-- [ ] T025 Lin runs `quickstart.md` on the test company after each slice is deployed
+- [ ] T023 Update `api:README.md` (layout and template fields) and `specs/001-website-builder` cross-references
+- [ ] T024 Lin runs `quickstart.md` on the test company after each slice is deployed
 
 ---
 
