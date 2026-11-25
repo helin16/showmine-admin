@@ -525,7 +525,7 @@ const LanguageEN = {
     'website-address-state-verified': 'verified',
     'website-address-state-failed': 'failed',
     'website-domain-state-set': 'Domain state (ShowMine staff)',
-    'website-analytics': 'Page views',
+    'website-analytics': 'Website page views',
     'website-analytics-help': 'Views of the published website, counted once per page shown. Previews and ShowMine checks are not counted. Days are UTC days.',
     'website-analytics-period': 'Period',
     'website-analytics-preset-7': 'Last 7 days',

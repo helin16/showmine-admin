@@ -113,6 +113,17 @@ describe('WebsitePagesPage', () => {
     await waitFor(() => expect(message.success).toHaveBeenCalledWith('Page About us deleted.'))
   })
 
+  // SMN-82: in the title row, as New article is: Choose a template first, then Add page.
+  test('puts Choose a template, then Add page, in the title row', async () => {
+    vi.mocked(WebsiteService.getPages).mockResolvedValue(pages as never)
+    renderPage()
+    const add = await screen.findByRole('button', { name: 'Add page' })
+    const header = screen.getByRole('banner')
+    expect(header).toContainElement(add)
+    const template = within(header).getByRole('link', { name: 'Choose a template' })
+    expect(template.compareDocumentPosition(add) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
   test('a member edits, adds and reorders, but gets no delete or template link', async () => {
     vi.mocked(WebsiteService.getPages).mockResolvedValue(pages as never)
     renderPage({ company, companyUsers: adminOf('NORMAL') })
@@ -189,6 +200,15 @@ describe('WebsitePagesPage', () => {
       'href',
       '/b/company/website',
     )
+  })
+
+  test('without a website, there is nothing to add a page to', async () => {
+    vi.mocked(WebsiteService.getPages).mockRejectedValue(
+      httpError(404, { message: 'This company has no website yet.' }),
+    )
+    renderPage()
+    await screen.findByText('Create your website first, then choose a template.')
+    expect(screen.queryByRole('button', { name: 'Add page' })).toBeNull()
   })
 
   test('without a website, a member is told so but gets no link to create it', async () => {

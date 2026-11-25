@@ -2,25 +2,21 @@ import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Input, Select } from 'antd'
 import { RootState } from '../../Redux/makeReduxStore'
-import { MENU_KEY_WEBSITE_ANALYTICS } from '../../Components/Menu/MenuItems'
-import BackendPage from '../../Layouts/BackendPage'
-import BackendPageContentTitle from '../../Layouts/BackendPageContentTitle'
-import InvalidAccessPanel from '../../Components/Error/InvalidAccessPanel'
-import Line from '../../Components/Charts/Line'
-import Alert from '../../Components/Form/Alert'
-import Button from '../../Components/Form/Button'
-import Card from '../../Components/Form/Card'
-import Empty from '../../Components/Form/Empty'
-import Space from '../../Components/Form/Space'
-import Spin from '../../Components/Form/Spin'
-import Table from '../../Components/Form/Table'
+import Line from '../Charts/Line'
+import Alert from '../Form/Alert'
+import Button from '../Form/Button'
+import Card from '../Form/Card'
+import Empty from '../Form/Empty'
+import Space from '../Form/Space'
+import Spin from '../Form/Spin'
+import Table from '../Form/Table'
 import translate from '../../i18n/translate'
 import WebsiteService from '../../Services/WebsiteService'
 import Utils from '../../Services/Utils'
 import { IWebsitePageViews } from '../../Types/Website/IWebsite'
 
-// Page views of the published website (specs/001-website-builder, US7, T074). Days are UTC days, as the API counts
-// them; days with no views are shown as zeros.
+// Page views of the published website (specs/001-website-builder, US7, T074), on the dashboard since SMN-82. Days are
+// UTC days, as the API counts them; days with no views are shown as zeros. Nothing for a company without a website.
 const DAY_MS = 24 * 60 * 60 * 1000
 const MAX_DAYS = 366
 const PRESETS = ['7', '30', '90']
@@ -47,7 +43,7 @@ type iState = {
   count: number
 }
 
-const WebsiteAnalyticsPage = () => {
+const WebsitePageViews = () => {
   const { company } = useSelector((s: RootState) => s.auth)
   const isOn = company?.websiteBuilderEnabled === true
   const [state, setState] = useState<iState>({ preset: '7', ...lastDays(7), loading: false, count: 0 })
@@ -174,14 +170,7 @@ const WebsiteAnalyticsPage = () => {
     </Space>
   )
 
-  return (
-    <BackendPage
-      selectedMenu={MENU_KEY_WEBSITE_ANALYTICS}
-      ContentHeader={<BackendPageContentTitle title={translate('website-analytics')} />}
-    >
-      {isOn ? <Spin spinning={state.loading}>{getContent()}</Spin> : <InvalidAccessPanel />}
-    </BackendPage>
-  )
+  return isOn ? <Spin spinning={state.loading}>{getContent()}</Spin> : null
 }
 
-export default WebsiteAnalyticsPage
+export default WebsitePageViews

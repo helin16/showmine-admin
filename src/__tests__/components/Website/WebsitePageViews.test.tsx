@@ -1,7 +1,7 @@
 import React from 'react'
 import { act, fireEvent, screen, waitFor } from '@testing-library/react'
 import { vi } from 'vitest'
-import WebsiteAnalyticsPage from '../../../Pages/Website/WebsiteAnalyticsPage'
+import WebsitePageViews from '../../../Components/Website/WebsitePageViews'
 import WebsiteService from '../../../Services/WebsiteService'
 import { changeCompany } from '../../../Redux/reduxers/auth.slice'
 import { renderWithProviders } from '../../testUtils'
@@ -11,14 +11,6 @@ import { stubMatchMedia } from '../../components/Access/domHelpers'
 vi.mock('../../../Services/WebsiteService', () => ({ default: { getPageViews: vi.fn() } }))
 vi.mock('@ant-design/charts', () => ({
   Line: ({ data }: { data: unknown }) => <pre data-testid={'line'}>{JSON.stringify(data)}</pre>,
-}))
-vi.mock('../../../Layouts/BackendPage', () => ({
-  default: ({ children, ContentHeader }: { children: React.ReactNode; ContentHeader?: React.ReactNode }) => (
-    <main>
-      <header>{ContentHeader}</header>
-      {children}
-    </main>
-  ),
 }))
 
 beforeAll(() => stubMatchMedia())
@@ -36,7 +28,7 @@ const views = (from: string, to: string, days: object[] = [], updatedAt: string 
   days,
 })
 const renderPage = (auth: object = { company, user: { id: 'u-1' } }) =>
-  renderWithProviders(<WebsiteAnalyticsPage />, { state: { auth } })
+  renderWithProviders(<WebsitePageViews />, { state: { auth } })
 const chart = () => JSON.parse(screen.getByTestId('line').textContent || '[]')
 const choose = async (label: string) => {
   fireEvent.mouseDown(screen.getByLabelText('Period'))
@@ -44,10 +36,10 @@ const choose = async (label: string) => {
 }
 const setDate = (label: string, value: string) => fireEvent.change(screen.getByLabelText(label), { target: { value } })
 
-describe('WebsiteAnalyticsPage', () => {
-  test('with the builder off, shows the not-allowed panel and asks the API nothing', () => {
-    renderPage({ company: { ...company, websiteBuilderEnabled: false } })
-    expect(screen.getByText('Sorry, you are not authorized to access this page.')).toBeInTheDocument()
+describe('WebsitePageViews', () => {
+  test('with the builder off, shows nothing and asks the API nothing', () => {
+    const { container } = renderPage({ company: { ...company, websiteBuilderEnabled: false } })
+    expect(container).toBeEmptyDOMElement()
     expect(WebsiteService.getPageViews).not.toHaveBeenCalled()
   })
 

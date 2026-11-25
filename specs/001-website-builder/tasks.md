@@ -268,6 +268,7 @@ description: 'Task list for the Website Builder (SMN-53, Sprint 3)'
 - [x] T082 [SMN-80] Pages and editor for members (no delete, no publish bar); picker lists all Media images; Media shows website use; "Website images" page removed
 
 - [x] T083 [SMN-81] Website name and address code: migration `api:migrations/20261122000005-add-website-name.js`, `api:src/helpers/WebsiteAddress.ts`, POST/PUT /website, website created on switch-on, published copy at the current address
+- [x] T085 [SMN-82] Website page views on the dashboard (`admin:src/Components/Website/WebsitePageViews.tsx` in `admin:src/Pages/Dashboard/DashBoardPage.tsx`), only with the switch on; Page views gone from the Website submenu; the old address goes to the dashboard
 - [x] T084 [SMN-81] Admin: website name instead of address name on the Publish and address page, with the ShowMine and WeChat addresses; subdomain field removed from Settings
 
 ---

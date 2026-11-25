@@ -8,6 +8,7 @@ import CompanyArticleStats from '../../Components/Article/CompanyArticleStats'
 import CompanyChannelStats from '../../Components/Channel/CompanyChannelStats'
 import CompanyUserStats from '../../Components/User/CompanyUserStats'
 import VisitStats from '../../Components/Stats/VisitStats'
+import WebsitePageViews from '../../Components/Website/WebsitePageViews'
 import {ARTICLE_DETAILS_URL, getUrl} from '../../UrlMap'
 import { MENU_KEY_DASHBOARD } from '../../Components/Menu/MenuItems'
 import Row from '../../Components/Form/Row'
@@ -67,6 +68,14 @@ const DashBoardPage = () => {
             <VisitStats />
           </Card>
         </Col>
+        {/* The website's page views, for a company with its website switched on (SMN-82). */}
+        {company.websiteBuilderEnabled === true ? (
+          <Col xs={{ span: 24 }}>
+            <Card title={translate('website-analytics')}>
+              <WebsitePageViews />
+            </Card>
+          </Col>
+        ) : null}
       </Row>
     </BackendPage>
   )

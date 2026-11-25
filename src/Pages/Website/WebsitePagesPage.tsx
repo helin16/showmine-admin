@@ -240,18 +240,7 @@ const WebsitePagesPage = () => {
     }
     return (
       <Card>
-        <Space orientation={'vertical'} style={{ width: '100%' }}>
-          <Space wrap>
-            <Button
-              type={'primary'}
-              onClick={() => setState((s) => ({ ...s, adding: { title: '', slug: '', errors: {}, saving: false } }))}
-            >
-              {translate('website-page-add')}
-            </Button>
-            {isAdmin ? <Link to={COMPANY_WEBSITE_TEMPLATES_URL}>{translate('website-templates-choose')}</Link> : null}
-          </Space>
-          {state.pages.length === 0 ? <Empty description={translate('website-pages-none')} /> : getTable(state.pages)}
-        </Space>
+        {state.pages.length === 0 ? <Empty description={translate('website-pages-none')} /> : getTable(state.pages)}
       </Card>
     )
   }
@@ -260,7 +249,30 @@ const WebsitePagesPage = () => {
   return (
     <BackendPage
       selectedMenu={MENU_KEY_WEBSITE_PAGES}
-      ContentHeader={<BackendPageContentTitle title={translate('website-pages')} />}
+      ContentHeader={
+        <BackendPageContentTitle
+          title={translate('website-pages')}
+          // In the title row, as New article is (SMN-82): Choose a template first, then Add page; only once the pages
+          // have loaded.
+          controls={
+            state.pages ? (
+              <Space wrap>
+                {isAdmin ? (
+                  <Link to={COMPANY_WEBSITE_TEMPLATES_URL}>{translate('website-templates-choose')}</Link>
+                ) : null}
+                <Button
+                  type={'primary'}
+                  onClick={() =>
+                    setState((s) => ({ ...s, adding: { title: '', slug: '', errors: {}, saving: false } }))
+                  }
+                >
+                  {translate('website-page-add')}
+                </Button>
+              </Space>
+            ) : null
+          }
+        />
+      }
     >
       {isOn ? <Spin spinning={state.loading}>{getContent()}</Spin> : <InvalidAccessPanel />}
       {adding ? (

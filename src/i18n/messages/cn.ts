@@ -524,7 +524,7 @@ const LanguageCN = {
     'website-address-state-verified': '已验证',
     'website-address-state-failed': '失败',
     'website-domain-state-set': '域名状态（ShowMine 工作人员）',
-    'website-analytics': '访问统计',
+    'website-analytics': '网站访问统计',
     'website-analytics-help': '已发布网站的访问次数，每打开一个页面算一次。预览和 ShowMine 自动检查不计在内。日期按 UTC 计算。',
     'website-analytics-period': '时间段',
     'website-analytics-preset-7': '最近 7 天',

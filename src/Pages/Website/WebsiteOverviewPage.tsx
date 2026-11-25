@@ -18,12 +18,7 @@ import translate from '../../i18n/translate'
 import WebsiteService from '../../Services/WebsiteService'
 import Utils from '../../Services/Utils'
 import IWebsite, { WEBSITE_NAME_MAX } from '../../Types/Website/IWebsite'
-import {
-  COMPANY_WEBSITE_PAGES_URL,
-  COMPANY_WEBSITE_SETTINGS_URL,
-  COMPANY_WEBSITE_ANALYTICS_URL,
-  COMPANY_WEBSITE_TEMPLATES_URL,
-} from '../../UrlMap'
+import { COMPANY_WEBSITE_PAGES_URL, COMPANY_WEBSITE_SETTINGS_URL, COMPANY_WEBSITE_TEMPLATES_URL } from '../../UrlMap'
 import PublishBar from '../../Components/Website/PublishBar'
 
 // The Website area's first page (specs/001-website-builder, US1, T019): name the website, or change its name, and see
@@ -225,7 +220,6 @@ const WebsiteOverviewPage = () => {
                 <Link to={COMPANY_WEBSITE_PAGES_URL}>{translate('website-pages-edit')}</Link>
                 <Link to={COMPANY_WEBSITE_TEMPLATES_URL}>{translate('website-templates-choose')}</Link>
                 <Link to={COMPANY_WEBSITE_SETTINGS_URL}>{translate('website-settings')}</Link>
-                <Link to={COMPANY_WEBSITE_ANALYTICS_URL}>{translate('website-analytics')}</Link>
               </Space>
             </>
           ) : null}

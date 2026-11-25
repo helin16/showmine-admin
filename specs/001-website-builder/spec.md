@@ -191,7 +191,7 @@ An admin picks a period of up to a year and sees page views per day and per page
 - **FR-021**: Each public page MUST provide a title, description and sharing image, falling back from the page to the site to the company.
 - **FR-022**: Admins MUST be able to set site and page SEO (title up to 70 characters, description up to 160), and to record a custom domain, unique, whose state (pending, verified, failed) only ShowMine staff change. The ShowMine subdomain MUST equal the address and be set automatically, `pending` until it is served (SMN-79). *(Amended 2026-11-25, SMN-81; the subdomain was entered by the admin.)*
 - **FR-023**: Page views MUST be counted per page per day (UTC), excluding previews and ShowMine's automated checks, without storing anything that identifies a visitor.
-- **FR-024**: Admins MUST be able to see page views per day and per page for a period of up to 366 days, with the period and last update time shown, and zeros when there are none.
+- **FR-024**: Admins MUST be able to see page views per day and per page for a period of up to 366 days, with the period and last update time shown, and zeros when there are none. They are shown on the dashboard, titled "Website page views", only for a company with its website switched on. *(Amended 2026-11-25, SMN-82; was a page under Website.)*
 - **FR-025**: All admin screens MUST be in English and Chinese, usable by keyboard, and show loading, empty, success and error states. Destructive actions MUST ask for confirmation.
 
 ### Key Entities

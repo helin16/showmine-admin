@@ -73,7 +73,6 @@ vi.mock('../../../Pages/Website/WebsiteTemplatesPage', () => page('website templ
 vi.mock('../../../Pages/Website/WebsiteSettingsPage', () => page('website settings'))
 vi.mock('../../../Pages/Website/WebsitePagesPage', () => page('website pages'))
 vi.mock('../../../Pages/Website/WebsitePageEditPage', () => page('website page'))
-vi.mock('../../../Pages/Website/WebsiteAnalyticsPage', () => page('website analytics'))
 
 const acme = { id: 'co-1', name: 'Acme' }
 const adminMember = { companyId: 'co-1', isActive: true, isPending: false, role: ROLE_ADMIN }
@@ -148,7 +147,6 @@ describe('Router', () => {
     test.each([
       [COMPANY_WEBSITE_PAGES_URL, 'website pages'],
       [`${COMPANY_WEBSITE_PAGES_URL}/p-1`, 'website page'],
-      [COMPANY_WEBSITE_ANALYTICS_URL, 'website analytics'],
     ])('a member reaches %s', async (path, name) => {
       renderAt(path, member)
       expect(await screen.findByText(`page: ${name}`)).toBeInTheDocument()
@@ -165,6 +163,12 @@ describe('Router', () => {
         expect(await screen.findByText(/^page: website/)).toBeInTheDocument()
       },
     )
+  })
+
+  // SMN-82: the website page views are on the dashboard; the old address goes there.
+  test('the old website page views address shows the dashboard', async () => {
+    renderAt(COMPANY_WEBSITE_ANALYTICS_URL, member)
+    expect(await screen.findByText('page: dashboard')).toBeInTheDocument()
   })
 
   test('unknown paths get the 404 page', () => {

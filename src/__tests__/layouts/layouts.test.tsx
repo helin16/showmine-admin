@@ -124,7 +124,7 @@ describe('BackendPageSideMenu', () => {
     websiteMenu(ROLE_ADMIN)
     expect(screen.getByRole('link', { name: 'Pages' })).toHaveAttribute('href', COMPANY_WEBSITE_PAGES_URL)
     expect(linkNames()).toEqual(
-      expect.arrayContaining(['Pages', 'Page views', 'Publish and address', 'Templates', 'Website settings']),
+      expect.arrayContaining(['Pages', 'Publish and address', 'Templates', 'Website settings']),
     )
     expect(screen.getByRole('link', { name: 'Publish and address' })).toHaveAttribute('href', COMPANY_WEBSITE_URL)
   })
@@ -145,7 +145,9 @@ describe('BackendPageSideMenu', () => {
 
   test('a member gets the pages and page views only, and no company admin section', () => {
     websiteMenu(ROLE_NON_ADMIN)
-    expect(linkNames()).toEqual(expect.arrayContaining(['Pages', 'Page views']))
+    expect(linkNames()).toEqual(expect.arrayContaining(['Pages']))
+    // Page views are on the dashboard (SMN-82).
+    expect(screen.queryByRole('link', { name: 'Website page views' })).not.toBeInTheDocument()
     for (const name of ['Publish and address', 'Templates', 'Website settings', 'Company Info']) {
       expect(screen.queryByRole('link', { name })).not.toBeInTheDocument()
     }

@@ -25,7 +25,6 @@ import {
   COMPANY_LIST_URL,
   COMPANY_WEBSITE_URL,
   COMPANY_WEBSITE_PAGES_URL,
-  COMPANY_WEBSITE_ANALYTICS_URL,
   COMPANY_WEBSITE_TEMPLATES_URL,
   COMPANY_WEBSITE_SETTINGS_URL,
 } from '../../UrlMap'
@@ -38,10 +37,10 @@ export const MENU_KEY_COMPANY_ADMIN = 'company-admin'
 export const MENU_KEY_COMPANY_BILLING = 'company-billing'
 export const MENU_KEY_COMPANY_CHANNELS = 'company-channels'
 export const MENU_KEY_COMPANY_USERS = 'company-users'
-// The website, under Components (SMN-80): pages and page views for every member, the rest for its admins.
+// The website, under Components (SMN-80): its pages for every member, the rest for its admins. Its page views are on
+// the dashboard (SMN-82).
 export const MENU_KEY_WEBSITE = 'website'
 export const MENU_KEY_WEBSITE_PAGES = 'website-pages'
-export const MENU_KEY_WEBSITE_ANALYTICS = 'website-analytics'
 export const MENU_KEY_WEBSITE_PUBLISH = 'website-publish'
 export const MENU_KEY_WEBSITE_TEMPLATES = 'website-templates'
 export const MENU_KEY_WEBSITE_SETTINGS = 'website-settings'
@@ -89,11 +88,6 @@ const MenuItems = [
             key: MENU_KEY_WEBSITE_PAGES,
             name: <FormattedMessage id='website-menu-pages' />,
             url: COMPANY_WEBSITE_PAGES_URL,
-          },
-          {
-            key: MENU_KEY_WEBSITE_ANALYTICS,
-            name: <FormattedMessage id='website-analytics' />,
-            url: COMPANY_WEBSITE_ANALYTICS_URL,
           },
           {
             key: MENU_KEY_WEBSITE_PUBLISH,

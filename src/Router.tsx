@@ -1,5 +1,5 @@
 import AppWrapper, { AppCssWrapper } from './Styles/AppWrapper'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom'
 import LoginPage from './Pages/Auth/LoginPage'
 import Page404 from './Pages/Error/Page404'
 import React, { lazy, Suspense } from 'react'
@@ -54,7 +54,6 @@ const WebsiteTemplatesPage = lazy(() => import('./Pages/Website/WebsiteTemplates
 const WebsitePagesPage = lazy(() => import('./Pages/Website/WebsitePagesPage'))
 const WebsitePageEditPage = lazy(() => import('./Pages/Website/WebsitePageEditPage'))
 const WebsiteSettingsPage = lazy(() => import('./Pages/Website/WebsiteSettingsPage'))
-const WebsiteAnalyticsPage = lazy(() => import('./Pages/Website/WebsiteAnalyticsPage'))
 const CompanyUsersPage = lazy(() => import('./Pages/Company/CompanyUsersPage'))
 const CompanyListPage = lazy(() => import('./Pages/Company/CompanyListPage'))
 const CompanyChannelsPage = lazy(() => import('./Pages/Channel/ChannelsPage'))
@@ -202,14 +201,8 @@ const Router = () => {
                     </ProtectedRoute>
                   }
                 />
-                <Route
-                  path={COMPANY_WEBSITE_ANALYTICS_URL}
-                  element={
-                    <ProtectedRoute>
-                      <WebsiteAnalyticsPage />
-                    </ProtectedRoute>
-                  }
-                />
+                {/* Page views moved to the dashboard (SMN-82); old links go there. */}
+                <Route path={COMPANY_WEBSITE_ANALYTICS_URL} element={<Navigate to={BACK_END_URL} replace />} />
                 <Route
                   path={COMPANY_BILLING_URL}
                   element={
