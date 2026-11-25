@@ -76,6 +76,12 @@ describe('WebsitePageViews', () => {
     expect(rows).toEqual(['home5', 'about1'])
   })
 
+  test('shows the title it is given on its first card', async () => {
+    vi.mocked(WebsiteService.getPageViews).mockResolvedValue(views('2026-11-19', '2026-11-25') as never)
+    renderWithProviders(<WebsitePageViews title={'Website page views'} />, { state: { auth: { company } } })
+    expect(await screen.findByText('Website page views')).toBeInTheDocument()
+  })
+
   test('a period with no views says so', async () => {
     vi.mocked(WebsiteService.getPageViews).mockResolvedValue(views('2026-11-19', '2026-11-25') as never)
     renderPage()

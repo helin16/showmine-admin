@@ -124,6 +124,14 @@ describe('WebsitePagesPage', () => {
     expect(template.compareDocumentPosition(add) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
+  test('Add page waits while the order is being saved', async () => {
+    vi.mocked(WebsiteService.getPages).mockResolvedValue(pages as never)
+    vi.mocked(WebsiteService.orderPages).mockReturnValue(new Promise(() => undefined) as never)
+    renderPage()
+    fireEvent.click(await screen.findByRole('button', { name: 'Move About us down' }))
+    expect(screen.getByRole('button', { name: 'Add page' })).toBeDisabled()
+  })
+
   test('a member edits, adds and reorders, but gets no delete or template link', async () => {
     vi.mocked(WebsiteService.getPages).mockResolvedValue(pages as never)
     renderPage({ company, companyUsers: adminOf('NORMAL') })

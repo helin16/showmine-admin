@@ -71,9 +71,7 @@ const DashBoardPage = () => {
         {/* The website's page views, for a company with its website switched on (SMN-82). */}
         {company.websiteBuilderEnabled === true ? (
           <Col xs={{ span: 24 }}>
-            <Card title={translate('website-analytics')}>
-              <WebsitePageViews />
-            </Card>
+            <WebsitePageViews title={translate('website-analytics')} />
           </Col>
         ) : null}
       </Row>

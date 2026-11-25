@@ -262,6 +262,7 @@ const WebsitePagesPage = () => {
                 ) : null}
                 <Button
                   type={'primary'}
+                  disabled={state.working}
                   onClick={() =>
                     setState((s) => ({ ...s, adding: { title: '', slug: '', errors: {}, saving: false } }))
                   }

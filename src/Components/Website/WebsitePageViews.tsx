@@ -43,7 +43,8 @@ type iState = {
   count: number
 }
 
-const WebsitePageViews = () => {
+// title: shown on the first card, so the dashboard needs no card around it.
+const WebsitePageViews = ({ title }: { title?: React.ReactNode }) => {
   const { company } = useSelector((s: RootState) => s.auth)
   const isOn = company?.websiteBuilderEnabled === true
   const [state, setState] = useState<iState>({ preset: '7', ...lastDays(7), loading: false, count: 0 })
@@ -110,7 +111,7 @@ const WebsitePageViews = () => {
 
   const getContent = () => (
     <Space orientation={'vertical'} style={{ width: '100%' }}>
-      <Card>
+      <Card title={title}>
         <Space orientation={'vertical'} style={{ width: '100%' }}>
           <div>{translate('website-analytics-help')}</div>
           <Space wrap>

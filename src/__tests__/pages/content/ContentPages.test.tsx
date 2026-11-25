@@ -40,7 +40,9 @@ vi.mock('../../../Components/Article/CompanyArticleStats', () => ({ default: () 
 vi.mock('../../../Components/Channel/CompanyChannelStats', () => ({ default: () => <div>channel stats</div> }))
 vi.mock('../../../Components/User/CompanyUserStats', () => ({ default: () => <div>user stats</div> }))
 vi.mock('../../../Components/Stats/VisitStats', () => ({ default: () => <div>visit stats</div> }))
-vi.mock('../../../Components/Website/WebsitePageViews', () => ({ default: () => <div>website page views</div> }))
+vi.mock('../../../Components/Website/WebsitePageViews', () => ({
+  default: ({ title }: { title?: React.ReactNode }) => <div>website page views {title}</div>,
+}))
 
 const noCompany = { auth: { user: signedIn.auth.user } }
 const LocationProbe = () => <div data-testid="location">{useLocation().pathname}</div>
@@ -168,7 +170,7 @@ describe('DashBoardPage', () => {
       expect(screen.getByText(panel)).toBeInTheDocument(),
     )
     expect(screen.getByRole('link', { name: /new article/i })).toHaveAttribute('href', '/b/articles/new')
-    expect(screen.queryByText('website page views')).not.toBeInTheDocument()
+    expect(screen.queryByText(/website page views/)).not.toBeInTheDocument()
   })
 
   // SMN-82: the website page views, only for a company with its website switched on.
@@ -176,7 +178,6 @@ describe('DashBoardPage', () => {
     renderWithProviders(<DashBoardPage />, {
       state: { ...signedIn, auth: { ...signedIn.auth, company: { ...signedIn.auth.company, websiteBuilderEnabled: true } } },
     } as never)
-    expect(screen.getByText('website page views')).toBeInTheDocument()
-    expect(screen.getByText('Website page views')).toBeInTheDocument()
+    expect(screen.getByText('website page views Website page views')).toBeInTheDocument()
   })
 })
