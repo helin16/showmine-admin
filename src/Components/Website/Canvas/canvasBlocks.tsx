@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import DOMPurify from 'dompurify'
 import IAsset from '../../../Types/Asset/IAsset'
 import ICompany from '../../../Types/Company/ICompany'
@@ -14,7 +14,9 @@ type iBlock = { section: IWebsiteSection; images: iImages; company?: ICompany }
 
 // The hosts the API keeps frames from (showmine-api HtmlSanitizer).
 const FRAME_HOSTS = ['player.bilibili.com', 'v.qq.com', 'www.youtube.com']
-DOMPurify.addHook('uponSanitizeElement', (node, data) => {
+// The canvas's own instance, so its hook touches no other use of DOMPurify.
+const purify = DOMPurify(window)
+purify.addHook('uponSanitizeElement', (node, data) => {
   if (data.tagName !== 'iframe') return
   let host = ''
   try {
@@ -27,14 +29,17 @@ DOMPurify.addHook('uponSanitizeElement', (node, data) => {
 })
 
 // Unsaved text, not yet cleaned by the API, shown inside the signed-in admin (research R2a): cleaned here first.
-// No ids (as the API), links only to web, email, phone or a page of the site; the canvas also stops link clicks.
+// As the API's allow-list, tighter where it is safe; the canvas also stops link clicks.
 export const cleanHtml = (html: string) =>
-  DOMPurify.sanitize(html, {
+  purify.sanitize(html, {
+    USE_PROFILES: { html: true },
     ADD_TAGS: ['iframe'],
     ADD_ATTR: ['allowfullscreen', 'frameborder'],
-    FORBID_ATTR: ['id'],
+    // No ids or names: they would become globals of the admin page (DOM clobbering).
+    FORBID_ATTR: ['id', 'name'],
     FORBID_TAGS: ['form', 'input', 'button', 'textarea', 'select', 'style'],
-    ALLOWED_URI_REGEXP: /^(?:https?:|mailto:|tel:|\/(?!\/)|#)/i,
+    // Web, email and phone links, and relative ones; no other scheme, and no //host.
+    ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):|(?![a-z][a-z0-9+.-]*:|\/\/))/i,
   })
 
 const urlOf = (images: iImages, assetId: unknown) =>
@@ -49,20 +54,28 @@ const Hero = ({ section, images }: iBlock) => {
     >
       {section.heading ? <h1>{`${section.heading}`}</h1> : null}
       {section.subheading ? <p>{`${section.subheading}`}</p> : null}
-      {/* No address: canvas links go nowhere. */}
-      {section.buttonUrl && section.buttonText ? <a className={'site-button'}>{`${section.buttonText}`}</a> : null}
+      {/* Canvas links go nowhere. */}
+      {section.buttonUrl && section.buttonText ? (
+        <a className={'site-button'} href={'#'}>
+          {`${section.buttonText}`}
+        </a>
+      ) : null}
     </section>
   )
 }
 
-const Text = ({ section }: iBlock) => (
-  <section className={'site-text'} dangerouslySetInnerHTML={{ __html: cleanHtml(`${section.html || ''}`) }} />
-)
+// Cleaned again only when its text changes, so typing in another block stays quick (SC-003).
+const Text = ({ section }: iBlock) => {
+  const html = `${section.html || ''}`
+  const clean = useMemo(() => cleanHtml(html), [html])
+  return <section className={'site-text'} dangerouslySetInnerHTML={{ __html: clean }} />
+}
 
 const Image = ({ section, images }: iBlock) => {
   const url = urlOf(images, section.assetId)
   return url ? (
-    <figure className={'site-image'}>
+    // The Reader sets its margin as a child of .site-page; here the block's frame has it.
+    <figure className={'site-image'} style={{ margin: 0 }}>
       <img src={url} alt={`${section.alt || ''}`} />
       {section.caption ? <figcaption>{`${section.caption}`}</figcaption> : null}
     </figure>
@@ -90,12 +103,12 @@ const Contact = ({ section, company }: iBlock) => {
       <ul>
         {section.showPhone && phone ? (
           <li>
-            <a>{phone}</a>
+            <a href={'#'}>{phone}</a>
           </li>
         ) : null}
         {section.showEmail && email ? (
           <li>
-            <a>{email}</a>
+            <a href={'#'}>{email}</a>
           </li>
         ) : null}
         {section.showAddress && address ? <li>{address}</li> : null}

@@ -89,9 +89,19 @@ const SiteCanvas = ({
         <Alert type={'warning'} role={'status'} title={translate('website-canvas-no-styles')} />
       ) : null}
       {css ? <style>{css}</style> : null}
+      {/* A click on a map or video selects its block. */}
+      <style>{'.site-canvas iframe { pointer-events: none; }'}</style>
       <div
         data-testid={'site-canvas'}
-        style={{ maxWidth: WIDTHS[width], margin: '0 auto', border: '1px solid #d9d9d9', background: '#fff' }}
+        className={'site-canvas'}
+        // Paint containment keeps fixed-position content inside the canvas, off the editor's own buttons.
+        style={{
+          maxWidth: WIDTHS[width],
+          margin: '0 auto',
+          border: '1px solid #d9d9d9',
+          background: '#fff',
+          contain: 'paint',
+        }}
         // Canvas links go nowhere: the admin stays on the editor.
         onClickCapture={(e) => (e.target as HTMLElement).closest('a') && e.preventDefault()}
       >
@@ -102,14 +112,16 @@ const SiteCanvas = ({
           }
         >
           <nav className={'site-nav'} aria-label={translate('website-pages')}>
-            <a className={'site-name'}>
+            <a className={'site-name'} href={'#'}>
               {company?.LogoAsset?.url ? <img src={company.LogoAsset.url} alt={''} /> : null}
               <span>{company?.name}</span>
             </a>
             <ul>
               {pageTitles.map((title, index) => (
                 <li key={`${index}-${title}`}>
-                  <a aria-current={index === currentIndex ? 'page' : undefined}>{title}</a>
+                  <a href={'#'} aria-current={index === currentIndex ? 'page' : undefined}>
+                    {title}
+                  </a>
                 </li>
               ))}
             </ul>

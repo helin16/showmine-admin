@@ -437,7 +437,6 @@ const LanguageCN = {
     'website-move-up': '上移 {name}',
     'website-move-down': '下移 {name}',
     'website-sections-none': '这个页面还没有区块。',
-    'website-section-add-type': '新区块',
     'website-section-add': '添加区块',
     'website-section-remove-confirm': '要移除这个区块吗？',
     'website-section-type-hero': '大图标题区',

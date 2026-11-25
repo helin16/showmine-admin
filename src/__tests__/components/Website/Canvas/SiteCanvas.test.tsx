@@ -178,7 +178,7 @@ describe('SiteCanvas', () => {
     test('without the Reader address, says so and draws the blocks plain', () => {
       const { container } = render(<SiteCanvas {...(props() as never)} />)
       expect(screen.getByRole('status')).toHaveTextContent('The website styles could not be loaded')
-      expect(container.querySelector('style')).toBeNull()
+      expect(container.textContent).not.toContain('.site-hero')
       expect(fetchMock).not.toHaveBeenCalled()
     })
 
@@ -191,7 +191,7 @@ describe('SiteCanvas', () => {
       expect(screen.queryByRole('status')).not.toBeInTheDocument()
       unmount()
       const again = render(<SiteCanvas {...(props() as never)} />)
-      await waitFor(() => expect(again.container.querySelector('style')).not.toBeNull())
+      await waitFor(() => expect(again.container.querySelector('style')).toHaveTextContent('.site-hero{color:red}'))
       expect(fetchMock).toHaveBeenCalledTimes(1)
     })
 
@@ -203,7 +203,7 @@ describe('SiteCanvas', () => {
       unmount()
       fetchMock.mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('.site{}') })
       const { container } = render(<SiteCanvas {...(props() as never)} />)
-      await waitFor(() => expect(container.querySelector('style')).not.toBeNull())
+      await waitFor(() => expect(container.querySelector('style')).toHaveTextContent('.site{}'))
       expect(fetchMock).toHaveBeenCalledTimes(2)
     })
   })
@@ -233,6 +233,17 @@ describe('cleanHtml', () => {
     expect(html).toContain('href="https://ok.test"')
     expect(html).toContain('href="/about"')
     expect(html).toContain('href="mailto:a@b.test"')
+  })
+
+  test('drops names, svg and math, and keeps relative links', () => {
+    const html = cleanHtml(
+      '<img name="gtag" src="https://x.test/a.png"><a name="dataLayer" href="about">a</a><a href="?x=1">b</a>' +
+        '<svg><a href="https://x.test">s</a></svg><math><mi>x</mi></math>',
+    )
+    expect(html).not.toMatch(/name=|<svg|<math/)
+    expect(html).toContain('href="about"')
+    expect(html).toContain('href="?x=1"')
+    expect(html).toContain('src="https://x.test/a.png"')
   })
 
   test('keeps frames only from the hosts the API keeps', () => {

@@ -219,6 +219,8 @@ const WebsitePageEditPage = () => {
     setSections(sections)
     setState((s) => ({
       ...s,
+      // Problems are kept by position: after a move they would mark the wrong block. The next save finds them again.
+      errors: {},
       announcement: translate('website-section-moved', {
         name: translate(`website-section-type-${section.type}`),
         number: index + by + 1,
@@ -577,7 +579,10 @@ const WebsitePageEditPage = () => {
               onSelect={select}
               onMove={moveSection}
               // The panel then asks for a block to be selected.
-              onRemove={(index) => setSections(draft.sections.filter((_, i) => i !== index))}
+              onRemove={(index) => {
+                setSections(draft.sections.filter((_, i) => i !== index))
+                setState((s) => ({ ...s, errors: {} }))
+              }}
             />
           </div>
           <div style={{ flex: '1 1 320px', maxWidth: 480 }}>{getPanel(draft.sections)}</div>

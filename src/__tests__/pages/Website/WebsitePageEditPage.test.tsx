@@ -249,6 +249,43 @@ describe('WebsitePageEditPage', () => {
     expect(within(menu[0]).getByText('Welcome')).toHaveAttribute('aria-current', 'page')
   })
 
+  // Problems are kept by position, so a move or remove would mark the wrong block.
+  const failWithTextProblem = async () => {
+    await loaded()
+    vi.mocked(WebsiteService.updatePage).mockRejectedValue(
+      httpError(400, { message: 'Bad', errors: [{ path: 'sections[1].html', message: 'Too long.' }] }),
+    )
+    fireEvent.change(screen.getByLabelText('Heading'), { target: { value: 'Changed' } })
+    fireEvent.click(saveBtn())
+    expect(await screen.findByText('Needs fixing')).toBeInTheDocument()
+  }
+
+  test('a move clears the problem marks', async () => {
+    await failWithTextProblem()
+    fireEvent.click(screen.getByRole('button', { name: 'Move 2. Text up' }))
+    expect(screen.queryByText('Needs fixing')).not.toBeInTheDocument()
+  })
+
+  test('a remove clears the problem marks', async () => {
+    // A third block, which moves into the problem's position.
+    vi.mocked(WebsiteService.getPages).mockResolvedValue([
+      page({ sections: [hero, text, { id: 'h2', type: 'hero', heading: 'Bye' }] }),
+    ] as never)
+    vi.mocked(WebsiteService.get).mockResolvedValue(website as never)
+    renderPage()
+    await screen.findByDisplayValue('Hello')
+    vi.mocked(WebsiteService.updatePage).mockRejectedValue(
+      httpError(400, { message: 'Bad', errors: [{ path: 'sections[1].html', message: 'Too long.' }] }),
+    )
+    fireEvent.change(screen.getByLabelText('Heading'), { target: { value: 'Changed' } })
+    fireEvent.click(saveBtn())
+    expect(await screen.findByText('Needs fixing')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Remove 2. Text' }))
+    fireEvent.click(within(await screen.findByRole('tooltip')).getByRole('button', { name: 'Remove' }))
+    expect(screen.getByRole('button', { name: 'Edit 2. Hero' })).toBeInTheDocument()
+    expect(screen.queryByText('Needs fixing')).not.toBeInTheDocument()
+  })
+
   test('a new block goes after the selected one', async () => {
     await loaded()
     fireEvent.click(screen.getByRole('button', { name: 'Image' }))

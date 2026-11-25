@@ -438,7 +438,6 @@ const LanguageEN = {
     'website-move-up': 'Move {name} up',
     'website-move-down': 'Move {name} down',
     'website-sections-none': 'This page has no sections yet.',
-    'website-section-add-type': 'New section',
     'website-section-add': 'Add section',
     'website-section-remove-confirm': 'Remove this section?',
     'website-section-type-hero': 'Hero',
