@@ -24,8 +24,8 @@ describe('WebsiteService', () => {
 
   test('create posts only the name', async () => {
     vi.mocked(axios.post).mockResolvedValue({ data: body })
-    await expect(WebsiteService.create('acme')).resolves.toEqual(body)
-    expect(axios.post).toHaveBeenCalledWith(`${API}/website`, { slug: 'acme' }, { headers })
+    await expect(WebsiteService.create('Acme Bakery')).resolves.toEqual(body)
+    expect(axios.post).toHaveBeenCalledWith(`${API}/website`, { name: 'Acme Bakery' }, { headers })
   })
 
   test('getTemplates lists the templates', async () => {

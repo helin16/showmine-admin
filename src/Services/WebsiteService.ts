@@ -15,7 +15,7 @@ const endPoint = '/website'
 
 const get = async (): Promise<IWebsite> => AppService.get(endPoint).then((resp) => resp.data)
 
-const create = async (slug: string): Promise<IWebsite> => AppService.post(endPoint, { slug }).then((resp) => resp.data)
+const create = async (name: string): Promise<IWebsite> => AppService.post(endPoint, { name }).then((resp) => resp.data)
 
 const update = async (params: iConfigParams): Promise<IWebsite> =>
   AppService.put(endPoint, params).then((resp) => resp.data)

@@ -17,7 +17,7 @@ import { BoxTitleDiv, FormInputWrapper } from '../../Styles/AppWrapper'
 import translate from '../../i18n/translate'
 import WebsiteService from '../../Services/WebsiteService'
 import Utils from '../../Services/Utils'
-import IWebsite, { WEBSITE_SLUG_PATTERN } from '../../Types/Website/IWebsite'
+import IWebsite, { WEBSITE_NAME_MAX } from '../../Types/Website/IWebsite'
 import {
   COMPANY_WEBSITE_PAGES_URL,
   COMPANY_WEBSITE_SETTINGS_URL,
@@ -26,20 +26,20 @@ import {
 } from '../../UrlMap'
 import PublishBar from '../../Components/Website/PublishBar'
 
-// The Website area's first page (specs/001-website-builder, US1, T019): create the website by choosing its address
-// name, or change the name, and see the public address and whether the site is published.
+// The Website area's first page (specs/001-website-builder, US1, T019): name the website, or change its name, and see
+// its addresses and whether it is published. The addresses are made from the name (SMN-81).
 type iState = {
   loading: boolean
   // null: the company has no website yet.
   website?: IWebsite | null
   loadError?: string
-  slug: string
-  slugError?: string
+  name: string
+  nameError?: string
   saving: boolean
   isStale: boolean
   count: number
 }
-const initState: iState = { loading: false, slug: '', saving: false, isStale: false, count: 0 }
+const initState: iState = { loading: false, name: '', saving: false, isStale: false, count: 0 }
 
 // Where visitors see the site, on the Reader. Null when the Reader's address is not configured, rather than a wrong
 // link on the admin's own address.
@@ -63,19 +63,20 @@ const WebsiteOverviewPage = () => {
       ...s,
       loading: true,
       website: undefined,
-      slug: '',
+      name: '',
       loadError: undefined,
       isStale: false,
-      slugError: undefined,
+      nameError: undefined,
     }))
     WebsiteService.get()
-      .then((website) => isCurrent && setState((s) => ({ ...s, website, slug: website.slug })))
+      .then((website) => isCurrent && setState((s) => ({ ...s, website, name: website.name || '' })))
       .catch((err) => {
         if (!isCurrent) return
         setState((s) => ({
           ...s,
           ...(err?.response?.status === 404
-            ? { website: null, slug: '' }
+            ? // No website yet: offered under the company name.
+              { website: null, name: `${company?.name || ''}`.slice(0, WEBSITE_NAME_MAX) }
             : { website: undefined, loadError: Utils.getErrorMessage(err) }),
         }))
       })
@@ -88,32 +89,32 @@ const WebsiteOverviewPage = () => {
   const reload = () => setState((s) => ({ ...s, count: s.count + 1 }))
 
   const save = () => {
-    const slug = state.slug.trim()
-    if (!WEBSITE_SLUG_PATTERN.test(slug)) {
-      setState((s) => ({ ...s, slugError: translate('website-slug-bad') }))
+    const name = state.name.trim()
+    if (name === '' || name.length > WEBSITE_NAME_MAX) {
+      setState((s) => ({ ...s, nameError: translate('website-name-bad') }))
       return
     }
     const { website } = state
     const companyId = company?.id
     const isSameCompany = () => companyIdRef.current === companyId
-    setState((s) => ({ ...s, saving: true, slugError: undefined }))
+    setState((s) => ({ ...s, saving: true, nameError: undefined }))
     const request = website
-      ? WebsiteService.update({ slug, updatedAt: website.updatedAt })
-      : WebsiteService.create(slug)
+      ? WebsiteService.update({ name, updatedAt: website.updatedAt })
+      : WebsiteService.create(name)
     request
       .then((saved) => {
         if (!isSameCompany()) return
-        setState((s) => ({ ...s, website: saved, slug: saved.slug }))
+        setState((s) => ({ ...s, website: saved, name: saved.name || '' }))
         message.success(translate('website-saved'))
       })
       .catch((err) => {
         if (!isSameCompany()) return
         const { status, data } = err?.response || {}
-        const fieldError = (data?.errors || []).find((error: { path: string }) => error.path === 'slug')?.message
+        const fieldError = (data?.errors || []).find((error: { path: string }) => error.path === 'name')?.message
         if (fieldError) {
-          setState((s) => ({ ...s, slugError: fieldError }))
+          setState((s) => ({ ...s, nameError: fieldError }))
         } else if (status === 409 && data?.message === NAME_TAKEN) {
-          setState((s) => ({ ...s, slugError: translate('website-slug-taken') }))
+          setState((s) => ({ ...s, nameError: translate('website-name-taken') }))
         } else if (status === 409) {
           // Another admin saved or created first: their change is kept, and this one waits for a reload.
           setState((s) => ({ ...s, isStale: true }))
@@ -157,17 +158,17 @@ const WebsiteOverviewPage = () => {
           ) : null}
           <FormInputWrapper>
             <BoxTitleDiv>
-              <label htmlFor={'website-slug'}>{translate('website-slug')}</label>
+              <label htmlFor={'website-name'}>{translate('website-name')}</label>
             </BoxTitleDiv>
             <Space wrap>
               <InputBox
-                id={'website-slug'}
-                value={state.slug}
-                maxLength={40}
-                status={state.slugError ? 'error' : undefined}
-                aria-invalid={state.slugError ? true : undefined}
-                aria-describedby={state.slugError ? 'website-slug-help website-slug-error' : 'website-slug-help'}
-                onChange={(e) => setState((s) => ({ ...s, slug: e.target.value, slugError: undefined }))}
+                id={'website-name'}
+                value={state.name}
+                maxLength={WEBSITE_NAME_MAX}
+                status={state.nameError ? 'error' : undefined}
+                aria-invalid={state.nameError ? true : undefined}
+                aria-describedby={state.nameError ? 'website-name-help website-name-error' : 'website-name-help'}
+                onChange={(e) => setState((s) => ({ ...s, name: e.target.value, nameError: undefined }))}
                 onPressEnter={save}
                 disabled={state.saving || state.isStale}
               />
@@ -175,20 +176,29 @@ const WebsiteOverviewPage = () => {
                 type={'primary'}
                 onClick={save}
                 loading={state.saving}
-                disabled={state.isStale || (!!website && state.slug.trim() === website.slug)}
+                disabled={state.isStale || (!!website && state.name.trim() === (website.name || ''))}
               >
                 {translate(website ? 'website-save' : 'website-create')}
               </Button>
             </Space>
-            <div id={'website-slug-help'}>{translate('website-slug-help')}</div>
-            {state.slugError ? (
-              <div id={'website-slug-error'} role={'alert'} className={'ant-form-item-explain-error'}>
-                {state.slugError}
+            <div id={'website-name-help'}>{translate('website-name-help')}</div>
+            {state.nameError ? (
+              <div id={'website-name-error'} role={'alert'} className={'ant-form-item-explain-error'}>
+                {state.nameError}
               </div>
             ) : null}
           </FormInputWrapper>
           {website ? (
             <>
+              {/* The ShowMine subdomain is the address; it opens once ShowMine serves it (SMN-79). */}
+              {website.addresses?.subdomain ? (
+                <FormInputWrapper>
+                  <BoxTitleDiv>{translate('website-address-subdomain')}</BoxTitleDiv>
+                  <span>
+                    {website.addresses.subdomain} {translate('website-address-not-open')}
+                  </span>
+                </FormInputWrapper>
+              ) : null}
               <FormInputWrapper>
                 <BoxTitleDiv>{translate('website-address')}</BoxTitleDiv>
                 {publicUrl === null ? (

@@ -22,8 +22,8 @@ Data is always the header company's. Another company's ids return 404. Each rout
 | Route | Body | Success | Errors |
 |---|---|---|---|
 | `GET /website` | | 200 website + `hasUnpublishedChanges` | 404 no active website |
-| `POST /website` | `{ slug }` | 200 website | 400 slug; 409 company has one or slug taken |
-| `PUT /website` | `{ slug?, theme?, seo?, subdomain?, customDomain?, updatedAt }` (super admin also `customDomainStatus`) | 200 website | 400 fields or missing `updatedAt`; 404; 409 taken or stale `updatedAt` |
+| `POST /website` | `{ name? }` (default: the company name) | 200 website, with `addresses: { subdomain, reader }` | 400 name, or a `slug`/`subdomain` sent; 409 company has one |
+| `PUT /website` | `{ name?, theme?, seo?, customDomain?, updatedAt }` (`slug` and `subdomain` refused: made from the name, SMN-81) (super admin also `customDomainStatus`) | 200 website | 400 fields or missing `updatedAt`; 404; 409 taken or stale `updatedAt` |
 | `POST /website/publish` | `{ updatedAt }` | 200 website with `publishedAt` | 400 `errors` (no pages, invalid section, bad image, a link to a missing page); 409 stale |
 | `POST /website/unpublish` | | 200 website | 404 |
 

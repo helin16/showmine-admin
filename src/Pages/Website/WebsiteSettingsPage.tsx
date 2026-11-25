@@ -22,19 +22,19 @@ import IWebsite, {
   CUSTOM_DOMAIN_STATUSES,
   IFieldError,
   IWebsiteSeo,
-  WEBSITE_SLUG_PATTERN,
   toSeo,
 } from '../../Types/Website/IWebsite'
 
-// The website's settings (specs/001-website-builder, US6, T067): the site's SEO, a ShowMine subdomain and a custom
-// domain. The addresses are recorded and checked only; nothing serves them yet.
-type iForm = { seo: IWebsiteSeo; subdomain: string; customDomain: string; customDomainStatus?: string }
+// The website's settings (specs/001-website-builder, US6, T067): the site's SEO and a custom domain, recorded and
+// checked only; nothing serves it yet. The ShowMine subdomain is made from the website name (SMN-81), shown with the
+// address on the Publish and address page.
+type iForm = { seo: IWebsiteSeo; customDomain: string; customDomainStatus?: string }
 type iState = {
   loading: boolean
   website?: IWebsite
   form?: iForm
   loadError?: string
-  // Problems by field: seo.title, subdomain, customDomain...
+  // Problems by field: seo.title, customDomain...
   errors: { [path: string]: string }
   saving: boolean
   isStale: boolean
@@ -44,22 +44,13 @@ type iState = {
 const initState: iState = { loading: false, errors: {}, saving: false, isStale: false, images: {}, count: 0 }
 
 // The API's own words for an address another website has.
-const SUBDOMAIN_TAKEN = 'That subdomain is taken.'
 const DOMAIN_TAKEN = 'That domain is taken.'
 
 // The fields that show their own problems.
-const SHOWN_PATHS = [
-  'seo.title',
-  'seo.description',
-  'seo.imageAssetId',
-  'subdomain',
-  'customDomain',
-  'customDomainStatus',
-]
+const SHOWN_PATHS = ['seo.title', 'seo.description', 'seo.imageAssetId', 'customDomain', 'customDomainStatus']
 
 const toForm = (website: IWebsite): iForm => ({
   seo: toSeo(website.seo),
-  subdomain: website.subdomain || '',
   customDomain: website.customDomain || '',
   customDomainStatus: website.customDomainStatus,
 })
@@ -119,12 +110,8 @@ const WebsiteSettingsPage = () => {
   const save = () => {
     const { form, website } = state
     if (!form || !website) return
-    const subdomain = form.subdomain.trim().toLowerCase()
     const customDomain = form.customDomain.trim().toLowerCase()
     const errors: { [path: string]: string } = {
-      ...(subdomain === '' || WEBSITE_SLUG_PATTERN.test(subdomain)
-        ? {}
-        : { subdomain: translate('website-subdomain-bad') }),
       ...(customDomain === '' || CUSTOM_DOMAIN_PATTERN.test(customDomain)
         ? {}
         : { customDomain: translate('website-domain-bad') }),
@@ -139,7 +126,6 @@ const WebsiteSettingsPage = () => {
     WebsiteService.update({
       // Sent only when changed: an SEO change counts as something to publish.
       ...(isSame(form.seo, toSeo(website.seo)) ? {} : { seo: form.seo }),
-      subdomain: subdomain || null,
       customDomain: customDomain || null,
       // Only staff may send it, only a change, and only for the saved domain: a new domain is pending until checked.
       ...(isSuperAdmin &&
@@ -167,8 +153,6 @@ const WebsiteSettingsPage = () => {
           if (unshown.length > 0) {
             message.error(unshown.map(([, problem]) => problem).join(' '))
           }
-        } else if (status === 409 && data?.message === SUBDOMAIN_TAKEN) {
-          setState((s) => ({ ...s, errors: { subdomain: translate('website-subdomain-taken') } }))
         } else if (status === 409 && data?.message === DOMAIN_TAKEN) {
           setState((s) => ({ ...s, errors: { customDomain: translate('website-domain-taken') } }))
         } else if (status === 409) {
@@ -188,7 +172,7 @@ const WebsiteSettingsPage = () => {
       </div>
     ) : null
 
-  const addressField = (field: 'subdomain' | 'customDomain', maxLength: number, status: string) => (
+  const addressField = (field: 'customDomain', maxLength: number, status: string) => (
     <div>
       <label htmlFor={`website-${field}`}>{translate(`website-${field}`)}</label>
       <Input
@@ -253,7 +237,6 @@ const WebsiteSettingsPage = () => {
         <Card title={translate('website-addresses')}>
           <Space orientation={'vertical'} style={{ width: '100%' }}>
             <Alert type={'info'} message={translate('website-addresses-not-served')} />
-            {addressField('subdomain', 40, website.subdomainStatus || 'none')}
             {addressField('customDomain', 253, website.customDomainStatus || 'none')}
             {isSuperAdmin && website.customDomain ? (
               <div>

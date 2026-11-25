@@ -6,7 +6,12 @@ export type IWebsiteSeo = { title?: string; description?: string; imageAssetId?:
 // A company's website as GET /website returns it (specs/001-website-builder, data-model "Website").
 type IWebsite = IBaseModel & {
   companyId: string
+  // Made from the name and a code made once (SMN-81).
   slug: string
+  name?: string | null
+  addressCode?: string | null
+  // Where it is, to show: its ShowMine subdomain and its Reader address; null when not configured.
+  addresses?: { subdomain: string | null; reader: string | null }
   theme?: { primaryColor?: string; fontPair?: string } | null
   seo?: IWebsiteSeo | null
   publishedAt?: string | null
@@ -36,9 +41,8 @@ export const CUSTOM_DOMAIN_PATTERN =
   /^(?=.{4,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+(?:[a-z]{2,63}|xn--[a-z0-9-]{1,59}[a-z0-9])$/
 export const CUSTOM_DOMAIN_STATUSES = ['pending', 'verified', 'failed'] as const
 
-// The API's rule for a website's address name: 3 to 40 lower-case letters, digits or hyphens, not starting or ending
-// with a hyphen. Reserved names are left to the API.
-export const WEBSITE_SLUG_PATTERN = /^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])$/
+// The website's name, from which its address is made (SMN-81).
+export const WEBSITE_NAME_MAX = 80
 
 // A template from GET /website/templates (specs/001-website-builder, US4).
 export type IWebsiteTemplate = {

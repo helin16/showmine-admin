@@ -8,7 +8,7 @@ import { changeCompany } from '../../../Redux/reduxers/auth.slice'
 import { renderWithProviders } from '../../testUtils'
 import { stubMatchMedia } from '../../components/Access/domHelpers'
 
-// The website overview (specs/001-website-builder, US1, T012).
+// The website overview (specs/001-website-builder, US1, T012). Named since SMN-81: the address is made from the name.
 vi.mock('../../../Services/WebsiteService', async (importOriginal) => {
   const actual = (await importOriginal()) as { default: object }
   return { default: { ...actual.default, get: vi.fn(), create: vi.fn(), update: vi.fn() } }
@@ -32,6 +32,7 @@ const company = { id: 'co-1', name: 'Acme', websiteBuilderEnabled: true }
 const website = (extra = {}) => ({
   id: 'w-1',
   companyId: 'co-1',
+  name: 'Acme',
   slug: 'acme',
   publishedAt: null,
   hasUnpublishedChanges: true,
@@ -42,7 +43,7 @@ const httpError = (status: number, data: object) =>
   Object.assign(new Error(`status ${status}`), { response: { status, data } })
 
 const renderPage = (auth: object = { company }) => renderWithProviders(<WebsiteOverviewPage />, { state: { auth } })
-const nameBox = () => screen.getByLabelText('Address name')
+const nameBox = () => screen.getByLabelText('Website name')
 const setName = (value: string) => fireEvent.change(nameBox(), { target: { value } })
 
 describe('WebsiteOverviewPage', () => {
@@ -57,57 +58,55 @@ describe('WebsiteOverviewPage', () => {
       vi.mocked(WebsiteService.get).mockRejectedValue(httpError(404, { message: 'This company has no website yet.' }))
     })
 
-    test('creates one with a valid name', async () => {
+    test('offers the company name, and creates it with a name that may have spaces', async () => {
       vi.mocked(WebsiteService.create).mockResolvedValue(website() as never)
       renderPage()
       expect(await screen.findByText('Create your website')).toBeInTheDocument()
+      expect(nameBox()).toHaveValue('Acme')
       expect(screen.queryByRole('link', { name: 'Choose a template' })).not.toBeInTheDocument()
 
-      setName('acme')
+      setName('  Acme Bakery ')
       fireEvent.click(screen.getByRole('button', { name: 'Create website' }))
 
-      expect(WebsiteService.create).toHaveBeenCalledWith('acme')
+      expect(WebsiteService.create).toHaveBeenCalledWith('Acme Bakery')
       expect(await screen.findByText('https://reader.test/s/acme')).toBeInTheDocument()
       expect(screen.getByText('Not published')).toBeInTheDocument()
       expect(message.success).toHaveBeenCalledWith('Saved.')
     })
 
-    test.each(['ab', 'My Shop', '-acme', 'acme-', 'a'.repeat(41)])(
-      'refuses "%s" before asking the API',
-      async (name) => {
-        renderPage()
-        await screen.findByText('Create your website')
+    test.each(['', '   ', 'a'.repeat(81)])('refuses "%s" before asking the API', async (name) => {
+      renderPage()
+      await screen.findByText('Create your website')
 
-        setName(name)
-        fireEvent.click(screen.getByRole('button', { name: 'Create website' }))
+      setName(name)
+      fireEvent.click(screen.getByRole('button', { name: 'Create website' }))
 
-        expect(screen.getByRole('alert')).toHaveTextContent('This name does not follow the rule above.')
-        expect(nameBox()).toHaveAttribute('aria-invalid', 'true')
-        expect(WebsiteService.create).not.toHaveBeenCalled()
-      },
-    )
+      expect(screen.getByRole('alert')).toHaveTextContent('Enter a name of 1 to 80 characters.')
+      expect(nameBox()).toHaveAttribute('aria-invalid', 'true')
+      expect(WebsiteService.create).not.toHaveBeenCalled()
+    })
 
     test('shows the field error from the API next to the name', async () => {
       vi.mocked(WebsiteService.create).mockRejectedValue(
         httpError(400, {
           message: 'Some fields are not valid.',
-          errors: [{ path: 'slug', message: 'This name is reserved.' }],
+          errors: [{ path: 'name', message: 'The website name, 1 to 80 characters.' }],
         }),
       )
       renderPage()
       await screen.findByText('Create your website')
 
-      setName('admin')
+      setName('Shop')
       fireEvent.click(screen.getByRole('button', { name: 'Create website' }))
 
-      expect(await screen.findByRole('alert')).toHaveTextContent('This name is reserved.')
+      expect(await screen.findByRole('alert')).toHaveTextContent('The website name, 1 to 80 characters.')
     })
 
     test('the name rule is always shown, and the field points to it', async () => {
       renderPage()
       await screen.findByText('Create your website')
-      expect(screen.getByText(/Use 3 to 40 lower-case letters/)).toBeInTheDocument()
-      expect(nameBox()).toHaveAttribute('aria-describedby', 'website-slug-help')
+      expect(screen.getByText(/Any name, spaces allowed/)).toBeInTheDocument()
+      expect(nameBox()).toHaveAttribute('aria-describedby', 'website-name-help')
     })
 
     test('another admin creating the website at the same time asks to reload', async () => {
@@ -117,11 +116,11 @@ describe('WebsiteOverviewPage', () => {
       renderPage()
       await screen.findByText('Create your website')
 
-      setName('acme')
+      setName('Acme')
       fireEvent.click(screen.getByRole('button', { name: 'Create website' }))
 
       expect(await screen.findByText(/Someone else changed the website/)).toBeInTheDocument()
-      expect(screen.queryByText('This name is taken. Try another.')).not.toBeInTheDocument()
+      expect(screen.queryByText('This name gives an address that is taken. Try another.')).not.toBeInTheDocument()
     })
 
     test('the race message that also mentions "taken" is not shown as a taken name', async () => {
@@ -131,7 +130,7 @@ describe('WebsiteOverviewPage', () => {
       renderPage()
       await screen.findByText('Create your website')
 
-      setName('acme')
+      setName('Acme')
       fireEvent.click(screen.getByRole('button', { name: 'Create website' }))
 
       expect(await screen.findByText(/Someone else changed the website/)).toBeInTheDocument()
@@ -142,10 +141,12 @@ describe('WebsiteOverviewPage', () => {
       renderPage()
       await screen.findByText('Create your website')
 
-      setName('taken-name')
+      setName('Taken Name')
       fireEvent.keyDown(nameBox(), { key: 'Enter', keyCode: 13, which: 13 })
 
-      expect(await screen.findByRole('alert')).toHaveTextContent('This name is taken. Try another.')
+      expect(await screen.findByRole('alert')).toHaveTextContent(
+        'This name gives an address that is taken. Try another.',
+      )
     })
   })
 
@@ -186,15 +187,15 @@ describe('WebsiteOverviewPage', () => {
 
     test('renames it with the updatedAt it was loaded with', async () => {
       vi.mocked(WebsiteService.get).mockResolvedValue(website() as never)
-      vi.mocked(WebsiteService.update).mockResolvedValue(website({ slug: 'acme-shop' }) as never)
+      vi.mocked(WebsiteService.update).mockResolvedValue(website({ name: 'Acme Shop', slug: 'acme-shop' }) as never)
       renderPage()
-      await screen.findByDisplayValue('acme')
+      await screen.findByDisplayValue('Acme')
       expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled()
 
-      setName('acme-shop')
+      setName(' Acme Shop  ')
       fireEvent.click(screen.getByRole('button', { name: 'Save' }))
 
-      expect(WebsiteService.update).toHaveBeenCalledWith({ slug: 'acme-shop', updatedAt: '2026-11-24T01:00:00.000Z' })
+      expect(WebsiteService.update).toHaveBeenCalledWith({ name: 'Acme Shop', updatedAt: '2026-11-24T01:00:00.000Z' })
       expect(await screen.findByText('https://reader.test/s/acme-shop')).toBeInTheDocument()
     })
 
@@ -204,16 +205,16 @@ describe('WebsiteOverviewPage', () => {
         httpError(409, { message: 'The website was changed by someone else. Reload and try again.' }),
       )
       renderPage()
-      await screen.findByDisplayValue('acme')
+      await screen.findByDisplayValue('Acme')
 
-      setName('mine')
+      setName('Mine')
       fireEvent.click(screen.getByRole('button', { name: 'Save' }))
 
       expect(await screen.findByText(/Someone else changed the website/)).toBeInTheDocument()
       expect(nameBox()).toBeDisabled()
-      vi.mocked(WebsiteService.get).mockResolvedValue(website({ slug: 'theirs' }) as never)
+      vi.mocked(WebsiteService.get).mockResolvedValue(website({ name: 'Theirs' }) as never)
       fireEvent.click(screen.getByRole('button', { name: 'Reload' }))
-      expect(await screen.findByDisplayValue('theirs')).toBeInTheDocument()
+      expect(await screen.findByDisplayValue('Theirs')).toBeInTheDocument()
       expect(screen.queryByText(/Someone else changed the website/)).not.toBeInTheDocument()
     })
 
@@ -221,9 +222,9 @@ describe('WebsiteOverviewPage', () => {
       vi.mocked(WebsiteService.get).mockResolvedValue(website() as never)
       vi.mocked(WebsiteService.update).mockRejectedValue(httpError(500, { message: 'Server down' }))
       renderPage()
-      await screen.findByDisplayValue('acme')
+      await screen.findByDisplayValue('Acme')
 
-      setName('other')
+      setName('Other')
       fireEvent.click(screen.getByRole('button', { name: 'Save' }))
 
       await waitFor(() => expect(message.error).toHaveBeenCalledWith('Server down'))
@@ -236,7 +237,7 @@ describe('WebsiteOverviewPage', () => {
     vi.mocked(WebsiteService.create).mockReturnValue(new Promise((resolve) => (finish = resolve)) as never)
     const { store } = renderPage()
     await screen.findByText('Create your website')
-    setName('acme')
+    setName('Acme')
     fireEvent.click(screen.getByRole('button', { name: 'Create website' }))
 
     await act(async () => {
@@ -246,7 +247,8 @@ describe('WebsiteOverviewPage', () => {
 
     expect(screen.queryByText('https://reader.test/s/acme')).not.toBeInTheDocument()
     expect(message.success).not.toHaveBeenCalled()
-    expect(nameBox()).toHaveValue('')
+    // The new company is offered its own name.
+    expect(nameBox()).toHaveValue('Other')
   })
 
   test('without the Reader address configured, no public address is shown', async () => {
@@ -257,6 +259,23 @@ describe('WebsiteOverviewPage', () => {
     expect(screen.queryByRole('link', { name: /reader/ })).not.toBeInTheDocument()
   })
 
+  test('shows the ShowMine address, not open yet, and the address in WeChat', async () => {
+    vi.mocked(WebsiteService.get).mockResolvedValue(
+      website({ addresses: { subdomain: 'https://acme-ab12cd.showmine.com.au', reader: null } }) as never,
+    )
+    renderPage()
+    expect(await screen.findByText(/https:\/\/acme-ab12cd\.showmine\.com\.au/)).toHaveTextContent('not open yet')
+    expect(screen.getByText('ShowMine address')).toBeInTheDocument()
+    expect(screen.getByText('Address in WeChat')).toBeInTheDocument()
+  })
+
+  test('without a ShowMine address configured, that line is left out', async () => {
+    vi.mocked(WebsiteService.get).mockResolvedValue(website({ addresses: { subdomain: null, reader: null } }) as never)
+    renderPage()
+    await screen.findByText('Address in WeChat')
+    expect(screen.queryByText('ShowMine address')).not.toBeInTheDocument()
+  })
+
   test('a failed load says why and can be tried again', async () => {
     vi.mocked(WebsiteService.get).mockRejectedValueOnce(httpError(500, { message: 'Server down' }))
     renderPage()
@@ -264,7 +283,7 @@ describe('WebsiteOverviewPage', () => {
 
     vi.mocked(WebsiteService.get).mockResolvedValue(website() as never)
     fireEvent.click(screen.getByRole('button', { name: /Try again/ }))
-    expect(await screen.findByDisplayValue('acme')).toBeInTheDocument()
+    expect(await screen.findByDisplayValue('Acme')).toBeInTheDocument()
   })
 
   test('the public address works with or without a trailing slash', () => {

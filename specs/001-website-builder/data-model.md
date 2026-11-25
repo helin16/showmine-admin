@@ -20,19 +20,21 @@ All tables are in `showmine-api`, created by Sequelize migrations. Each migratio
 |---|---|---|---|
 | base columns | | | US1 |
 | `companyId` | UUID → companies, not null | Partial unique `WHERE isActive` | US1 |
-| `slug` | VARCHAR(40), not null | `^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])$`, not reserved, partial unique `WHERE isActive` | US1 |
+| `slug` | VARCHAR(40), not null | `^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])$`, partial unique `WHERE isActive`. Made from `name` and `addressCode` (SMN-81) | US1 |
+| `name` | VARCHAR(80), null | The website's name; any text. Set from the company name when created (SMN-81) | US1 |
+| `addressCode` | VARCHAR(6), null, unique | 6 lower-case letters or digits, made once (SMN-81) | US1 |
 | `theme` | JSON | `{ primaryColor: #rrggbb, fontPair: modern \| classic \| friendly }` | US1 |
 | `seo` | JSON | `{ title ≤70, description ≤160, imageAssetId? }`. `imageAssetId` is an active website image of the company, or null (added with US3) | US1, US3, US6 |
 | `templateId`, `templateVersion` | VARCHAR, INT, null | Set by initialise | US4 |
 | `publishedSnapshot` | JSON, null | Copy shown to the public (below). Null means unpublished | US1 (column), US3 |
 | `publishedAt`, `publishedById` | DATE, UUID, null | | US1 (column), US3 |
 | `contentChangedAt` | DATE, null | Set on every website write and every page create, update, delete or reorder | US2 |
-| `subdomain` | VARCHAR(40), null | Same pattern as `slug`; partial unique `WHERE isActive` | US6 |
+| `subdomain` | VARCHAR(40), null | Equal to `slug`, set automatically (SMN-81); partial unique `WHERE isActive` | US6 |
 | `subdomainStatus` | VARCHAR, default `none` | `none \| pending \| live`. A taken subdomain is refused with 409 and never stored; `pending` until the infrastructure serves it | US6 |
 | `customDomain` | VARCHAR(253), null | A lower-case host name; partial unique `WHERE isActive` | US6 |
 | `customDomainStatus` | VARCHAR, default `none` | `none \| pending \| verified \| failed`. Only a super admin sets it | US6 |
 
-Reserved slugs (exact list in the API): `admin`, `api`, `app`, `assets`, `auth`, `blog`, `cdn`, `help`, `item`, `login`, `mail`, `official`, `redirect`, `showmine`, `signin`, `signup`, `static`, `support`, `wechat`, `www`.
+Reserved slugs (until SMN-81, which made every address end in a code, so none can clash): `admin`, `api`, `app`, `assets`, `auth`, `blog`, `cdn`, `help`, `item`, `login`, `mail`, `official`, `redirect`, `showmine`, `signin`, `signup`, `static`, `support`, `wechat`, `www`.
 
 **Derived**:
 - `hasUnpublishedChanges` is true when any of these holds:

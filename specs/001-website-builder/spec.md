@@ -26,6 +26,8 @@ Deployment order for every slice: API first (additive and hidden behind the swit
 
 A company admin completes the business profile: name, description, contact details and address. They then create the company's website by choosing its web address name. Jira: SMN-55, SMN-56.
 
+*Amended 2026-11-25 (SMN-81):* the website is created when a super admin turns the switch on, named after the company. Admins can rename it; its address and ShowMine subdomain are made from the name and a fixed code.
+
 **Why this priority**: Every other story needs a website record and the business details it shows.
 
 **Independent Test**: With the builder turned on for a test company, an admin fills in the profile, creates a website with a free address name, reloads, and sees everything kept. A member of the same company cannot see or change any of it.
@@ -122,7 +124,7 @@ An admin uploads images, watching upload progress, then picks them for sections.
 
 ### User Story 6 - SEO and web address settings (Priority: P2)
 
-An admin sets the site's and each page's title, description and sharing image. They record a ShowMine subdomain, which is checked for availability, and a custom domain, whose verification state they can see. Jira: SMN-64.
+An admin sets the site's and each page's title, description and sharing image. *(Amended 2026-11-25, SMN-81: the ShowMine subdomain is set from the website name, not entered.)* They record a ShowMine subdomain, which is checked for availability, and a custom domain, whose verification state they can see. Jira: SMN-64.
 
 **Why this priority**: Being found and having a proper address matter, but the path address works without them.
 
@@ -169,7 +171,7 @@ An admin picks a period of up to a year and sees page views per day and per page
 - **FR-001**: ShowMine staff MUST be able to turn the builder on or off per company. When off, the company sees no Website area, editing is refused, and its public site shows not-found.
 - **FR-002**: Only the company's approved members (and ShowMine staff) MUST be able to view or change its website. Any member MAY view the website, add, edit and reorder pages and sections, preview the draft, upload images and see page views. Only its admins MAY delete pages, publish or unpublish, change the address name, apply a template and change the settings (SEO and addresses). *(Amended 2026-11-25, SMN-80; was admins only.)*
 - **FR-003**: The business profile MUST be the company's existing profile plus an address of at most 500 characters.
-- **FR-004**: Each company MUST have at most one active website, with an address name of 3 to 40 lower-case letters, digits or hyphens. The name must not start or end with a hyphen, must not be a reserved name, and must be unique among active websites.
+- **FR-004**: Each company MUST have at most one active website. It has a name (1 to 80 characters, any text). Its address MUST be made from the name and a 6-character code made once: letters and digits kept, anything else a hyphen, accents dropped, `site` when nothing is left, cut so the whole is at most 40 characters (`test company` → `test-company-a1b2c3`). Renaming keeps the code; the old address stops working. Turning the switch on creates the website, named after the company. *(Amended 2026-11-25, SMN-81; was an address name chosen by the admin.)*
 - **FR-005**: Admins MUST be able to create, rename, reorder and delete pages. Each page MUST have a name unique within its website, and the first page MUST be the home page.
 - **FR-006**: Pages MUST be made of sections of six types: hero, text, image, gallery (1 to 24 images), contact details, and latest articles (3 to 12). Each field MUST have a stated limit. A page MUST have at most 30 sections.
 - **FR-007**: Links in sections MUST be web, email or phone links, or a page of the same site. Map links MUST be secure web links.
@@ -187,7 +189,7 @@ An admin picks a period of up to a year and sees page views per day and per page
 - **FR-019**: Asset clean-up MUST treat images used by any website as in use, whatever their type.
 - **FR-020**: Visitors MUST see published pages with navigation, the not-found page for anything else, and a layout that works from phone to desktop.
 - **FR-021**: Each public page MUST provide a title, description and sharing image, falling back from the page to the site to the company.
-- **FR-022**: Admins MUST be able to set site and page SEO (title up to 70 characters, description up to 160), and to record a subdomain and a custom domain, each unique. Subdomains show their availability. Custom domains show pending, verified or failed, and only staff set that state.
+- **FR-022**: Admins MUST be able to set site and page SEO (title up to 70 characters, description up to 160), and to record a custom domain, unique, whose state (pending, verified, failed) only ShowMine staff change. The ShowMine subdomain MUST equal the address and be set automatically, `pending` until it is served (SMN-79). *(Amended 2026-11-25, SMN-81; the subdomain was entered by the admin.)*
 - **FR-023**: Page views MUST be counted per page per day (UTC), excluding previews and ShowMine's automated checks, without storing anything that identifies a visitor.
 - **FR-024**: Admins MUST be able to see page views per day and per page for a period of up to 366 days, with the period and last update time shown, and zeros when there are none.
 - **FR-025**: All admin screens MUST be in English and Chinese, usable by keyboard, and show loading, empty, success and error states. Destructive actions MUST ask for confirmation.
@@ -195,7 +197,7 @@ An admin picks a period of up to a year and sees page views per day and per page
 ### Key Entities
 
 - **Company (business profile)**: the existing company, plus an address and the builder switch.
-- **Website**: one per company. Holds the address name, theme, SEO, the recorded subdomain and custom domain with their states, the published copy, and when and by whom it was published.
+- **Website**: one per company. Holds its name and address code (SMN-81), the address made from them, theme, SEO, the recorded subdomain and custom domain with their states, the published copy, and when and by whom it was published.
 - **Page**: belongs to a website. Holds a name, title, order, SEO and its ordered sections.
 - **Section**: part of a page. Has one of six types, with typed fields.
 - **Template**: provided by ShowMine and versioned. Holds a name, description, thumbnail, theme and starting pages.

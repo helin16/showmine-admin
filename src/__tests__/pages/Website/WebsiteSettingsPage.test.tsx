@@ -67,7 +67,8 @@ describe('WebsiteSettingsPage', () => {
     expect(WebsiteService.get).not.toHaveBeenCalled()
   })
 
-  test('shows the saved settings, the address states and that the addresses are not served yet', async () => {
+  // SMN-81: the ShowMine subdomain is made from the website name, so it is no field here.
+  test('shows the saved settings, the domain state and that it is not served yet; no subdomain field', async () => {
     await loaded({
       subdomain: 'acme-shop',
       subdomainStatus: 'pending',
@@ -75,9 +76,9 @@ describe('WebsiteSettingsPage', () => {
       customDomainStatus: 'failed',
     })
     expect(screen.getByLabelText('Search description')).toHaveValue('Bread')
-    expect(screen.getByLabelText('ShowMine subdomain')).toHaveValue('acme-shop')
+    expect(screen.queryByLabelText('ShowMine subdomain')).not.toBeInTheDocument()
     expect(screen.getByLabelText('Your own domain')).toHaveValue('acme.com')
-    expect(screen.getByText('State: pending')).toBeInTheDocument()
+    expect(screen.queryByText('State: pending')).not.toBeInTheDocument()
     expect(screen.getByText('State: failed')).toBeInTheDocument()
     expect(screen.getByText(/do not open the site yet/)).toBeInTheDocument()
     // Only staff can change the domain state.
@@ -92,32 +93,30 @@ describe('WebsiteSettingsPage', () => {
     expect(screen.getByText('4 / 70')).toBeInTheDocument()
   })
 
-  test('saves the SEO and addresses, tidied, with the updatedAt it was loaded with', async () => {
+  test('saves the SEO and domain, tidied, with the updatedAt it was loaded with', async () => {
     await loaded()
     type('Search title', 'Acme Bakery')
-    type('ShowMine subdomain', ' Acme-Shop ')
     type('Your own domain', ' WWW.Acme.com ')
     vi.mocked(WebsiteService.update).mockResolvedValue(
-      website({ seo: { title: 'Acme Bakery', description: 'Bread' }, subdomain: 'acme-shop' }) as never,
+      website({ seo: { title: 'Acme Bakery', description: 'Bread' }, customDomain: 'www.acme.com' }) as never,
     )
     fireEvent.click(saveBtn())
 
     expect(WebsiteService.update).toHaveBeenCalledWith({
       seo: { title: 'Acme Bakery', description: 'Bread', imageAssetId: null },
-      subdomain: 'acme-shop',
       customDomain: 'www.acme.com',
       updatedAt: 'w-time',
     })
     await waitFor(() => expect(message.success).toHaveBeenCalledWith('Saved.'))
   })
 
-  test('changing only an address leaves the SEO out, and clearing one sends null', async () => {
-    await loaded({ subdomain: 'acme-shop', subdomainStatus: 'pending' })
-    type('ShowMine subdomain', '')
+  test('changing only the domain leaves the SEO out, and clearing it sends null', async () => {
+    await loaded({ customDomain: 'acme.com', customDomainStatus: 'pending' })
+    type('Your own domain', '')
     vi.mocked(WebsiteService.update).mockResolvedValue(website() as never)
     fireEvent.click(saveBtn())
 
-    expect(WebsiteService.update).toHaveBeenCalledWith({ subdomain: null, customDomain: null, updatedAt: 'w-time' })
+    expect(WebsiteService.update).toHaveBeenCalledWith({ customDomain: null, updatedAt: 'w-time' })
   })
 
   test('typing during a save is kept', async () => {
@@ -175,29 +174,29 @@ describe('WebsiteSettingsPage', () => {
     expect(await screen.findByText('This image is missing. Choose another.')).toBeInTheDocument()
   })
 
-  test.each([
-    ['ShowMine subdomain', 'ab', 'Use 3 to 40 lower-case letters, digits or hyphens'],
-    ['Your own domain', 'acme', 'Enter a domain name such as www.example.com.'],
-  ])('a bad %s is stopped before sending', async (label, value, problem) => {
-    await loaded()
-    type(label, value)
-    fireEvent.click(saveBtn())
-    expect(screen.getByText(new RegExp(problem))).toBeInTheDocument()
-    expect(screen.getByLabelText(label)).toHaveAttribute('aria-invalid', 'true')
-    expect(WebsiteService.update).not.toHaveBeenCalled()
-  })
+  test.each([['Your own domain', 'acme', 'Enter a domain name such as www.example.com.']])(
+    'a bad %s is stopped before sending',
+    async (label, value, problem) => {
+      await loaded()
+      type(label, value)
+      fireEvent.click(saveBtn())
+      expect(screen.getByText(new RegExp(problem))).toBeInTheDocument()
+      expect(screen.getByLabelText(label)).toHaveAttribute('aria-invalid', 'true')
+      expect(WebsiteService.update).not.toHaveBeenCalled()
+    },
+  )
 
-  test.each([
-    ['ShowMine subdomain', 'acme-shop', 'That subdomain is taken.', 'That subdomain is taken. Try another.'],
-    ['Your own domain', 'acme.com', 'That domain is taken.', 'That domain is used by another website.'],
-  ])('a taken %s is shown on its field', async (label, value, apiWords, shown) => {
-    await loaded()
-    type(label, value)
-    vi.mocked(WebsiteService.update).mockRejectedValue(httpError(409, { message: apiWords }))
-    fireEvent.click(saveBtn())
-    expect(await screen.findByText(shown)).toBeInTheDocument()
-    expect(screen.getByLabelText(label)).toHaveAttribute('aria-invalid', 'true')
-  })
+  test.each([['Your own domain', 'acme.com', 'That domain is taken.', 'That domain is used by another website.']])(
+    'a taken %s is shown on its field',
+    async (label, value, apiWords, shown) => {
+      await loaded()
+      type(label, value)
+      vi.mocked(WebsiteService.update).mockRejectedValue(httpError(409, { message: apiWords }))
+      fireEvent.click(saveBtn())
+      expect(await screen.findByText(shown)).toBeInTheDocument()
+      expect(screen.getByLabelText(label)).toHaveAttribute('aria-invalid', 'true')
+    },
+  )
 
   test('field problems from the API show on their fields, including SEO', async () => {
     await loaded()
@@ -272,7 +271,6 @@ describe('WebsiteSettingsPage', () => {
       fireEvent.click(saveBtn())
 
       expect(WebsiteService.update).toHaveBeenCalledWith({
-        subdomain: null,
         customDomain: 'acme.com',
         customDomainStatus: 'verified',
         updatedAt: 'w-time',
@@ -288,7 +286,6 @@ describe('WebsiteSettingsPage', () => {
       vi.mocked(WebsiteService.update).mockResolvedValue(website() as never)
       fireEvent.click(saveBtn())
       expect(WebsiteService.update).toHaveBeenCalledWith({
-        subdomain: null,
         customDomain: 'shop.acme.com',
         updatedAt: 'w-time',
       })
