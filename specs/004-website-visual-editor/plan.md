@@ -76,8 +76,7 @@ showmine-admin/src/
 ├── Components/Website/Canvas/
 │   ├── SiteCanvas.tsx                           # slice 2: effective layout + blocks, device widths, selection
 │   ├── canvasBlocks.tsx                         # slice 2: block markup copied from the Reader (class names pinned)
-│   └── (panel and palette)                      # slice 2: kept in WebsitePageEditPage (existing SectionEditors);
-│                                                # the palette moves out in slice 3 when it gains drag sources
+│   └── BlockPalette.tsx                         # SMN-85: block tiles (click); slice 3 adds drag sources
 └── Components/Menu/MenuItems.tsx                # slice 4: Website > Layout (admins)
 
 showmine-api/

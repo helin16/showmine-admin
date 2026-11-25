@@ -46,6 +46,7 @@ const props = (extra = {}) => ({
   onSelect: vi.fn(),
   onMove: vi.fn(),
   onRemove: vi.fn(),
+  onPreview: vi.fn(),
   ...extra,
 })
 const canvas = () => screen.getByTestId('site-canvas')
@@ -70,7 +71,7 @@ describe('SiteCanvas', () => {
     expect(within(site).getByText('Home').closest('a')).not.toHaveAttribute('aria-current')
 
     const page = site.querySelector('.site-page') as HTMLElement
-    const drawn = Array.from(page.querySelectorAll('[role=button] > *')).map((el) => el.className)
+    const drawn = Array.from(page.querySelectorAll('.canvas-item')).map((item) => item.lastElementChild?.className)
     expect(drawn).toStrictEqual([
       'site-hero with-image',
       'site-text',
@@ -106,34 +107,51 @@ describe('SiteCanvas', () => {
     expect(within(site).queryByText('Go')).not.toBeInTheDocument()
   })
 
-  test('narrows to tablet and phone widths', () => {
+  test('narrows to tablet and phone widths with the device buttons', () => {
     render(<SiteCanvas {...(props() as never)} />)
+    const group = screen.getByRole('group', { name: 'Width' })
     expect(canvas()).toHaveStyle({ maxWidth: '100%' })
-    fireEvent.click(screen.getByText('Tablet'))
+    expect(within(group).getByRole('button', { name: 'Desktop' })).toHaveAttribute('aria-pressed', 'true')
+    fireEvent.click(within(group).getByRole('button', { name: 'Tablet' }))
     expect(canvas()).toHaveStyle({ maxWidth: '768px' })
-    fireEvent.click(screen.getByText('Phone'))
+    expect(within(group).getByRole('button', { name: 'Tablet' })).toHaveAttribute('aria-pressed', 'true')
+    expect(within(group).getByRole('button', { name: 'Desktop' })).toHaveAttribute('aria-pressed', 'false')
+    fireEvent.click(within(group).getByRole('button', { name: 'Phone' }))
     expect(canvas()).toHaveStyle({ maxWidth: '375px' })
   })
 
-  test('selects a block by click or keyboard, and shows the toolbar on the selected one', () => {
+  test('Preview in the bar above the canvas', () => {
+    const p = props()
+    render(<SiteCanvas {...(p as never)} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Preview' }))
+    expect(p.onPreview).toHaveBeenCalled()
+  })
+
+  test('selects a block by clicking it or its Edit button; the canvas around the page unselects', () => {
     const p = props({ selectedId: 't' })
     render(<SiteCanvas {...(p as never)} />)
-    fireEvent.click(screen.getByRole('button', { name: 'Edit 1. Hero' }))
+    fireEvent.click(screen.getByText('Hello'))
     expect(p.onSelect).toHaveBeenLastCalledWith('h')
-    fireEvent.keyDown(screen.getByRole('button', { name: 'Edit 3. Image' }), { key: 'Enter' })
+    fireEvent.click(screen.getByRole('button', { name: 'Edit 3. Image' }))
     expect(p.onSelect).toHaveBeenLastCalledWith('i')
-    fireEvent.keyDown(screen.getByRole('button', { name: 'Edit 4. Gallery' }), { key: ' ' })
-    expect(p.onSelect).toHaveBeenLastCalledWith('g')
-    fireEvent.keyDown(screen.getByRole('button', { name: 'Edit 5. Contact details' }), { key: 'a' })
+    fireEvent.click(canvas().parentElement as HTMLElement)
+    expect(p.onSelect).toHaveBeenLastCalledWith(undefined)
     expect(p.onSelect).toHaveBeenCalledTimes(3)
 
+    expect(screen.getByTestId('canvas-item-t')).toHaveClass('canvas-item', 'is-selected')
+    expect(screen.getByTestId('canvas-item-h')).not.toHaveClass('is-selected')
     expect(screen.getByRole('button', { name: 'Edit 2. Text' })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByRole('button', { name: 'Edit 1. Hero' })).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  test('each block has the corner tools; they do not also select or unselect', () => {
+    const p = props({ selectedId: 't' })
+    render(<SiteCanvas {...(p as never)} />)
     fireEvent.click(screen.getByRole('button', { name: 'Move 2. Text up' }))
     expect(p.onMove).toHaveBeenLastCalledWith(1, -1)
-    fireEvent.click(screen.getByRole('button', { name: 'Move 2. Text down' }))
-    expect(p.onMove).toHaveBeenLastCalledWith(1, 1)
-    expect(screen.queryByRole('button', { name: 'Move 1. Hero up' })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Move 4. Gallery down' }))
+    expect(p.onMove).toHaveBeenLastCalledWith(3, 1)
+    expect(p.onSelect).not.toHaveBeenCalled()
   })
 
   test('the first block cannot move up, nor the last down', () => {
@@ -158,9 +176,9 @@ describe('SiteCanvas', () => {
     render(<SiteCanvas {...(props({ problemIds: ['g'] }) as never)} />)
     const marks = screen.getAllByText('Needs fixing')
     expect(marks).toHaveLength(1)
-    expect(marks[0].parentElement?.parentElement?.parentElement).toContainElement(
-      screen.getByRole('button', { name: 'Edit 4. Gallery' }),
-    )
+    expect(marks[0].closest('.canvas-item')).toBe(screen.getByTestId('canvas-item-g'))
+    expect(screen.getByTestId('canvas-item-g')).toHaveClass('has-problem')
+    expect(screen.getByTestId('canvas-item-h')).not.toHaveClass('has-problem')
   })
 
   test('links on the canvas go nowhere', () => {

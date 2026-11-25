@@ -37,6 +37,8 @@ approval.
 - [x] T003 [US1] Options drawer in `admin:src/Pages/Website/WebsitePageEditPage.tsx` (kept in the page for now; moved to `admin:src/Components/Website/PageOptions.tsx` in T022 when the template joins it): title, address name, SEO (existing `SeoFields`) and, for admins, Delete page with confirmation
 - [x] T004 [US1] `admin:src/Pages/Website/WebsitePageEditPage.tsx`: title row via `BackendPageContentTitle` controls, as `ArticleDetailsPage`; publish moves into the title row for admins; strings in en/cn
 
+- [x] T004a [US1] SMN-85 (Lin, 2026-11-26): title row as the article editor: Save, Publish (admins, cloud icon) and an Options dropdown (Preview, Page settings, Back to pages, Delete page for admins, confirmed in a dialog); the Options drawer goes, its fields move to the panel's Settings tab
+
 **Checkpoint**: the page editor works as today, rearranged.
 
 ---
@@ -50,6 +52,7 @@ approval.
 - [x] T005 [US2] `reader:public/website.css`: the site styles moved from `reader:src/styles/website.scss` as plain CSS (nested rules written out), linked by the website pages, served with `Cache-Control: public, max-age=300` and `Access-Control-Allow-Origin: *` (`reader:next.config.js`); tests that each block's class names are styled and that the file has no `@media` rule (research R2)
 - [x] T006 [P] [US2] Tests in `admin:src/__tests__/components/Website/Canvas/SiteCanvas.test.tsx`: blocks in order with the Reader's class names, theme variables, device widths, selection, toolbar up/down/delete, problems marked; 30 blocks redraw within budget (SC-003)
 - [x] T007 [US2] `admin:src/Components/Website/Canvas/{SiteCanvas,canvasBlocks}.tsx`: canvas reading `${REACT_APP_FRONT_END_URL}/website.css` into a `<style>`, a note when it is not set or fails; unsaved HTML through `DOMPurify` (3.4.17) with the API's allow-list and inert links (research R2a; new dependency); `admin:vercel.json` unchanged (research R2)
+- [x] T008a [US2] SMN-85 (Lin, 2026-11-26): canvas, toolbar and panel as the MConnect form designer (mgg-ui `DesignTab`, `designCanvas`, `BlockPalette`): device icon bar with Preview, grey canvas, hover and selected outlines, corner tools (edit, up, down, remove), clicking the canvas around the page unselects; the panel with a tab rail (Blocks, Settings), block tiles in `admin:src/Components/Website/Canvas/BlockPalette.tsx`, a selected block with Back; nothing selected on load; a new block goes at the end
 - [x] T008 [US2] `admin:src/Pages/Website/WebsitePageEditPage.tsx`: canvas in the main area, panel (reusing `SectionEditors`) and palette (adds by click, after the selected block) on the right, folding below on narrow screens
 
 ---

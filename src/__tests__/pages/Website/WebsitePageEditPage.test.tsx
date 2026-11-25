@@ -73,13 +73,15 @@ const loaded = async (auth?: object) => {
   vi.mocked(WebsiteService.getPages).mockResolvedValue([page()] as never)
   vi.mocked(WebsiteService.get).mockResolvedValue(website as never)
   const result = renderPage(auth)
-  await screen.findByDisplayValue('Hello')
+  await screen.findByRole('heading', { name: 'Hello' })
+  // The first block opened in the panel, as most tests edit it.
+  fireEvent.click(screen.getByRole('button', { name: 'Edit 1. Hero' }))
   return result
 }
 const saveBtn = () => screen.getByRole('button', { name: 'Save' })
-// The page's title, address name and SEO sit in Options (spec 004, US1): opened first when closed.
+// The page's title, address name and SEO sit in the panel's Settings tab (SMN-85): opened first when closed.
 const optionsField = (label: string) => {
-  if (!screen.queryByLabelText(label)) fireEvent.click(screen.getByRole('button', { name: 'Options' }))
+  if (!screen.queryByLabelText(label)) fireEvent.click(screen.getByRole('button', { name: 'Settings' }))
   return screen.getByLabelText(label)
 }
 
@@ -90,43 +92,92 @@ describe('WebsitePageEditPage', () => {
     expect(WebsiteService.getPages).not.toHaveBeenCalled()
   })
 
-  test('shows the page, its sections in order and the publish bar; nothing to save yet', async () => {
-    await loaded()
-    expect(optionsField('Title')).toHaveValue('Home')
-    // Drawn on the canvas, the first block selected and edited in the panel (spec 004, US2).
-    const canvas = screen.getByTestId('site-canvas')
-    expect(within(canvas).getByRole('heading', { name: 'Hello' })).toBeInTheDocument()
+  test('shows the page on the canvas, nothing selected, the blocks to add and the publish bar', async () => {
+    vi.mocked(WebsiteService.getPages).mockResolvedValue([page()] as never)
+    vi.mocked(WebsiteService.get).mockResolvedValue(website as never)
+    renderPage()
+    // Drawn on the canvas, in order (spec 004, US2); nothing selected, so the panel offers the blocks (SMN-85).
+    const canvas = await screen.findByTestId('site-canvas')
+    expect(await within(canvas).findByRole('heading', { name: 'Hello' })).toBeInTheDocument()
     const blocks = within(canvas).getAllByRole('button', { name: /^Edit / })
     expect(blocks.map((b) => b.getAttribute('aria-label'))).toStrictEqual(['Edit 1. Hero', 'Edit 2. Text'])
-    expect(blocks[0]).toHaveAttribute('aria-pressed', 'true')
-    expect(screen.getByText('1. Hero')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Publish' })).toBeInTheDocument()
+    expect(blocks[0]).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByRole('button', { name: 'Add Hero' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Blocks' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByText(/2 of 30 blocks/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Publish/ })).toBeInTheDocument()
     expect(saveBtn()).toBeDisabled()
+    expect(optionsField('Title')).toHaveValue('Home')
   })
 
-  // Spec 004, US1: edited like an article: the title row has the actions; the page settings sit in Options.
-  test('the title row reads Editing: <title>, with Save, Preview, Publish and Options', async () => {
+  test('a selected block shows its fields with Back; Back returns to the blocks', async () => {
+    await loaded()
+    expect(screen.getByText('1. Hero')).toBeInTheDocument()
+    expect(screen.getByLabelText('Heading')).toHaveValue('Hello')
+    expect(screen.getByRole('button', { name: 'Blocks' })).toHaveAttribute('aria-pressed', 'false')
+    fireEvent.click(screen.getByRole('button', { name: /Back$/ }))
+    expect(screen.queryByLabelText('Heading')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Add Hero' })).toBeInTheDocument()
+  })
+
+  test('clicking a block selects it; clicking the canvas around the page unselects it', async () => {
+    await loaded()
+    fireEvent.click(screen.getByTestId('canvas-item-t1'))
+    expect(screen.getByRole('button', { name: 'Edit 2. Text' })).toHaveAttribute('aria-pressed', 'true')
+    fireEvent.click(screen.getByTestId('site-canvas').parentElement as HTMLElement)
+    expect(screen.getByRole('button', { name: 'Edit 2. Text' })).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByRole('button', { name: 'Add Hero' })).toBeInTheDocument()
+  })
+
+  // As on an article (SMN-85): Save, Publish and Options in the title row; the rest in Options.
+  test('the title row reads Editing: <title>, with Save, Publish and Options', async () => {
     await loaded()
     const header = screen.getByRole('banner')
     expect(within(header).getByText('Editing: Home')).toBeInTheDocument()
-    for (const name of [/Save/, /Preview/, /Publish/, /Options/]) {
-      expect(within(header).getByRole('button', { name })).toBeInTheDocument()
-    }
-    expect(screen.queryByLabelText('Title')).not.toBeInTheDocument()
+    expect(
+      within(header)
+        .getAllByRole('button')
+        .map((b) => b.textContent?.trim()),
+    ).toStrictEqual(['Save', 'Publish', 'Options'])
+    fireEvent.click(within(header).getByRole('button', { name: /Options/ }))
+    const items = (await screen.findAllByRole('menuitem')).map((item) => item.textContent)
+    expect(items).toStrictEqual(['Preview', 'Page settings', 'Back to pages', 'Delete page'])
   })
+
+  test('Page settings in Options opens the Settings tab', async () => {
+    await loaded()
+    fireEvent.click(screen.getByRole('button', { name: /Options/ }))
+    fireEvent.click(await screen.findByRole('menuitem', { name: /Page settings/ }))
+    expect(screen.getByLabelText('Title')).toHaveValue('Home')
+    expect(screen.getByRole('button', { name: 'Settings' })).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  const deleteFromOptions = async () => {
+    fireEvent.click(screen.getByRole('button', { name: /Options/ }))
+    fireEvent.click(await screen.findByRole('menuitem', { name: /Delete page/ }))
+    return screen.findByRole('dialog')
+  }
 
   test('an admin deletes the page from Options after confirming, and goes back to the pages', async () => {
     vi.mocked(WebsiteService.deletePage).mockResolvedValue({} as never)
     await loaded()
-    fireEvent.click(screen.getByRole('button', { name: 'Options' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Delete page' }))
+    const dialog = await deleteFromOptions()
+    expect(dialog).toHaveTextContent('Delete the page Home?')
     expect(WebsiteService.deletePage).not.toHaveBeenCalled()
-    fireEvent.click(within(await screen.findByRole('tooltip')).getByRole('button', { name: 'Delete' }))
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }))
     expect(WebsiteService.deletePage).toHaveBeenCalledWith('p-1')
     expect(await screen.findByText('pages list')).toBeInTheDocument()
   })
 
-  test('a problem with a field in Options, found on save, opens Options to show it', async () => {
+  test('the delete confirmation can be cancelled', async () => {
+    await loaded()
+    const dialog = await deleteFromOptions()
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(WebsiteService.deletePage).not.toHaveBeenCalled()
+  })
+
+  test('a problem with a field in Settings, found on save, opens Settings to show it', async () => {
     vi.mocked(WebsiteService.updatePage).mockRejectedValue(
       Object.assign(new Error('x'), {
         response: { status: 400, data: { errors: [{ path: 'title', message: 'Too long.' }] } },
@@ -134,24 +185,23 @@ describe('WebsitePageEditPage', () => {
     )
     await loaded()
     fireEvent.change(optionsField('Title'), { target: { value: 'New' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Close' }))
-    await waitFor(() => expect(document.querySelector('.ant-drawer-open')).toBeNull())
+    fireEvent.click(screen.getByRole('button', { name: 'Blocks' }))
+    expect(screen.queryByLabelText('Title')).not.toBeInTheDocument()
     fireEvent.click(saveBtn())
     expect(await screen.findByText('Too long.')).toBeInTheDocument()
-    await waitFor(() => expect(document.querySelector('.ant-drawer-open')).not.toBeNull())
+    expect(screen.getByRole('button', { name: 'Settings' })).toHaveAttribute('aria-pressed', 'true')
   })
 
-  test('an empty title opens Options on every save, even after it was closed', async () => {
+  test('an empty title opens Settings on every save, even from a selected block', async () => {
     await loaded()
     fireEvent.change(optionsField('Title'), { target: { value: ' ' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Close' }))
-    await waitFor(() => expect(document.querySelector('.ant-drawer-open')).toBeNull())
+    fireEvent.click(screen.getByRole('button', { name: 'Edit 1. Hero' }))
+    expect(screen.queryByLabelText('Title')).not.toBeInTheDocument()
     fireEvent.click(saveBtn())
-    await waitFor(() => expect(document.querySelector('.ant-drawer-open')).not.toBeNull())
-    fireEvent.click(screen.getByRole('button', { name: 'Close' }))
-    await waitFor(() => expect(document.querySelector('.ant-drawer-open')).toBeNull())
+    expect(screen.getByLabelText('Title')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Blocks' }))
     fireEvent.click(saveBtn())
-    await waitFor(() => expect(document.querySelector('.ant-drawer-open')).not.toBeNull())
+    expect(screen.getByLabelText('Title')).toBeInTheDocument()
     expect(WebsiteService.updatePage).not.toHaveBeenCalled()
   })
 
@@ -161,6 +211,7 @@ describe('WebsitePageEditPage', () => {
     fireEvent.change(optionsField('Title'), { target: { value: 'Changed' } })
     fireEvent.click(screen.getByRole('button', { name: 'Delete page' }))
     expect(await screen.findByText(/Its unsaved changes go too/)).toBeInTheDocument()
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancel' }))
     fireEvent.click(saveBtn())
     await waitFor(() => expect(screen.getByRole('button', { name: 'Delete page' })).toBeDisabled())
   })
@@ -168,20 +219,30 @@ describe('WebsitePageEditPage', () => {
   test('a failed delete says why and stays', async () => {
     vi.mocked(WebsiteService.deletePage).mockRejectedValue(new Error('Server down'))
     await loaded()
-    fireEvent.click(screen.getByRole('button', { name: 'Options' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Delete page' }))
-    fireEvent.click(within(await screen.findByRole('tooltip')).getByRole('button', { name: 'Delete' }))
+    const dialog = await deleteFromOptions()
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }))
     await waitFor(() => expect(message.error).toHaveBeenCalledWith('Server down'))
     expect(screen.queryByText('pages list')).not.toBeInTheDocument()
   })
 
-  test('a member edits and previews, with no publish bar', async () => {
+  test('a member edits and previews, with no publish bar and no Delete page', async () => {
     await loaded({ company, companyUsers: adminOf('NORMAL') })
     expect(optionsField('Title')).toBeEnabled()
     expect(screen.getByRole('button', { name: 'Preview' })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Publish' })).toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: 'Options' }))
+    expect(screen.queryByRole('button', { name: /Publish/ })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Delete page' })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: /Options/ }))
+    const items = (await screen.findAllByRole('menuitem')).map((item) => item.textContent)
+    expect(items).toStrictEqual(['Preview', 'Page settings', 'Back to pages'])
+  })
+
+  test('Publish in the title row has no Unpublish beside it', async () => {
+    vi.mocked(WebsiteService.getPages).mockResolvedValue([page()] as never)
+    vi.mocked(WebsiteService.get).mockResolvedValue({ ...website, publishedAt: '2026-11-20T00:00:00Z' } as never)
+    renderPage()
+    await screen.findByRole('heading', { name: 'Hello' })
+    expect(screen.getByRole('button', { name: /Publish/ })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Unpublish' })).toBeNull()
   })
 
   test('a page of another website, or a removed one, is not found', async () => {
@@ -221,11 +282,10 @@ describe('WebsitePageEditPage', () => {
     expect(screen.getByRole('button', { name: 'Edit 1. Text' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Remove 2. Hero' }))
     fireEvent.click(within(await screen.findByRole('tooltip')).getByRole('button', { name: 'Remove' }))
-    expect(screen.getByText('Select a block on the page to edit it.')).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Text' }))
+    // Nothing selected: the blocks to add.
+    fireEvent.click(screen.getByRole('button', { name: 'Add Text' }))
     // The new block is selected, in the panel.
     expect(screen.getByRole('button', { name: 'Edit 2. Text' })).toHaveAttribute('aria-pressed', 'true')
-    expect(screen.getByText('2 of 30 blocks')).toBeInTheDocument()
     fireEvent.click(saveBtn())
 
     const [, { sections }] = vi.mocked(WebsiteService.updatePage).mock.calls[0] as [
@@ -242,7 +302,7 @@ describe('WebsitePageEditPage', () => {
     ] as never)
     vi.mocked(WebsiteService.get).mockResolvedValue(website as never)
     renderPage()
-    await screen.findByDisplayValue('Hello')
+    await screen.findByRole('heading', { name: 'Hello' })
     fireEvent.change(optionsField('Title'), { target: { value: 'Welcome' } })
     const menu = within(within(screen.getByTestId('site-canvas')).getByRole('navigation')).getAllByRole('listitem')
     expect(menu.map((item) => item.textContent)).toStrictEqual(['Welcome', 'About'])
@@ -273,7 +333,8 @@ describe('WebsitePageEditPage', () => {
     ] as never)
     vi.mocked(WebsiteService.get).mockResolvedValue(website as never)
     renderPage()
-    await screen.findByDisplayValue('Hello')
+    await screen.findByRole('heading', { name: 'Hello' })
+    fireEvent.click(screen.getByRole('button', { name: 'Edit 1. Hero' }))
     vi.mocked(WebsiteService.updatePage).mockRejectedValue(
       httpError(400, { message: 'Bad', errors: [{ path: 'sections[1].html', message: 'Too long.' }] }),
     )
@@ -286,11 +347,12 @@ describe('WebsitePageEditPage', () => {
     expect(screen.queryByText('Needs fixing')).not.toBeInTheDocument()
   })
 
-  test('a new block goes after the selected one', async () => {
+  test('a new block goes at the end and is selected', async () => {
     await loaded()
-    fireEvent.click(screen.getByRole('button', { name: 'Image' }))
-    expect(screen.getByRole('button', { name: 'Edit 2. Image' })).toHaveAttribute('aria-pressed', 'true')
-    expect(screen.getByRole('button', { name: 'Edit 3. Text' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Blocks' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Add Image' }))
+    expect(screen.getByRole('button', { name: 'Edit 3. Image' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByText('3. Image')).toBeInTheDocument()
   })
 
   test('a problem in another block selects it, so its field is seen', async () => {
@@ -343,7 +405,7 @@ describe('WebsitePageEditPage', () => {
     expect(await screen.findByText(/Someone else changed this page/)).toBeInTheDocument()
     vi.mocked(WebsiteService.getPages).mockResolvedValue([page({ title: 'Theirs' })] as never)
     fireEvent.click(screen.getByRole('button', { name: 'Reload' }))
-    expect(await screen.findByDisplayValue('Theirs')).toBeInTheDocument()
+    await waitFor(() => expect(optionsField('Title')).toHaveValue('Theirs'))
   })
 
   test('a taken address name is shown on the name', async () => {
@@ -359,6 +421,19 @@ describe('WebsitePageEditPage', () => {
 
   describe('preview', () => {
     const tab = () => ({ opener: {} as unknown, location: { href: '' }, close: vi.fn() })
+
+    test('Preview in Options opens the draft too', async () => {
+      await loaded()
+      const open = vi.spyOn(window, 'open').mockReturnValue(tab() as never)
+      vi.mocked(WebsiteService.getPreviewUrl).mockResolvedValue({
+        url: 'https://reader.test/s/acme?preview=y',
+        expiresAt: '',
+      })
+      fireEvent.click(screen.getByRole('button', { name: /Options/ }))
+      fireEvent.click(await screen.findByRole('menuitem', { name: /Preview/ }))
+      expect(open).toHaveBeenCalledWith('', '_blank')
+      await waitFor(() => expect(WebsiteService.getPreviewUrl).toHaveBeenCalled())
+    })
 
     test('opens the draft in a new tab that cannot reach this one', async () => {
       await loaded()
@@ -424,8 +499,9 @@ describe('WebsitePageEditPage', () => {
     test('going back to the pages asks first', async () => {
       await loaded()
       fireEvent.change(optionsField('Title'), { target: { value: 'Changed' } })
-      fireEvent.click(screen.getByRole('button', { name: 'Back to pages' }))
-      fireEvent.click(within(await screen.findByRole('tooltip')).getByRole('button', { name: 'Leave' }))
+      fireEvent.click(screen.getByRole('button', { name: /Options/ }))
+      fireEvent.click(await screen.findByRole('menuitem', { name: /Back to pages/ }))
+      fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Leave' }))
       expect(await screen.findByText('pages list')).toBeInTheDocument()
     })
   })
@@ -538,9 +614,9 @@ describe('WebsitePageEditPage', () => {
       ] as never)
       vi.mocked(WebsiteService.get).mockResolvedValue(website as never)
       renderPage()
-      expect(await screen.findByText('A page can have at most 30 sections.')).toBeInTheDocument()
+      expect(await screen.findByText(/A page can have at most 30 sections\./)).toBeInTheDocument()
       for (const name of ['Hero', 'Text', 'Image', 'Gallery', 'Contact details', 'Latest articles']) {
-        expect(screen.getByRole('button', { name })).toBeDisabled()
+        expect(screen.getByRole('button', { name: `Add ${name}` })).toBeDisabled()
       }
     })
 
@@ -566,6 +642,7 @@ describe('WebsitePageEditPage', () => {
     } as never)
     renderPage()
 
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit 1. Image' }))
     expect(await screen.findByRole('img', { name: 'a1.png' })).toHaveAttribute('src', 'https://cdn.test/a1.png')
     fireEvent.click(screen.getByRole('button', { name: 'Edit 2. Image' }))
     expect(screen.getByText('This image is missing. Choose another.')).toBeInTheDocument()
@@ -576,7 +653,7 @@ describe('WebsitePageEditPage', () => {
     vi.mocked(WebsiteService.getPages).mockResolvedValue([page({ sections: [{ id: 'i1', type: 'image' }] })] as never)
     vi.mocked(WebsiteService.get).mockResolvedValue(website as never)
     renderPage()
-    fireEvent.click(await screen.findByRole('button', { name: 'Options' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Settings' }))
     fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Changed' } })
     fireEvent.click(saveBtn())
     expect(await screen.findByText('Choose an image.')).toBeInTheDocument()
@@ -584,7 +661,7 @@ describe('WebsitePageEditPage', () => {
   })
 
   describe('page SEO', () => {
-    const openSeo = async () => fireEvent.click(await screen.findByRole('button', { name: 'Options' }))
+    const openSeo = async () => fireEvent.click(await screen.findByRole('button', { name: 'Settings' }))
 
     test('is folded away until opened, and saves what was typed', async () => {
       await loaded()
@@ -618,7 +695,7 @@ describe('WebsitePageEditPage', () => {
         data: [{ id: 's1', url: 'https://cdn.test/s1.png', fileName: 's1.png' }],
       } as never)
       renderPage()
-      await screen.findByDisplayValue('Hello')
+      await screen.findByRole('heading', { name: 'Hello' })
       expect(WebsiteService.getImages).toHaveBeenCalledWith(1, ['s1'])
       await openSeo()
       const group = screen.getByRole('group', { name: 'Sharing image' })

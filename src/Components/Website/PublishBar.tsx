@@ -8,6 +8,7 @@ import Button from '../Form/Button'
 import PopConfirm from '../Form/Popconfirm'
 import Space from '../Form/Space'
 import Tag from '../Form/Tag'
+import Icons from '../Icons'
 import message from '../Form/message'
 import translate from '../../i18n/translate'
 import WebsiteService from '../../Services/WebsiteService'
@@ -24,6 +25,8 @@ type iPublishBar = {
   onStale: () => void
   // While the page has unsaved changes, publishing would leave them out.
   hasUnsavedChanges?: boolean
+  // False in the page editor's title row, which has Publish only, as an article (SMN-85).
+  canUnpublish?: boolean
 }
 
 type iProblem = { text: string; pageId?: string }
@@ -45,7 +48,7 @@ export const describeProblems = (errors: IFieldError[], pages: IWebsitePage[]): 
     return { text: `${where}: ${text}`, pageId: page?.id }
   })
 
-const PublishBar = ({ website, onChanged, onStale, hasUnsavedChanges = false }: iPublishBar) => {
+const PublishBar = ({ website, onChanged, onStale, hasUnsavedChanges = false, canUnpublish = true }: iPublishBar) => {
   const [working, setWorking] = useState(false)
   const [problems, setProblems] = useState<iProblem[]>([])
   // Answers that arrive after a switch of company are for the old one and are dropped.
@@ -116,13 +119,14 @@ const PublishBar = ({ website, onChanged, onStale, hasUnsavedChanges = false }: 
         {getStatus()}
         <Button
           type={'primary'}
+          icon={<Icons.CloudUploadOutlined aria-hidden />}
           onClick={publish}
           loading={working}
           disabled={working || isUpToDate || hasUnsavedChanges}
         >
           {translate('website-publish')}
         </Button>
-        {website.publishedAt ? (
+        {website.publishedAt && canUnpublish ? (
           <PopConfirm
             title={translate('website-unpublish-confirm')}
             okText={translate('website-unpublish')}

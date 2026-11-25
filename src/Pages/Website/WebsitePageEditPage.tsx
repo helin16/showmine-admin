@@ -10,21 +10,17 @@ import BackendPageContentTitle from '../../Layouts/BackendPageContentTitle'
 import InvalidAccessPanel from '../../Components/Error/InvalidAccessPanel'
 import Alert from '../../Components/Form/Alert'
 import Button from '../../Components/Form/Button'
-import Card from '../../Components/Form/Card'
-import PopConfirm from '../../Components/Form/Popconfirm'
 import Space from '../../Components/Form/Space'
 import Spin from '../../Components/Form/Spin'
 import message from '../../Components/Form/message'
 import PublishBar from '../../Components/Website/PublishBar'
-import SectionEditor, {
-  ADDABLE_SECTION_TYPES,
-  checkSection,
-  getImageIds,
-  newSection,
-} from '../../Components/Website/SectionEditors'
+import SectionEditor, { checkSection, getImageIds, newSection } from '../../Components/Website/SectionEditors'
 import SeoFields from '../../Components/Website/SeoFields'
 import SiteCanvas from '../../Components/Website/Canvas/SiteCanvas'
-import Drawer from '../../Components/Form/Drawer'
+import BlockPalette, { BLOCK_TILE_GAP, BLOCK_TILE_SIZE } from '../../Components/Website/Canvas/BlockPalette'
+import styled from 'styled-components'
+import Dropdown from '../../Components/Form/Dropdown'
+import Modal from '../../Components/Form/Modal'
 import Icons from '../../Components/Icons'
 import { BoxTitleDiv } from '../../Styles/AppWrapper'
 import IAsset from '../../Types/Asset/IAsset'
@@ -94,6 +90,106 @@ const toDraft = (page: IWebsitePage): iDraft => ({
 })
 const isSame = (a?: iDraft, b?: iDraft) => JSON.stringify(a) === JSON.stringify(b)
 
+// The canvas and the panel side by side, as the MConnect form designer (mgg-ui DesignTab): the panel is as wide as a
+// row of block tiles (3, then 4 from 1600px and 5 from 1920px); narrower than 992px it goes under the canvas.
+const PANEL_PADDING = '12px'
+const DesignLayout = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  .design-canvas {
+    min-width: 0;
+  }
+  @media (min-width: 992px) {
+    flex-direction: row;
+    align-items: flex-start;
+    --block-tiles: 3;
+    .design-canvas {
+      flex: 1 1 0;
+    }
+    .design-panel {
+      flex: 0 0 auto;
+      position: sticky;
+      top: 0;
+    }
+    .panel-content {
+      width: calc(
+        var(--block-tiles) * ${BLOCK_TILE_SIZE} + (var(--block-tiles) - 1) * ${BLOCK_TILE_GAP} + 2 * ${PANEL_PADDING}
+      );
+    }
+  }
+  @media (min-width: 1600px) {
+    --block-tiles: 4;
+  }
+  @media (min-width: 1920px) {
+    --block-tiles: 5;
+  }
+`
+
+// The panel: the open tab's content, with the tab rail on the far right and a notch on the active tab.
+const SidePanel = styled.div`
+  display: flex;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  background: #f8f9fa;
+  min-height: 300px;
+  .panel-content {
+    flex: 1;
+    min-width: 0;
+    padding: ${PANEL_PADDING};
+  }
+  .panel-tabs {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #dee2e6;
+    background: #f1f3f5;
+    button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 12px 10px;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      color: #495057;
+      font-size: 0.8rem;
+      cursor: pointer;
+      position: relative;
+      .anticon {
+        font-size: 20px;
+      }
+      &.active {
+        background: #fff;
+        color: #212529;
+        font-weight: 600;
+      }
+      &.active::before,
+      &.active::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-color: transparent;
+      }
+      &.active::before {
+        left: -10px;
+        border-width: 10px 10px 10px 0;
+        border-right-color: #dee2e6;
+      }
+      &.active::after {
+        left: -9px;
+        border-width: 9px 9px 9px 0;
+        border-right-color: #fff;
+      }
+    }
+  }
+`
+
 const WebsitePageEditPage = () => {
   const isAdmin = useIsCompanyAdmin()
   const { company } = useSelector((s: RootState) => s.auth)
@@ -101,13 +197,21 @@ const WebsitePageEditPage = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const [state, setState] = useState(initState)
-  const [isOptionsOpen, setIsOptionsOpen] = useState(false)
+  // The right panel's tab when no block is selected (SMN-85, as the MConnect form designer).
+  const [panelTab, setPanelTab] = useState<'blocks' | 'settings'>('blocks')
+  // The confirmation open: deleting the page, or leaving it with unsaved changes.
+  const [confirming, setConfirming] = useState<'delete' | 'leave' | null>(null)
   const [deleting, setDeleting] = useState(false)
-  // A problem with a field kept in Options opens it, each time, so the message is seen.
-  const openOptionsFor = (errors: { [path: string]: string }) => {
-    if (Object.keys(errors).some((path) => path === 'title' || path === 'slug' || path.startsWith('seo.'))) {
-      setIsOptionsOpen(true)
+  // A problem with a field in Settings opens that tab, each time, so the message is seen. Says whether it did.
+  const showSettingsFor = (errors: { [path: string]: string }) => {
+    const isSettings = Object.keys(errors).some(
+      (path) => path === 'title' || path === 'slug' || path.startsWith('seo.'),
+    )
+    if (isSettings) {
+      setPanelTab('settings')
+      setState((s) => ({ ...s, selectedId: undefined }))
     }
+    return isSettings
   }
   const companyIdRef = useRef(company?.id)
   companyIdRef.current = company?.id
@@ -119,7 +223,6 @@ const WebsitePageEditPage = () => {
     if (!isOn) return
     let isCurrent = true
     setState((s) => ({ ...s, loading: true, loadError: undefined, notFound: false, isStale: false, errors: {} }))
-    setIsOptionsOpen(false)
     Promise.all([WebsiteService.getPages(), WebsiteService.get()])
       .then(([pages, website]) => {
         if (!isCurrent) return
@@ -134,7 +237,8 @@ const WebsitePageEditPage = () => {
                 pages,
                 website,
                 draft: kept ?? toDraft(page),
-                selectedId: (kept ?? toDraft(page)).sections[0]?.id,
+                // Nothing selected: the panel shows the blocks to add.
+                selectedId: undefined,
               }
             : { ...s, page: undefined, draft: undefined, notFound: true },
         )
@@ -194,7 +298,7 @@ const WebsitePageEditPage = () => {
   const setDraft = (changes: Partial<iDraft>) =>
     setState((s) => (s.draft ? { ...s, draft: { ...s.draft, ...changes } } : s))
   const setSections = (sections: IWebsiteSection[]) => setDraft({ sections })
-  const select = (selectedId: string) => setState((s) => ({ ...s, selectedId }))
+  const select = (selectedId?: string) => setState((s) => ({ ...s, selectedId }))
 
   // A problem in a block selects the first such block, so its field is seen.
   const selectProblem = (errors: { [path: string]: string }, sections: IWebsiteSection[]) => {
@@ -202,13 +306,11 @@ const WebsitePageEditPage = () => {
     if (index >= 0) select(sections[index].id)
   }
 
-  // Added after the selected block, or at the end, and selected.
+  // Added at the end, and selected. (The blocks to add show only while no block is selected, as in the MConnect form
+  // designer; dragging to a place comes in slice 3.)
   const addSection = (type: string) => {
-    const sections = [...(state.draft?.sections || [])]
-    const at = sections.findIndex((section) => section.id === state.selectedId)
     const section = newSection(type)
-    sections.splice(at >= 0 ? at + 1 : sections.length, 0, section)
-    setSections(sections)
+    setSections([...(state.draft?.sections || []), section])
     select(section.id)
   }
 
@@ -243,8 +345,7 @@ const WebsitePageEditPage = () => {
     )
     if (Object.keys(errors).length > 0) {
       setState((s) => ({ ...s, errors }))
-      openOptionsFor(errors)
-      selectProblem(errors, draft.sections)
+      if (!showSettingsFor(errors)) selectProblem(errors, draft.sections)
       message.error(translate('website-page-has-problems'))
       return Promise.resolve(false)
     }
@@ -267,14 +368,13 @@ const WebsitePageEditPage = () => {
         const fieldErrors = Object.fromEntries(((data?.errors || []) as IFieldError[]).map((e) => [e.path, e.message]))
         if (Object.keys(fieldErrors).length > 0) {
           setState((s) => ({ ...s, errors: fieldErrors }))
-          openOptionsFor(fieldErrors)
-          selectProblem(fieldErrors, draft.sections)
+          if (!showSettingsFor(fieldErrors)) selectProblem(fieldErrors, draft.sections)
           message.error(translate('website-page-has-problems'))
         } else if (status === 409 && data?.message === STALE_PAGE) {
           setState((s) => ({ ...s, isStale: true }))
         } else if (status === 409) {
           setState((s) => ({ ...s, errors: { slug: translate('website-page-slug-taken') } }))
-          setIsOptionsOpen(true)
+          showSettingsFor({ slug: '' })
         } else {
           message.error(Utils.getErrorMessage(err))
         }
@@ -337,45 +437,66 @@ const WebsitePageEditPage = () => {
           : `${translate('website-section-number', { number: Number(path.slice(9, path.indexOf(']'))) + 1 })}: ${problem}`,
       )
 
-  // The selected block's fields, then the blocks to add (by click; dragging comes in slice 3).
+  // The right panel, as the MConnect form designer: the selected block's fields with Back, or the open tab (the blocks
+  // to add, or the page settings); the tab rail on the far right.
   const getPanel = (sections: IWebsiteSection[]) => {
     const index = sections.findIndex((section) => section.id === state.selectedId)
     const section = sections[index]
     const isFull = sections.length >= MAX_SECTIONS
+    const tabs = [
+      { key: 'blocks', label: translate('website-panel-blocks'), Icon: Icons.BuildOutlined },
+      { key: 'settings', label: translate('website-panel-settings'), Icon: Icons.SettingOutlined },
+    ] as const
     return (
-      <Space orientation={'vertical'} style={{ width: '100%' }}>
-        {section ? (
-          <Card title={`${index + 1}. ${translate(`website-section-type-${section.type}`)}`}>
-            <SectionEditor
-              key={section.id}
-              section={section}
-              errors={sectionErrors(index)}
-              images={state.images}
-              onImagesPicked={addImages}
-              onChange={(changed) => setSections(sections.map((s) => (s.id === section.id ? changed : s)))}
-            />
-          </Card>
-        ) : (
-          <Alert
-            type={'info'}
-            title={translate(sections.length === 0 ? 'website-sections-none' : 'website-canvas-select')}
-          />
-        )}
-        <Card title={translate('website-section-add')}>
-          <Space wrap>
-            {ADDABLE_SECTION_TYPES.map((type) => (
-              <Button key={type} disabled={isFull} onClick={() => addSection(type)}>
-                {translate(`website-section-type-${type}`)}
+      <SidePanel>
+        <div className={'panel-content'} role={'region'} aria-label={translate('website-panel')}>
+          {section ? (
+            <>
+              <Button type={'link'} size={'small'} style={{ paddingLeft: 0 }} onClick={() => select(undefined)}>
+                <Icons.ArrowLeftOutlined aria-hidden /> {translate('website-panel-back')}
               </Button>
-            ))}
-          </Space>
-          <p style={{ marginBottom: 0 }}>
-            {isFull
-              ? translate('website-sections-full', { max: MAX_SECTIONS })
-              : translate('website-section-count', { count: sections.length, max: MAX_SECTIONS })}
-          </p>
-        </Card>
-      </Space>
+              <BoxTitleDiv>{`${index + 1}. ${translate(`website-section-type-${section.type}`)}`}</BoxTitleDiv>
+              <SectionEditor
+                key={section.id}
+                section={section}
+                errors={sectionErrors(index)}
+                images={state.images}
+                onImagesPicked={addImages}
+                onChange={(changed) => setSections(sections.map((s) => (s.id === section.id ? changed : s)))}
+              />
+            </>
+          ) : null}
+          {!section && panelTab === 'blocks' ? (
+            <>
+              <BlockPalette isFull={isFull} onAdd={addSection} />
+              <small style={{ display: 'block', marginTop: 8, color: '#6c757d' }}>
+                {translate('website-blocks-hint')}{' '}
+                {isFull
+                  ? translate('website-sections-full', { max: MAX_SECTIONS })
+                  : translate('website-section-count', { count: sections.length, max: MAX_SECTIONS })}
+              </small>
+            </>
+          ) : null}
+          {!section && panelTab === 'settings' ? getSettings() : null}
+        </div>
+        <div className={'panel-tabs'} role={'group'} aria-label={translate('website-panel')}>
+          {tabs.map(({ key, label, Icon }) => (
+            <button
+              key={key}
+              type={'button'}
+              className={!section && panelTab === key ? 'active' : ''}
+              aria-pressed={!section && panelTab === key}
+              onClick={() => {
+                select(undefined)
+                setPanelTab(key)
+              }}
+            >
+              <Icon aria-hidden />
+              {label}
+            </button>
+          ))}
+        </div>
+      </SidePanel>
     )
   }
 
@@ -391,10 +512,10 @@ const WebsitePageEditPage = () => {
       </div>
     ) : null
 
-  // Delete page, in Options, for admins: the page goes, and so does any unsaved change.
+  // Delete page, for admins, after confirming: the page goes, and so does any unsaved change.
   const deletePage = () => {
     const { page } = state
-    // The button is disabled while saving and busy while deleting, so neither can overlap.
+    // The confirmation is busy while deleting, and Delete page is disabled while saving, so neither can overlap.
     if (!page) return
     const companyId = company?.id
     const isSameCompany = () => companyIdRef.current === companyId
@@ -406,105 +527,139 @@ const WebsitePageEditPage = () => {
         navigate(COMPANY_WEBSITE_PAGES_URL)
       })
       .catch((err) => isSameCompany() && message.error(Utils.getErrorMessage(err)))
-      .finally(() => setDeleting(false))
+      .finally(() => {
+        setDeleting(false)
+        setConfirming(null)
+      })
   }
 
-  // The page's settings, out of the way of its content (specs/004-website-visual-editor, US1).
-  const getOptions = () => {
+  // The page's settings, in the panel's Settings tab (specs/004-website-visual-editor, US1; SMN-85).
+  const getSettings = () => {
     const { draft, page } = state
     if (!draft || !page) return null
     return (
-      <Drawer title={translate('options')} open={isOptionsOpen} onClose={() => setIsOptionsOpen(false)} size={'large'}>
-        <Space orientation={'vertical'} style={{ width: '100%' }} size={'large'}>
-          {(['title', 'slug'] as const).map((name) => (
-            <div key={name}>
-              <label htmlFor={`page-${name}`}>{translate(`website-page-${name}`)}</label>
-              <Input
-                id={`page-${name}`}
-                value={draft[name]}
-                maxLength={name === 'title' ? 80 : 40}
-                status={state.errors[name] ? 'error' : undefined}
-                aria-invalid={state.errors[name] ? true : undefined}
-                aria-describedby={state.errors[name] ? `page-${name}-error` : undefined}
-                onChange={(e) => setDraft({ [name]: e.target.value })}
-              />
-              {fieldError(name)}
-            </div>
-          ))}
-          <div>
-            <BoxTitleDiv>{translate('website-seo')}</BoxTitleDiv>
-            <SeoFields
-              idPrefix={'page-seo'}
-              seo={draft.seo}
-              help={translate('website-seo-page-help')}
-              errors={seoErrors}
-              images={state.images}
-              onImagesPicked={addImages}
-              onChange={(seo) => setDraft({ seo })}
+      <Space orientation={'vertical'} style={{ width: '100%' }} size={'large'}>
+        {(['title', 'slug'] as const).map((name) => (
+          <div key={name}>
+            <label htmlFor={`page-${name}`}>{translate(`website-page-${name}`)}</label>
+            <Input
+              id={`page-${name}`}
+              value={draft[name]}
+              maxLength={name === 'title' ? 80 : 40}
+              status={state.errors[name] ? 'error' : undefined}
+              aria-invalid={state.errors[name] ? true : undefined}
+              aria-describedby={state.errors[name] ? `page-${name}-error` : undefined}
+              onChange={(e) => setDraft({ [name]: e.target.value })}
             />
+            {fieldError(name)}
           </div>
-          {isAdmin ? (
-            <PopConfirm
-              title={translate(isDirty ? 'website-page-delete-confirm-unsaved' : 'website-page-delete-confirm', {
-                title: page.title,
-              })}
-              okText={translate('website-delete')}
-              cancelText={translate('cancel')}
-              okButtonProps={{ danger: true }}
-              onConfirm={deletePage}
-            >
-              <Button danger loading={deleting} disabled={state.saving}>
-                {translate('website-page-delete')}
-              </Button>
-            </PopConfirm>
-          ) : null}
-        </Space>
-      </Drawer>
+        ))}
+        <div>
+          <BoxTitleDiv>{translate('website-seo')}</BoxTitleDiv>
+          <SeoFields
+            idPrefix={'page-seo'}
+            seo={draft.seo}
+            help={translate('website-seo-page-help')}
+            errors={seoErrors}
+            images={state.images}
+            onImagesPicked={addImages}
+            onChange={(seo) => setDraft({ seo })}
+          />
+        </div>
+        {isAdmin ? (
+          <Button danger disabled={state.saving} onClick={() => setConfirming('delete')}>
+            {translate('website-page-delete')}
+          </Button>
+        ) : null}
+      </Space>
     )
   }
 
-  // Save, Preview and, for admins, Publish, in the title row as on an article; then Options.
+  // The leave and delete confirmations.
+  const getConfirmation = () => {
+    const { page } = state
+    if (!page || !confirming) return null
+    return confirming === 'delete' ? (
+      <Modal
+        open
+        title={translate(isDirty ? 'website-page-delete-confirm-unsaved' : 'website-page-delete-confirm', {
+          title: page.title,
+        })}
+        okText={translate('website-delete')}
+        cancelText={translate('cancel')}
+        okButtonProps={{ danger: true, loading: deleting }}
+        onOk={deletePage}
+        onCancel={() => !deleting && setConfirming(null)}
+      />
+    ) : (
+      <Modal
+        open
+        title={translate('website-page-leave-confirm')}
+        okText={translate('website-page-leave')}
+        cancelText={translate('cancel')}
+        onOk={() => navigate(COMPANY_WEBSITE_PAGES_URL)}
+        onCancel={() => setConfirming(null)}
+      />
+    )
+  }
+
+  const backToPages = () => (isDirty ? setConfirming('leave') : navigate(COMPANY_WEBSITE_PAGES_URL))
+
+  // As on an article (SMN-85): Save, Publish for admins, and Options with the rest.
   const getControls = () => {
     const { draft, website } = state
     if (!draft) return null
+    const items = [
+      { key: 'preview', icon: <Icons.EyeOutlined aria-hidden />, label: translate('website-preview') },
+      { key: 'settings', icon: <Icons.SettingOutlined aria-hidden />, label: translate('website-page-settings') },
+      { key: 'back', icon: <Icons.ArrowLeftOutlined aria-hidden />, label: translate('website-pages-back') },
+      ...(isAdmin
+        ? [
+            {
+              key: 'delete',
+              icon: <Icons.DeleteOutlined aria-hidden />,
+              label: translate('website-page-delete'),
+              danger: true,
+              disabled: state.saving,
+            },
+          ]
+        : []),
+    ]
+    const onMenu = ({ key }: { key: string }) => {
+      if (key === 'preview') preview()
+      if (key === 'settings') {
+        select(undefined)
+        setPanelTab('settings')
+      }
+      if (key === 'back') backToPages()
+      if (key === 'delete') setConfirming('delete')
+    }
     return (
       <Space wrap align={'start'}>
-        {isDirty ? (
-          <PopConfirm
-            title={translate('website-page-leave-confirm')}
-            okText={translate('website-page-leave')}
-            cancelText={translate('cancel')}
-            onConfirm={() => navigate(COMPANY_WEBSITE_PAGES_URL)}
-          >
-            <Button type={'link'}>{translate('website-pages-back')}</Button>
-          </PopConfirm>
-        ) : (
-          <Link to={COMPANY_WEBSITE_PAGES_URL}>{translate('website-pages-back')}</Link>
-        )}
         {isDirty ? <span>{translate('website-page-unsaved')}</span> : null}
         {state.previewUrl ? (
           <a href={state.previewUrl} target={'_blank'} rel={'noopener noreferrer'}>
             {translate('website-preview-open')}
           </a>
         ) : null}
-        <Button onClick={preview} disabled={state.saving || state.isStale}>
-          {translate('website-preview')}
-        </Button>
-        <Button type={'primary'} onClick={save} loading={state.saving} disabled={!isDirty || state.isStale}>
+        <Button onClick={save} loading={state.saving} disabled={!isDirty || state.isStale}>
           {translate('website-save')}
         </Button>
-        {/* Publishing is for admins only (SMN-80); a member saves and previews. */}
+        {/* Publishing is for admins only (SMN-80); a member saves and previews. Unpublishing is on the overview. */}
         {website && isAdmin ? (
           <PublishBar
             website={website}
             hasUnsavedChanges={isDirty}
+            canUnpublish={false}
             onChanged={(changed) => setState((s) => ({ ...s, website: changed }))}
             onStale={reload}
           />
         ) : null}
-        <Button icon={<Icons.SettingOutlined aria-hidden />} onClick={() => setIsOptionsOpen(true)}>
-          {translate('options')}
-        </Button>
+        <Dropdown trigger={['click']} menu={{ items, onClick: onMenu }}>
+          <Button>
+            {translate('options')} <Icons.DownOutlined aria-hidden />
+          </Button>
+        </Dropdown>
       </Space>
     )
   }
@@ -562,9 +717,8 @@ const WebsitePageEditPage = () => {
             }
           />
         ) : null}
-        {/* The panel folds below the canvas on a narrow screen. */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-start' }}>
-          <div style={{ flex: '1 1 480px', minWidth: 0 }}>
+        <DesignLayout>
+          <div className={'design-canvas'}>
             <SiteCanvas
               website={website}
               company={company ?? undefined}
@@ -577,6 +731,7 @@ const WebsitePageEditPage = () => {
                 .filter((_, i) => Object.keys(state.errors).some((path) => path.startsWith(`sections[${i}].`)))
                 .map((section) => section.id)}
               onSelect={select}
+              onPreview={preview}
               onMove={moveSection}
               // The panel then asks for a block to be selected.
               onRemove={(index) => {
@@ -585,8 +740,8 @@ const WebsitePageEditPage = () => {
               }}
             />
           </div>
-          <div style={{ flex: '1 1 320px', maxWidth: 480 }}>{getPanel(draft.sections)}</div>
-        </div>
+          <div className={'design-panel'}>{getPanel(draft.sections)}</div>
+        </DesignLayout>
       </Space>
     )
   }
@@ -604,7 +759,7 @@ const WebsitePageEditPage = () => {
       }
     >
       {isOn ? <Spin spinning={state.loading}>{getContent()}</Spin> : <InvalidAccessPanel />}
-      {isOn ? getOptions() : null}
+      {isOn ? getConfirmation() : null}
     </BackendPage>
   )
 }

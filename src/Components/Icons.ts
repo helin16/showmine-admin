@@ -49,6 +49,19 @@ import {
   ClockCircleOutlined,
   CloseOutlined,
   ReloadOutlined,
+  EditOutlined,
+  UpOutlined,
+  DesktopOutlined,
+  TabletOutlined,
+  MobileOutlined,
+  AppstoreOutlined,
+  BuildOutlined,
+  PictureOutlined,
+  FileImageOutlined,
+  FileTextOutlined,
+  ContactsOutlined,
+  ReadOutlined,
+  ArrowLeftOutlined,
 } from '@ant-design/icons'
 
 const Icons = {
@@ -102,6 +115,19 @@ const Icons = {
   ClockCircleOutlined,
   CloseOutlined,
   ReloadOutlined,
+  EditOutlined,
+  UpOutlined,
+  DesktopOutlined,
+  TabletOutlined,
+  MobileOutlined,
+  AppstoreOutlined,
+  BuildOutlined,
+  PictureOutlined,
+  FileImageOutlined,
+  FileTextOutlined,
+  ContactsOutlined,
+  ReadOutlined,
+  ArrowLeftOutlined,
 }
 
 export default Icons
