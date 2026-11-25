@@ -422,6 +422,25 @@ describe('WebsitePageEditPage', () => {
   describe('preview', () => {
     const tab = () => ({ opener: {} as unknown, location: { href: '' }, close: vi.fn() })
 
+    test('no preview while a save is in flight, nor once the page is stale', async () => {
+      await loaded()
+      const open = vi.spyOn(window, 'open').mockReturnValue(tab() as never)
+      let fail: (err: unknown) => void = () => undefined
+      vi.mocked(WebsiteService.updatePage).mockReturnValue(new Promise((_, reject) => (fail = reject)) as never)
+      fireEvent.change(screen.getByLabelText('Heading'), { target: { value: 'Changed' } })
+      fireEvent.click(saveBtn())
+      expect(screen.getByRole('button', { name: 'Preview' })).toBeDisabled()
+      fireEvent.click(screen.getByRole('button', { name: /Options/ }))
+      fireEvent.click(await screen.findByRole('menuitem', { name: /Preview/ }))
+      expect(open).not.toHaveBeenCalled()
+      await act(async () =>
+        fail(httpError(409, { message: 'The page was changed by someone else. Reload and try again.' })),
+      )
+      expect(await screen.findByText(/Someone else changed this page/)).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Preview' })).toBeDisabled()
+      expect(WebsiteService.updatePage).toHaveBeenCalledTimes(1)
+    })
+
     test('Preview in Options opens the draft too', async () => {
       await loaded()
       const open = vi.spyOn(window, 'open').mockReturnValue(tab() as never)

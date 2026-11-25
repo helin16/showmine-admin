@@ -47,6 +47,7 @@ const props = (extra = {}) => ({
   onMove: vi.fn(),
   onRemove: vi.fn(),
   onPreview: vi.fn(),
+  canPreview: true,
   ...extra,
 })
 const canvas = () => screen.getByTestId('site-canvas')
@@ -125,6 +126,11 @@ describe('SiteCanvas', () => {
     render(<SiteCanvas {...(p as never)} />)
     fireEvent.click(screen.getByRole('button', { name: 'Preview' }))
     expect(p.onPreview).toHaveBeenCalled()
+  })
+
+  test('Preview is off when the page cannot be previewed', () => {
+    render(<SiteCanvas {...(props({ canPreview: false }) as never)} />)
+    expect(screen.getByRole('button', { name: 'Preview' })).toBeDisabled()
   })
 
   test('selects a block by clicking it or its Edit button; the canvas around the page unselects', () => {

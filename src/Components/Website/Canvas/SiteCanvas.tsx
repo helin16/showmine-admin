@@ -147,6 +147,8 @@ type iSiteCanvas = {
   onMove: (index: number, by: number) => void
   onRemove: (index: number) => void
   onPreview: () => void
+  // Not while a save is in flight or the page is stale.
+  canPreview: boolean
 }
 
 const SiteCanvas = ({
@@ -162,6 +164,7 @@ const SiteCanvas = ({
   onMove,
   onRemove,
   onPreview,
+  canPreview,
 }: iSiteCanvas) => {
   const [css, setCss] = useState<string | null>(null)
   const [width, setWidth] = useState<keyof typeof WIDTHS>('desktop')
@@ -221,6 +224,7 @@ const SiteCanvas = ({
             className={'canvas-bar-button'}
             aria-label={translate('website-preview')}
             title={translate('website-preview')}
+            disabled={!canPreview}
             onClick={onPreview}
           >
             <Icons.EyeOutlined aria-hidden />

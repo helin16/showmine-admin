@@ -111,6 +111,9 @@ const DesignLayout = styled.div`
       flex: 0 0 auto;
       position: sticky;
       top: 0;
+      /* A long Settings tab still scrolls while the panel sticks. */
+      max-height: 100vh;
+      overflow-y: auto;
     }
     .panel-content {
       width: calc(
@@ -479,7 +482,7 @@ const WebsitePageEditPage = () => {
           ) : null}
           {!section && panelTab === 'settings' ? getSettings() : null}
         </div>
-        <div className={'panel-tabs'} role={'group'} aria-label={translate('website-panel')}>
+        <div className={'panel-tabs'} role={'group'} aria-label={translate('website-panel-tabs')}>
           {tabs.map(({ key, label, Icon }) => (
             <button
               key={key}
@@ -610,7 +613,12 @@ const WebsitePageEditPage = () => {
     const { draft, website } = state
     if (!draft) return null
     const items = [
-      { key: 'preview', icon: <Icons.EyeOutlined aria-hidden />, label: translate('website-preview') },
+      {
+        key: 'preview',
+        icon: <Icons.EyeOutlined aria-hidden />,
+        label: translate('website-preview'),
+        disabled: state.saving || state.isStale,
+      },
       { key: 'settings', icon: <Icons.SettingOutlined aria-hidden />, label: translate('website-page-settings') },
       { key: 'back', icon: <Icons.ArrowLeftOutlined aria-hidden />, label: translate('website-pages-back') },
       ...(isAdmin
@@ -732,6 +740,7 @@ const WebsitePageEditPage = () => {
                 .map((section) => section.id)}
               onSelect={select}
               onPreview={preview}
+              canPreview={!state.saving && !state.isStale}
               onMove={moveSection}
               // The panel then asks for a block to be selected.
               onRemove={(index) => {
