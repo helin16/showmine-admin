@@ -47,7 +47,7 @@ per-company website switch; no E2E (admin and Reader suites target production)
 | Browser configuration safe | `REACT_APP_FRONT_END_URL` is public already; unsaved HTML cleaned on the canvas with DOMPurify, links inert (R2a) | n/a | n/a | Pass |
 | Accessible and localized | keyboard drag, announcements, en/cn strings | messages as today | landmark roles for header/footer | Pass |
 | Verify observable behaviour | tests per slice, functions coverage 90% | tests per route and rule | tests for the effective layout | Pass |
-| Vercel deployment | new admin routes load on direct navigation; `vercel.json` `style-src` gains the Reader origin (R2) | n/a | static `/website.css` with a short cache (R2) | Pass |
+| Vercel deployment | new admin routes load on direct navigation; `vercel.json` unchanged: the canvas fetches the styles (R2) | n/a | static `/website.css` with a short cache, readable by any site (R2) | Pass |
 
 ## Project Structure
 
@@ -76,8 +76,8 @@ showmine-admin/src/
 ├── Components/Website/Canvas/
 │   ├── SiteCanvas.tsx                           # slice 2: effective layout + blocks, device widths, selection
 │   ├── canvasBlocks.tsx                         # slice 2: block markup copied from the Reader (class names pinned)
-│   ├── BlockPalette.tsx                         # slice 2 (click), slice 3 (drag)
-│   └── BlockPanel.tsx                           # slice 2: the selected block's fields (existing SectionEditors)
+│   └── (panel and palette)                      # slice 2: kept in WebsitePageEditPage (existing SectionEditors);
+│                                                # the palette moves out in slice 3 when it gains drag sources
 └── Components/Menu/MenuItems.tsx                # slice 4: Website > Layout (admins)
 
 showmine-api/

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { Input, Select } from 'antd'
+import { Input } from 'antd'
 import { RootState } from '../../Redux/makeReduxStore'
 import { MENU_KEY_WEBSITE_PAGES } from '../../Components/Menu/MenuItems'
 import { useIsCompanyAdmin } from '../../Components/Route/CompanyAdminRoute'
@@ -23,6 +23,7 @@ import SectionEditor, {
   newSection,
 } from '../../Components/Website/SectionEditors'
 import SeoFields from '../../Components/Website/SeoFields'
+import SiteCanvas from '../../Components/Website/Canvas/SiteCanvas'
 import Drawer from '../../Components/Form/Drawer'
 import Icons from '../../Components/Icons'
 import { BoxTitleDiv } from '../../Styles/AppWrapper'
@@ -41,11 +42,14 @@ import IWebsite, {
 import { COMPANY_WEBSITE_PAGES_URL } from '../../UrlMap'
 
 // Edits one page and its sections (specs/001-website-builder, US2, T035). One Save sends the whole page with the
-// updatedAt it was loaded with; Preview opens the saved draft on the Reader; the publish bar publishes it.
+// updatedAt it was loaded with; Preview opens the saved draft on the Reader; the publish bar publishes it. The page is
+// drawn on a canvas as the website shows it; the selected block is edited in the panel (specs/004, US2).
 type iDraft = { title: string; slug: string; sections: IWebsiteSection[]; seo: IWebsiteSeo }
 type iState = {
   loading: boolean
   page?: IWebsitePage
+  // Every page of the website, for the canvas menu.
+  pages: IWebsitePage[]
   website?: IWebsite
   draft?: iDraft
   notFound: boolean
@@ -54,7 +58,8 @@ type iState = {
   errors: { [path: string]: string }
   saving: boolean
   isStale: boolean
-  addingType: string
+  // The block edited in the panel.
+  selectedId?: string
   // A preview link the browser would not open in a new tab.
   previewUrl?: string
   // Read by screen readers after a section moves.
@@ -68,8 +73,8 @@ const initState: iState = {
   notFound: false,
   errors: {},
   saving: false,
+  pages: [],
   isStale: false,
-  addingType: 'text',
   announcement: '',
   images: {},
   count: 0,
@@ -123,7 +128,14 @@ const WebsitePageEditPage = () => {
         keptDraftRef.current = undefined
         setState((s) =>
           page
-            ? { ...s, page, website, draft: kept ?? toDraft(page) }
+            ? {
+                ...s,
+                page,
+                pages,
+                website,
+                draft: kept ?? toDraft(page),
+                selectedId: (kept ?? toDraft(page)).sections[0]?.id,
+              }
             : { ...s, page: undefined, draft: undefined, notFound: true },
         )
         const shown = kept ?? (page ? toDraft(page) : undefined)
@@ -182,6 +194,23 @@ const WebsitePageEditPage = () => {
   const setDraft = (changes: Partial<iDraft>) =>
     setState((s) => (s.draft ? { ...s, draft: { ...s.draft, ...changes } } : s))
   const setSections = (sections: IWebsiteSection[]) => setDraft({ sections })
+  const select = (selectedId: string) => setState((s) => ({ ...s, selectedId }))
+
+  // A problem in a block selects the first such block, so its field is seen.
+  const selectProblem = (errors: { [path: string]: string }, sections: IWebsiteSection[]) => {
+    const index = sections.findIndex((_, i) => Object.keys(errors).some((path) => path.startsWith(`sections[${i}].`)))
+    if (index >= 0) select(sections[index].id)
+  }
+
+  // Added after the selected block, or at the end, and selected.
+  const addSection = (type: string) => {
+    const sections = [...(state.draft?.sections || [])]
+    const at = sections.findIndex((section) => section.id === state.selectedId)
+    const section = newSection(type)
+    sections.splice(at >= 0 ? at + 1 : sections.length, 0, section)
+    setSections(sections)
+    select(section.id)
+  }
 
   const moveSection = (index: number, by: number) => {
     const sections = [...(state.draft?.sections || [])]
@@ -213,6 +242,7 @@ const WebsitePageEditPage = () => {
     if (Object.keys(errors).length > 0) {
       setState((s) => ({ ...s, errors }))
       openOptionsFor(errors)
+      selectProblem(errors, draft.sections)
       message.error(translate('website-page-has-problems'))
       return Promise.resolve(false)
     }
@@ -236,6 +266,7 @@ const WebsitePageEditPage = () => {
         if (Object.keys(fieldErrors).length > 0) {
           setState((s) => ({ ...s, errors: fieldErrors }))
           openOptionsFor(fieldErrors)
+          selectProblem(fieldErrors, draft.sections)
           message.error(translate('website-page-has-problems'))
         } else if (status === 409 && data?.message === STALE_PAGE) {
           setState((s) => ({ ...s, isStale: true }))
@@ -304,52 +335,45 @@ const WebsitePageEditPage = () => {
           : `${translate('website-section-number', { number: Number(path.slice(9, path.indexOf(']'))) + 1 })}: ${problem}`,
       )
 
-  const getSection = (section: IWebsiteSection, index: number, sections: IWebsiteSection[]) => {
-    const name = `${index + 1}. ${translate(`website-section-type-${section.type}`)}`
+  // The selected block's fields, then the blocks to add (by click; dragging comes in slice 3).
+  const getPanel = (sections: IWebsiteSection[]) => {
+    const index = sections.findIndex((section) => section.id === state.selectedId)
+    const section = sections[index]
+    const isFull = sections.length >= MAX_SECTIONS
     return (
-      // Keyed by position: moving a section changes the content of the cards, never moves a text editor's frame,
-      // which would reload it.
-      <Card
-        key={index}
-        title={name}
-        extra={
+      <Space orientation={'vertical'} style={{ width: '100%' }}>
+        {section ? (
+          <Card title={`${index + 1}. ${translate(`website-section-type-${section.type}`)}`}>
+            <SectionEditor
+              key={section.id}
+              section={section}
+              errors={sectionErrors(index)}
+              images={state.images}
+              onImagesPicked={addImages}
+              onChange={(changed) => setSections(sections.map((s) => (s.id === section.id ? changed : s)))}
+            />
+          </Card>
+        ) : (
+          <Alert
+            type={'info'}
+            title={translate(sections.length === 0 ? 'website-sections-none' : 'website-canvas-select')}
+          />
+        )}
+        <Card title={translate('website-section-add')}>
           <Space wrap>
-            <Button
-              aria-label={translate('website-move-up', { name })}
-              disabled={index === 0}
-              onClick={() => moveSection(index, -1)}
-            >
-              ↑
-            </Button>
-            <Button
-              aria-label={translate('website-move-down', { name })}
-              disabled={index === sections.length - 1}
-              onClick={() => moveSection(index, 1)}
-            >
-              ↓
-            </Button>
-            <PopConfirm
-              title={translate('website-section-remove-confirm')}
-              okText={translate('website-remove')}
-              cancelText={translate('cancel')}
-              okButtonProps={{ danger: true }}
-              onConfirm={() => setSections(sections.filter((s) => s.id !== section.id))}
-            >
-              <Button danger aria-label={translate('website-remove-named', { name })}>
-                {translate('website-remove')}
+            {ADDABLE_SECTION_TYPES.map((type) => (
+              <Button key={type} disabled={isFull} onClick={() => addSection(type)}>
+                {translate(`website-section-type-${type}`)}
               </Button>
-            </PopConfirm>
+            ))}
           </Space>
-        }
-      >
-        <SectionEditor
-          section={section}
-          errors={sectionErrors(index)}
-          images={state.images}
-          onImagesPicked={addImages}
-          onChange={(changed) => setSections(sections.map((s) => (s.id === section.id ? changed : s)))}
-        />
-      </Card>
+          <p style={{ marginBottom: 0 }}>
+            {isFull
+              ? translate('website-sections-full', { max: MAX_SECTIONS })
+              : translate('website-section-count', { count: sections.length, max: MAX_SECTIONS })}
+          </p>
+        </Card>
+      </Space>
     )
   }
 
@@ -506,6 +530,7 @@ const WebsitePageEditPage = () => {
     if (!draft) {
       return null
     }
+    const pages = [...state.pages].sort((a, b) => a.position - b.position)
     return (
       <Space orientation={'vertical'} style={{ width: '100%' }}>
         {state.isStale ? (
@@ -523,8 +548,6 @@ const WebsitePageEditPage = () => {
         <div aria-live={'polite'} className={'sr-only'} style={{ position: 'absolute', left: -10000 }}>
           {state.announcement}
         </div>
-        {draft.sections.map(getSection)}
-        {draft.sections.length === 0 ? <Alert type={'info'} message={translate('website-sections-none')} /> : null}
         {getPageProblems().length > 0 ? (
           <Alert
             type={'error'}
@@ -537,30 +560,28 @@ const WebsitePageEditPage = () => {
             }
           />
         ) : null}
-        <Card>
-          <Space wrap>
-            <label htmlFor={'add-section-type'}>{translate('website-section-add-type')}</label>
-            <Select
-              id={'add-section-type'}
-              value={state.addingType}
-              style={{ minWidth: 180 }}
-              onChange={(addingType: string) => setState((s) => ({ ...s, addingType }))}
-              options={ADDABLE_SECTION_TYPES.map((type) => ({
-                value: type,
-                label: translate(`website-section-type-${type}`),
-              }))}
+        {/* The panel folds below the canvas on a narrow screen. */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-start' }}>
+          <div style={{ flex: '1 1 480px', minWidth: 0 }}>
+            <SiteCanvas
+              website={website}
+              company={company ?? undefined}
+              pageTitles={pages.map((p) => (p.id === state.page?.id ? draft.title : p.title))}
+              currentIndex={pages.findIndex((p) => p.id === state.page?.id)}
+              sections={draft.sections}
+              images={state.images}
+              selectedId={state.selectedId}
+              problemIds={draft.sections
+                .filter((_, i) => Object.keys(state.errors).some((path) => path.startsWith(`sections[${i}].`)))
+                .map((section) => section.id)}
+              onSelect={select}
+              onMove={moveSection}
+              // The panel then asks for a block to be selected.
+              onRemove={(index) => setSections(draft.sections.filter((_, i) => i !== index))}
             />
-            <Button
-              disabled={draft.sections.length >= MAX_SECTIONS}
-              onClick={() => setSections([...draft.sections, newSection(state.addingType)])}
-            >
-              {translate('website-section-add')}
-            </Button>
-            {draft.sections.length >= MAX_SECTIONS ? (
-              <span>{translate('website-sections-full', { max: MAX_SECTIONS })}</span>
-            ) : null}
-          </Space>
-        </Card>
+          </div>
+          <div style={{ flex: '1 1 320px', maxWidth: 480 }}>{getPanel(draft.sections)}</div>
+        </div>
       </Space>
     )
   }

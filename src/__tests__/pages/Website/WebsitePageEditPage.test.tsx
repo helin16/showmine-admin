@@ -21,6 +21,8 @@ vi.mock('../../../Services/WebsiteService', () => ({
     publish: vi.fn(),
     unpublish: vi.fn(),
     deletePage: vi.fn(),
+    // No Reader address: the canvas shows the blocks without the site styles.
+    getReaderUrl: vi.fn(() => null),
   },
 }))
 vi.mock('../../../Components/Form/message', () => ({ default: { error: vi.fn(), success: vi.fn() } }))
@@ -91,8 +93,13 @@ describe('WebsitePageEditPage', () => {
   test('shows the page, its sections in order and the publish bar; nothing to save yet', async () => {
     await loaded()
     expect(optionsField('Title')).toHaveValue('Home')
+    // Drawn on the canvas, the first block selected and edited in the panel (spec 004, US2).
+    const canvas = screen.getByTestId('site-canvas')
+    expect(within(canvas).getByRole('heading', { name: 'Hello' })).toBeInTheDocument()
+    const blocks = within(canvas).getAllByRole('button', { name: /^Edit / })
+    expect(blocks.map((b) => b.getAttribute('aria-label'))).toStrictEqual(['Edit 1. Hero', 'Edit 2. Text'])
+    expect(blocks[0]).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByText('1. Hero')).toBeInTheDocument()
-    expect(screen.getByText('2. Text')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Publish' })).toBeInTheDocument()
     expect(saveBtn()).toBeDisabled()
   })
@@ -211,10 +218,14 @@ describe('WebsitePageEditPage', () => {
     vi.mocked(WebsiteService.updatePage).mockResolvedValue(page() as never)
 
     fireEvent.click(screen.getByRole('button', { name: 'Move 1. Hero down' }))
-    expect(screen.getByText('1. Text')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Edit 1. Text' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Remove 2. Hero' }))
     fireEvent.click(within(await screen.findByRole('tooltip')).getByRole('button', { name: 'Remove' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Add section' }))
+    expect(screen.getByText('Select a block on the page to edit it.')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Text' }))
+    // The new block is selected, in the panel.
+    expect(screen.getByRole('button', { name: 'Edit 2. Text' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByText('2 of 30 blocks')).toBeInTheDocument()
     fireEvent.click(saveBtn())
 
     const [, { sections }] = vi.mocked(WebsiteService.updatePage).mock.calls[0] as [
@@ -222,6 +233,42 @@ describe('WebsitePageEditPage', () => {
       { sections: { type: string }[] },
     ]
     expect(sections.map((s) => s.type)).toStrictEqual(['text', 'text'])
+  })
+
+  test('the canvas menu lists the pages in order, with the title as typed', async () => {
+    vi.mocked(WebsiteService.getPages).mockResolvedValue([
+      { ...page(), id: 'p-2', title: 'About', position: 1 },
+      page(),
+    ] as never)
+    vi.mocked(WebsiteService.get).mockResolvedValue(website as never)
+    renderPage()
+    await screen.findByDisplayValue('Hello')
+    fireEvent.change(optionsField('Title'), { target: { value: 'Welcome' } })
+    const menu = within(within(screen.getByTestId('site-canvas')).getByRole('navigation')).getAllByRole('listitem')
+    expect(menu.map((item) => item.textContent)).toStrictEqual(['Welcome', 'About'])
+    expect(within(menu[0]).getByText('Welcome')).toHaveAttribute('aria-current', 'page')
+  })
+
+  test('a new block goes after the selected one', async () => {
+    await loaded()
+    fireEvent.click(screen.getByRole('button', { name: 'Image' }))
+    expect(screen.getByRole('button', { name: 'Edit 2. Image' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: 'Edit 3. Text' })).toBeInTheDocument()
+  })
+
+  test('a problem in another block selects it, so its field is seen', async () => {
+    await loaded()
+    vi.mocked(WebsiteService.updatePage).mockRejectedValue(
+      httpError(400, { message: 'Bad', errors: [{ path: 'sections[1].html', message: 'Too long.' }] }),
+    )
+    fireEvent.change(screen.getByLabelText('Heading'), { target: { value: 'Changed' } })
+    fireEvent.click(saveBtn())
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Edit 2. Text' })).toHaveAttribute('aria-pressed', 'true'),
+    )
+    expect(screen.getByLabelText('rich text')).toBeInTheDocument()
+    expect(screen.getByText('Needs fixing')).toBeInTheDocument()
   })
 
   test('a problem the browser can see stops the save and is shown on its field', async () => {
@@ -366,8 +413,11 @@ describe('WebsitePageEditPage', () => {
   describe('after review', () => {
     test('typing in a text section counts as an unsaved change at once', async () => {
       await loaded()
+      fireEvent.click(screen.getByRole('button', { name: 'Edit 2. Text' }))
       fireEvent.change(screen.getByLabelText('rich text'), { target: { value: '<p>New words</p>' } })
       expect(screen.getByText('Unsaved changes')).toBeInTheDocument()
+      // The canvas follows at once.
+      expect(within(screen.getByTestId('site-canvas')).getByText('New words')).toBeInTheDocument()
       expect(saveBtn()).not.toBeDisabled()
       const event = new Event('beforeunload', { cancelable: true })
       window.dispatchEvent(event)
@@ -452,7 +502,9 @@ describe('WebsitePageEditPage', () => {
       vi.mocked(WebsiteService.get).mockResolvedValue(website as never)
       renderPage()
       expect(await screen.findByText('A page can have at most 30 sections.')).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: 'Add section' })).toBeDisabled()
+      for (const name of ['Hero', 'Text', 'Image', 'Gallery', 'Contact details', 'Latest articles']) {
+        expect(screen.getByRole('button', { name })).toBeDisabled()
+      }
     })
 
     test('a move is announced', async () => {
@@ -478,6 +530,7 @@ describe('WebsitePageEditPage', () => {
     renderPage()
 
     expect(await screen.findByRole('img', { name: 'a1.png' })).toHaveAttribute('src', 'https://cdn.test/a1.png')
+    fireEvent.click(screen.getByRole('button', { name: 'Edit 2. Image' }))
     expect(screen.getByText('This image is missing. Choose another.')).toBeInTheDocument()
     expect(WebsiteService.getImages).toHaveBeenCalledWith(1, ['a1', 'gone'])
   })

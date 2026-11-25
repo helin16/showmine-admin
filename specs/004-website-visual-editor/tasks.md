@@ -47,10 +47,10 @@ approval.
 
 **Independent Test**: spec US2.
 
-- [ ] T005 [US2] `reader:public/website.css`: the site styles moved from `reader:src/styles/website.scss` as plain CSS (nested rules written out), linked by the website pages, served with `Cache-Control: public, max-age=300` (`reader:next.config.js`); tests that each block's class names are styled and that the file has no `@media` rule (research R2)
-- [ ] T006 [P] [US2] Tests in `admin:src/__tests__/components/Website/Canvas/SiteCanvas.test.tsx`: blocks in order with the Reader's class names, theme variables, device widths, selection, toolbar up/down/delete, problems marked; 30 blocks redraw within budget (SC-003)
-- [ ] T007 [US2] `admin:src/Components/Website/Canvas/{SiteCanvas,canvasBlocks,BlockPanel,BlockPalette}.tsx`: canvas linking `${REACT_APP_FRONT_END_URL}/website.css`, a note when it is not set; unsaved HTML through `DOMPurify` with the API's allow-list and inert links (research R2a; new dependency); panel reusing `SectionEditors`; palette adds by click. `admin:vercel.json`: the Reader's origin in `style-src` only, with a test
-- [ ] T008 [US2] `admin:src/Pages/Website/WebsitePageEditPage.tsx`: canvas in the main area, panel on the right, folding below on narrow screens
+- [x] T005 [US2] `reader:public/website.css`: the site styles moved from `reader:src/styles/website.scss` as plain CSS (nested rules written out), linked by the website pages, served with `Cache-Control: public, max-age=300` and `Access-Control-Allow-Origin: *` (`reader:next.config.js`); tests that each block's class names are styled and that the file has no `@media` rule (research R2)
+- [x] T006 [P] [US2] Tests in `admin:src/__tests__/components/Website/Canvas/SiteCanvas.test.tsx`: blocks in order with the Reader's class names, theme variables, device widths, selection, toolbar up/down/delete, problems marked; 30 blocks redraw within budget (SC-003)
+- [x] T007 [US2] `admin:src/Components/Website/Canvas/{SiteCanvas,canvasBlocks}.tsx`: canvas reading `${REACT_APP_FRONT_END_URL}/website.css` into a `<style>`, a note when it is not set or fails; unsaved HTML through `DOMPurify` (3.4.17) with the API's allow-list and inert links (research R2a; new dependency); `admin:vercel.json` unchanged (research R2)
+- [x] T008 [US2] `admin:src/Pages/Website/WebsitePageEditPage.tsx`: canvas in the main area, panel (reusing `SectionEditors`) and palette (adds by click, after the selected block) on the right, folding below on narrow screens
 
 ---
 

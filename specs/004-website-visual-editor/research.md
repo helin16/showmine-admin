@@ -8,13 +8,13 @@
 
 ## R2. The canvas looks like the website
 
-- **Decision**: the Reader's site styles become one plain CSS file the Reader serves at `/website.css` (all rules under `.site`, colours from CSS variables, as today). The Reader links it on website pages; the admin canvas links the same file from the Reader's address (`REACT_APP_FRONT_END_URL`). The block markup (class names and structure) is copied into the admin canvas from the Reader's `components/Website`.
+- **Decision**: the Reader's site styles become one plain CSS file the Reader serves at `/website.css` (all rules under `.site`, colours from CSS variables, as today). The Reader links it on website pages; the admin canvas reads the same file from the Reader's address (`REACT_APP_FRONT_END_URL`) and puts it in a `<style>` element. The block markup (class names and structure) is copied into the admin canvas from the Reader's `components/Website`.
 - **Rationale**: one stylesheet for both, so a style change shows on the canvas without an admin release (SC-002). Spec assumption: draw in the admin, not embed the Reader. Markup is small (about 160 lines) and changes rarely.
 - **Ceiling**: two copies of the markup. A test in each repository pins the class names each block uses; a shared package if the copies drift.
 - **Alternatives**: embedding the Reader preview in a frame (rejected by Lin: slow, needs cross-window messages); copying the styles into the admin (two stylesheets to keep in step).
 - **Dependency**: `REACT_APP_FRONT_END_URL` must be set on the admin (it already must, for preview links). Without it the canvas shows unstyled blocks and says so.
-- **Content Security Policy**: the admin's `vercel.json` allows styles only from itself and TinyMCE; the Reader's origin is added to `style-src` (and nothing else), in the same slice, with a test that reads `vercel.json`.
-- **Caching**: the Reader serves `/website.css` with a short cache (`Cache-Control: public, max-age=300`) set in its `next.config.js`, so the canvas and the site never differ for long after a style change. The file is plain CSS: the four nested rules (`&.site-font-*`) are written out.
+- **Content Security Policy** (changed in slice 2, SMN-84): the admin fetches the file (`connect-src` already allows any https address) and inlines it (`style-src` already allows inline styles), so `vercel.json` needs no Reader origin and does not change. The Reader serves `/website.css` with `Access-Control-Allow-Origin: *`; the file is public. Linking it would have meant naming the Reader's production host in `vercel.json`, which the repositories do not settle.
+- **Caching**: the Reader serves `/website.css` with a short cache (`Cache-Control: public, max-age=300`) set in its `next.config.js`, and the admin reads it once per visit, so the canvas and the site never differ for long after a style change. The file is plain CSS: the four nested rules (`&.site-font-*`) are written out.
 - **Device widths**: the canvas narrows a container, it does not change the window, so the site styles must keep using container-independent layout (today: grid `auto-fill`, no `@media` rules). New header and footer styles follow the same rule; a test in the Reader fails on `@media` in `website.css`.
 
 ## R2a. Unsaved content on the canvas
