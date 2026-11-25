@@ -23,7 +23,7 @@ approval.
 
 ## Phase 1: Setup
 
-- [ ] T001 Branch per repository and slice from `master`, linking this spec in each PR
+- [x] T001 Branch per repository and slice from `master`, linking this spec in each PR
 
 ---
 
@@ -33,9 +33,9 @@ approval.
 
 **Independent Test**: spec US1.
 
-- [ ] T002 [P] [US1] Tests in `admin:src/__tests__/pages/Website/WebsitePageEditPage.test.tsx`: title row reads "Editing: <title>"; Save, Preview, Options for a member; Publish and Delete page for an admin; title, address name and SEO edited in Options are saved with the same checks; unsaved changes warn before leaving
-- [ ] T003 [US1] `admin:src/Components/Website/PageOptions.tsx`: a drawer opened from Options with title, address name, SEO (existing `SeoFields`) and, for admins, Delete page with confirmation
-- [ ] T004 [US1] `admin:src/Pages/Website/WebsitePageEditPage.tsx`: title row via `BackendPageContentTitle` controls, as `ArticleDetailsPage`; publish moves into the title row for admins; strings in en/cn
+- [x] T002 [P] [US1] Tests in `admin:src/__tests__/pages/Website/WebsitePageEditPage.test.tsx`: title row reads "Editing: <title>"; Save, Preview, Options for a member; Publish and Delete page for an admin; title, address name and SEO edited in Options are saved with the same checks; unsaved changes warn before leaving
+- [x] T003 [US1] `admin:src/Components/Website/PageOptions.tsx`: a drawer opened from Options with title, address name, SEO (existing `SeoFields`) and, for admins, Delete page with confirmation
+- [x] T004 [US1] `admin:src/Pages/Website/WebsitePageEditPage.tsx`: title row via `BackendPageContentTitle` controls, as `ArticleDetailsPage`; publish moves into the title row for admins; strings in en/cn
 
 **Checkpoint**: the page editor works as today, rearranged.
 

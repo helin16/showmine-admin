@@ -23,7 +23,9 @@ import SectionEditor, {
   newSection,
 } from '../../Components/Website/SectionEditors'
 import SeoFields from '../../Components/Website/SeoFields'
-import Collapse from '../../Components/Form/Collapse'
+import Drawer from '../../Components/Form/Drawer'
+import Icons from '../../Components/Icons'
+import { BoxTitleDiv } from '../../Styles/AppWrapper'
 import IAsset from '../../Types/Asset/IAsset'
 import translate from '../../i18n/translate'
 import WebsiteService from '../../Services/WebsiteService'
@@ -94,7 +96,7 @@ const WebsitePageEditPage = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const [state, setState] = useState(initState)
-  const [isSeoOpen, setIsSeoOpen] = useState(false)
+  const [isOptionsOpen, setIsOptionsOpen] = useState(false)
   const companyIdRef = useRef(company?.id)
   companyIdRef.current = company?.id
   // The admin's own version, kept across a reload when they chose to keep it after someone else's change.
@@ -340,6 +342,131 @@ const WebsitePageEditPage = () => {
     )
   }
 
+  const seoErrors = Object.fromEntries(
+    Object.entries(state.errors)
+      .filter(([path]) => path.startsWith('seo.'))
+      .map(([path, problem]) => [path.slice(4), problem]),
+  )
+  const fieldError = (path: string) =>
+    state.errors[path] ? (
+      <div id={`page-${path}-error`} role={'alert'} className={'ant-form-item-explain-error'}>
+        {state.errors[path]}
+      </div>
+    ) : null
+  // A problem with a field kept in Options opens it, so the message is seen.
+  const hasOptionsProblem = !!state.errors.title || !!state.errors.slug || Object.keys(seoErrors).length > 0
+  useEffect(() => {
+    if (hasOptionsProblem) setIsOptionsOpen(true)
+  }, [hasOptionsProblem])
+
+  // Delete page, in Options, for admins: the page goes, and so does any unsaved change.
+  const deletePage = () => {
+    const { page } = state
+    if (!page) return
+    WebsiteService.deletePage(`${page.id}`)
+      .then(() => {
+        message.success(translate('website-page-deleted', { title: page.title }))
+        navigate(COMPANY_WEBSITE_PAGES_URL)
+      })
+      .catch((err) => message.error(Utils.getErrorMessage(err)))
+  }
+
+  // The page's settings, out of the way of its content (specs/004-website-visual-editor, US1).
+  const getOptions = () => {
+    const { draft, page } = state
+    if (!draft || !page) return null
+    return (
+      <Drawer title={translate('options')} open={isOptionsOpen} onClose={() => setIsOptionsOpen(false)} size={'large'}>
+        <Space orientation={'vertical'} style={{ width: '100%' }} size={'large'}>
+          {(['title', 'slug'] as const).map((name) => (
+            <div key={name}>
+              <label htmlFor={`page-${name}`}>{translate(`website-page-${name}`)}</label>
+              <Input
+                id={`page-${name}`}
+                value={draft[name]}
+                maxLength={name === 'title' ? 80 : 40}
+                status={state.errors[name] ? 'error' : undefined}
+                aria-invalid={state.errors[name] ? true : undefined}
+                aria-describedby={state.errors[name] ? `page-${name}-error` : undefined}
+                onChange={(e) => setDraft({ [name]: e.target.value })}
+              />
+              {fieldError(name)}
+            </div>
+          ))}
+          <div>
+            <BoxTitleDiv>{translate('website-seo')}</BoxTitleDiv>
+            <SeoFields
+              idPrefix={'page-seo'}
+              seo={draft.seo}
+              help={translate('website-seo-page-help')}
+              errors={seoErrors}
+              images={state.images}
+              onImagesPicked={addImages}
+              onChange={(seo) => setDraft({ seo })}
+            />
+          </div>
+          {isAdmin ? (
+            <PopConfirm
+              title={translate('website-page-delete-confirm', { title: page.title })}
+              okText={translate('website-delete')}
+              cancelText={translate('cancel')}
+              okButtonProps={{ danger: true }}
+              onConfirm={deletePage}
+            >
+              <Button danger>{translate('website-page-delete')}</Button>
+            </PopConfirm>
+          ) : null}
+        </Space>
+      </Drawer>
+    )
+  }
+
+  // Save, Preview and, for admins, Publish, in the title row as on an article; then Options.
+  const getControls = () => {
+    const { draft, website } = state
+    if (!draft) return null
+    return (
+      <Space wrap align={'start'}>
+        {isDirty ? (
+          <PopConfirm
+            title={translate('website-page-leave-confirm')}
+            okText={translate('website-page-leave')}
+            cancelText={translate('cancel')}
+            onConfirm={() => navigate(COMPANY_WEBSITE_PAGES_URL)}
+          >
+            <Button type={'link'}>{translate('website-pages-back')}</Button>
+          </PopConfirm>
+        ) : (
+          <Link to={COMPANY_WEBSITE_PAGES_URL}>{translate('website-pages-back')}</Link>
+        )}
+        {isDirty ? <span>{translate('website-page-unsaved')}</span> : null}
+        {state.previewUrl ? (
+          <a href={state.previewUrl} target={'_blank'} rel={'noopener noreferrer'}>
+            {translate('website-preview-open')}
+          </a>
+        ) : null}
+        <Button onClick={preview} disabled={state.saving || state.isStale}>
+          {translate('website-preview')}
+        </Button>
+        <Button type={'primary'} onClick={save} loading={state.saving} disabled={!isDirty || state.isStale}>
+          {translate('website-save')}
+        </Button>
+        {/* Publishing is for admins only (SMN-80); a member saves and previews. */}
+        {website && isAdmin ? (
+          <PublishBar
+            website={website}
+            hasUnsavedChanges={isDirty}
+            onChanged={(changed) => setState((s) => ({ ...s, website: changed }))}
+            onStale={reload}
+          />
+        ) : null}
+        <Button icon={<Icons.SettingOutlined />} onClick={() => setIsOptionsOpen(true)}>
+          {translate('options')}
+        </Button>
+      </Space>
+    )
+  }
+
   const getContent = () => {
     if (state.notFound) {
       return (
@@ -363,17 +490,6 @@ const WebsitePageEditPage = () => {
     if (!draft) {
       return null
     }
-    const seoErrors = Object.fromEntries(
-      Object.entries(state.errors)
-        .filter(([path]) => path.startsWith('seo.'))
-        .map(([path, problem]) => [path.slice(4), problem]),
-    )
-    const fieldError = (path: string) =>
-      state.errors[path] ? (
-        <div id={`page-${path}-error`} role={'alert'} className={'ant-form-item-explain-error'}>
-          {state.errors[path]}
-        </div>
-      ) : null
     return (
       <Space orientation={'vertical'} style={{ width: '100%' }}>
         {state.isStale ? (
@@ -391,58 +507,6 @@ const WebsitePageEditPage = () => {
         <div aria-live={'polite'} className={'sr-only'} style={{ position: 'absolute', left: -10000 }}>
           {state.announcement}
         </div>
-        {/* Publishing is for admins only (SMN-80); a member saves and previews. */}
-        {website && isAdmin ? (
-          <Card>
-            <PublishBar
-              website={website}
-              hasUnsavedChanges={isDirty}
-              onChanged={(changed) => setState((s) => ({ ...s, website: changed }))}
-              onStale={reload}
-            />
-          </Card>
-        ) : null}
-        <Card>
-          <Space orientation={'vertical'} style={{ width: '100%' }}>
-            {(['title', 'slug'] as const).map((name) => (
-              <div key={name}>
-                <label htmlFor={`page-${name}`}>{translate(`website-page-${name}`)}</label>
-                <Input
-                  id={`page-${name}`}
-                  value={draft[name]}
-                  maxLength={name === 'title' ? 80 : 40}
-                  status={state.errors[name] ? 'error' : undefined}
-                  aria-invalid={state.errors[name] ? true : undefined}
-                  aria-describedby={state.errors[name] ? `page-${name}-error` : undefined}
-                  onChange={(e) => setDraft({ [name]: e.target.value })}
-                />
-                {fieldError(name)}
-              </div>
-            ))}
-          </Space>
-        </Card>
-        <Collapse
-          items={[
-            {
-              key: 'seo',
-              label: translate('website-seo'),
-              // Open while it has a problem, so the message is seen.
-              children: (
-                <SeoFields
-                  idPrefix={'page-seo'}
-                  seo={draft.seo}
-                  help={translate('website-seo-page-help')}
-                  errors={seoErrors}
-                  images={state.images}
-                  onImagesPicked={addImages}
-                  onChange={(seo) => setDraft({ seo })}
-                />
-              ),
-            },
-          ]}
-          activeKey={isSeoOpen || Object.keys(seoErrors).length > 0 ? ['seo'] : []}
-          onChange={(keys) => setIsSeoOpen(([] as string[]).concat(keys).includes('seo'))}
-        />
         {draft.sections.map(getSection)}
         {draft.sections.length === 0 ? <Alert type={'info'} message={translate('website-sections-none')} /> : null}
         {getPageProblems().length > 0 ? (
@@ -481,22 +545,6 @@ const WebsitePageEditPage = () => {
             ) : null}
           </Space>
         </Card>
-        <Card>
-          <Space wrap>
-            <Button type={'primary'} onClick={save} loading={state.saving} disabled={!isDirty || state.isStale}>
-              {translate('website-save')}
-            </Button>
-            <Button onClick={preview} disabled={state.saving || state.isStale}>
-              {translate('website-preview')}
-            </Button>
-            {isDirty ? <span>{translate('website-page-unsaved')}</span> : null}
-            {state.previewUrl ? (
-              <a href={state.previewUrl} target={'_blank'} rel={'noopener noreferrer'}>
-                {translate('website-preview-open')}
-              </a>
-            ) : null}
-          </Space>
-        </Card>
       </Space>
     )
   }
@@ -506,25 +554,13 @@ const WebsitePageEditPage = () => {
       selectedMenu={MENU_KEY_WEBSITE_PAGES}
       ContentHeader={
         <BackendPageContentTitle
-          title={state.page ? state.page.title : translate('website-pages')}
-          controls={
-            isDirty ? (
-              <PopConfirm
-                title={translate('website-page-leave-confirm')}
-                okText={translate('website-page-leave')}
-                cancelText={translate('cancel')}
-                onConfirm={() => navigate(COMPANY_WEBSITE_PAGES_URL)}
-              >
-                <Button>{translate('website-pages-back')}</Button>
-              </PopConfirm>
-            ) : (
-              <Link to={COMPANY_WEBSITE_PAGES_URL}>{translate('website-pages-back')}</Link>
-            )
-          }
+          title={state.page ? `${translate('editing')}: ${state.page.title}` : translate('website-pages')}
+          controls={getControls()}
         />
       }
     >
       {isOn ? <Spin spinning={state.loading}>{getContent()}</Spin> : <InvalidAccessPanel />}
+      {isOn ? getOptions() : null}
     </BackendPage>
   )
 }

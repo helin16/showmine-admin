@@ -20,6 +20,7 @@ vi.mock('../../../Services/WebsiteService', () => ({
     getImages: vi.fn(),
     publish: vi.fn(),
     unpublish: vi.fn(),
+    deletePage: vi.fn(),
   },
 }))
 vi.mock('../../../Components/Form/message', () => ({ default: { error: vi.fn(), success: vi.fn() } }))
@@ -74,6 +75,11 @@ const loaded = async (auth?: object) => {
   return result
 }
 const saveBtn = () => screen.getByRole('button', { name: 'Save' })
+// The page's title, address name and SEO sit in Options (spec 004, US1): opened first when closed.
+const optionsField = (label: string) => {
+  if (!screen.queryByLabelText(label)) fireEvent.click(screen.getByRole('button', { name: /Options/ }))
+  return screen.getByLabelText(label)
+}
 
 describe('WebsitePageEditPage', () => {
   test('with the builder off, shows the not-allowed panel and loads nothing', () => {
@@ -84,18 +90,67 @@ describe('WebsitePageEditPage', () => {
 
   test('shows the page, its sections in order and the publish bar; nothing to save yet', async () => {
     await loaded()
-    expect(screen.getByLabelText('Title')).toHaveValue('Home')
+    expect(optionsField('Title')).toHaveValue('Home')
     expect(screen.getByText('1. Hero')).toBeInTheDocument()
     expect(screen.getByText('2. Text')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Publish' })).toBeInTheDocument()
     expect(saveBtn()).toBeDisabled()
   })
 
+  // Spec 004, US1: edited like an article: the title row has the actions; the page settings sit in Options.
+  test('the title row reads Editing: <title>, with Save, Preview, Publish and Options', async () => {
+    await loaded()
+    const header = screen.getByRole('banner')
+    expect(within(header).getByText('Editing: Home')).toBeInTheDocument()
+    for (const name of [/Save/, /Preview/, /Publish/, /Options/]) {
+      expect(within(header).getByRole('button', { name })).toBeInTheDocument()
+    }
+    expect(screen.queryByLabelText('Title')).not.toBeInTheDocument()
+  })
+
+  test('an admin deletes the page from Options after confirming, and goes back to the pages', async () => {
+    vi.mocked(WebsiteService.deletePage).mockResolvedValue({} as never)
+    await loaded()
+    fireEvent.click(screen.getByRole('button', { name: /Options/ }))
+    fireEvent.click(screen.getByRole('button', { name: 'Delete page' }))
+    expect(WebsiteService.deletePage).not.toHaveBeenCalled()
+    fireEvent.click(within(await screen.findByRole('tooltip')).getByRole('button', { name: 'Delete' }))
+    expect(WebsiteService.deletePage).toHaveBeenCalledWith('p-1')
+    expect(await screen.findByText('pages list')).toBeInTheDocument()
+  })
+
+  test('a problem with a field in Options, found on save, opens Options to show it', async () => {
+    vi.mocked(WebsiteService.updatePage).mockRejectedValue(
+      Object.assign(new Error('x'), {
+        response: { status: 400, data: { errors: [{ path: 'title', message: 'Too long.' }] } },
+      }),
+    )
+    await loaded()
+    fireEvent.change(optionsField('Title'), { target: { value: 'New' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }))
+    await waitFor(() => expect(document.querySelector('.ant-drawer-open')).toBeNull())
+    fireEvent.click(saveBtn())
+    expect(await screen.findByText('Too long.')).toBeInTheDocument()
+    await waitFor(() => expect(document.querySelector('.ant-drawer-open')).not.toBeNull())
+  })
+
+  test('a failed delete says why and stays', async () => {
+    vi.mocked(WebsiteService.deletePage).mockRejectedValue(new Error('Server down'))
+    await loaded()
+    fireEvent.click(screen.getByRole('button', { name: /Options/ }))
+    fireEvent.click(screen.getByRole('button', { name: 'Delete page' }))
+    fireEvent.click(within(await screen.findByRole('tooltip')).getByRole('button', { name: 'Delete' }))
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Server down'))
+    expect(screen.queryByText('pages list')).not.toBeInTheDocument()
+  })
+
   test('a member edits and previews, with no publish bar', async () => {
     await loaded({ company, companyUsers: adminOf('NORMAL') })
-    expect(screen.getByLabelText('Title')).toBeEnabled()
+    expect(optionsField('Title')).toBeEnabled()
     expect(screen.getByRole('button', { name: 'Preview' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Publish' })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: /Options/ }))
+    expect(screen.queryByRole('button', { name: 'Delete page' })).toBeNull()
   })
 
   test('a page of another website, or a removed one, is not found', async () => {
@@ -109,7 +164,7 @@ describe('WebsitePageEditPage', () => {
     await loaded()
     vi.mocked(WebsiteService.updatePage).mockResolvedValue(page({ title: 'Welcome', updatedAt: 'new-time' }) as never)
 
-    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Welcome ' } })
+    fireEvent.change(optionsField('Title'), { target: { value: 'Welcome ' } })
     expect(screen.getByText('Unsaved changes')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Publish' })).toBeDisabled()
     fireEvent.click(saveBtn())
@@ -174,7 +229,7 @@ describe('WebsitePageEditPage', () => {
     vi.mocked(WebsiteService.updatePage).mockRejectedValue(
       httpError(409, { message: 'The page was changed by someone else. Reload and try again.' }),
     )
-    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Mine' } })
+    fireEvent.change(optionsField('Title'), { target: { value: 'Mine' } })
     fireEvent.click(saveBtn())
 
     expect(await screen.findByText(/Someone else changed this page/)).toBeInTheDocument()
@@ -188,7 +243,7 @@ describe('WebsitePageEditPage', () => {
     vi.mocked(WebsiteService.updatePage).mockRejectedValue(
       httpError(409, { message: 'Another page of this website has that address.' }),
     )
-    fireEvent.change(screen.getByLabelText('Address name'), { target: { value: 'about' } })
+    fireEvent.change(optionsField('Address name'), { target: { value: 'about' } })
     fireEvent.click(saveBtn())
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Another page has this address name.')
@@ -221,7 +276,7 @@ describe('WebsitePageEditPage', () => {
       vi.mocked(WebsiteService.updatePage).mockResolvedValue(page({ title: 'New' }) as never)
       vi.mocked(WebsiteService.getPreviewUrl).mockResolvedValue({ url: 'https://reader.test/p', expiresAt: '' })
 
-      fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'New' } })
+      fireEvent.change(optionsField('Title'), { target: { value: 'New' } })
       fireEvent.click(screen.getByRole('button', { name: 'Preview' }))
 
       await waitFor(() => expect(opened.location.href).toBe('https://reader.test/p'))
@@ -234,7 +289,7 @@ describe('WebsitePageEditPage', () => {
       vi.spyOn(window, 'open').mockReturnValue(opened as never)
       vi.mocked(WebsiteService.updatePage).mockRejectedValue(httpError(500, { message: 'Server down' }))
 
-      fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'New' } })
+      fireEvent.change(optionsField('Title'), { target: { value: 'New' } })
       fireEvent.click(screen.getByRole('button', { name: 'Preview' }))
 
       await waitFor(() => expect(opened.close).toHaveBeenCalled())
@@ -245,7 +300,7 @@ describe('WebsitePageEditPage', () => {
   describe('unsaved changes', () => {
     test('closing the tab asks first', async () => {
       await loaded()
-      fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Changed' } })
+      fireEvent.change(optionsField('Title'), { target: { value: 'Changed' } })
       const event = new Event('beforeunload', { cancelable: true })
       window.dispatchEvent(event)
       expect(event.defaultPrevented).toBe(true)
@@ -260,7 +315,7 @@ describe('WebsitePageEditPage', () => {
 
     test('going back to the pages asks first', async () => {
       await loaded()
-      fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Changed' } })
+      fireEvent.change(optionsField('Title'), { target: { value: 'Changed' } })
       fireEvent.click(screen.getByRole('button', { name: 'Back to pages' }))
       fireEvent.click(within(await screen.findByRole('tooltip')).getByRole('button', { name: 'Leave' }))
       expect(await screen.findByText('pages list')).toBeInTheDocument()
@@ -271,7 +326,7 @@ describe('WebsitePageEditPage', () => {
     let finish!: (value: unknown) => void
     const { store } = await loaded()
     vi.mocked(WebsiteService.updatePage).mockReturnValue(new Promise((resolve) => (finish = resolve)) as never)
-    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Old company' } })
+    fireEvent.change(optionsField('Title'), { target: { value: 'Old company' } })
     fireEvent.click(saveBtn())
 
     vi.mocked(WebsiteService.getPages).mockResolvedValue([] as never)
@@ -299,13 +354,13 @@ describe('WebsitePageEditPage', () => {
       let finish!: (value: unknown) => void
       await loaded()
       vi.mocked(WebsiteService.updatePage).mockReturnValue(new Promise((resolve) => (finish = resolve)) as never)
-      fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'First' } })
+      fireEvent.change(optionsField('Title'), { target: { value: 'First' } })
       fireEvent.click(saveBtn())
-      fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'First and more' } })
+      fireEvent.change(optionsField('Title'), { target: { value: 'First and more' } })
 
       await act(async () => finish(page({ title: 'First', updatedAt: 'new-time' })))
 
-      expect(screen.getByLabelText('Title')).toHaveValue('First and more')
+      expect(optionsField('Title')).toHaveValue('First and more')
       expect(screen.getByText('Unsaved changes')).toBeInTheDocument()
     })
 
@@ -314,7 +369,7 @@ describe('WebsitePageEditPage', () => {
       vi.mocked(WebsiteService.updatePage).mockRejectedValueOnce(
         httpError(409, { message: 'The page was changed by someone else. Reload and try again.' }),
       )
-      fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Mine' } })
+      fireEvent.change(optionsField('Title'), { target: { value: 'Mine' } })
       fireEvent.click(saveBtn())
       vi.mocked(WebsiteService.getPages).mockResolvedValue([
         page({ title: 'Theirs', updatedAt: 'their-time' }),
@@ -323,9 +378,9 @@ describe('WebsitePageEditPage', () => {
       fireEvent.click(await screen.findByRole('button', { name: 'Keep my version' }))
 
       await waitFor(() => expect(screen.queryByText(/Someone else changed this page/)).not.toBeInTheDocument())
-      expect(screen.getByLabelText('Title')).toHaveValue('Mine')
+      expect(optionsField('Title')).toHaveValue('Mine')
       vi.mocked(WebsiteService.updatePage).mockResolvedValue(page({ title: 'Mine' }) as never)
-      await screen.findByText('Theirs')
+      await screen.findByText('Editing: Theirs')
       fireEvent.click(screen.getByText('Save').closest('button') as HTMLElement)
       expect(WebsiteService.updatePage).toHaveBeenLastCalledWith(
         'p-1',
@@ -359,7 +414,7 @@ describe('WebsitePageEditPage', () => {
           ],
         }),
       )
-      fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'X' } })
+      fireEvent.change(optionsField('Title'), { target: { value: 'X' } })
       fireEvent.click(saveBtn())
 
       expect(await screen.findByText('A list of at most 30 sections.')).toBeInTheDocument()
@@ -407,21 +462,22 @@ describe('WebsitePageEditPage', () => {
     vi.mocked(WebsiteService.getPages).mockResolvedValue([page({ sections: [{ id: 'i1', type: 'image' }] })] as never)
     vi.mocked(WebsiteService.get).mockResolvedValue(website as never)
     renderPage()
-    fireEvent.change(await screen.findByLabelText('Title'), { target: { value: 'Changed' } })
+    fireEvent.click(await screen.findByRole('button', { name: /Options/ }))
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Changed' } })
     fireEvent.click(saveBtn())
     expect(await screen.findByText('Choose an image.')).toBeInTheDocument()
     expect(WebsiteService.updatePage).not.toHaveBeenCalled()
   })
 
   describe('page SEO', () => {
-    const openSeo = async () => fireEvent.click(await screen.findByRole('button', { name: /Search and sharing/ }))
+    const openSeo = async () => fireEvent.click(await screen.findByRole('button', { name: /Options/ }))
 
     test('is folded away until opened, and saves what was typed', async () => {
       await loaded()
       expect(screen.queryByLabelText('Search title')).not.toBeInTheDocument()
       await openSeo()
-      fireEvent.change(screen.getByLabelText('Search title'), { target: { value: 'Fresh bread' } })
-      fireEvent.change(screen.getByLabelText('Search description'), { target: { value: 'Baked daily' } })
+      fireEvent.change(optionsField('Search title'), { target: { value: 'Fresh bread' } })
+      fireEvent.change(optionsField('Search description'), { target: { value: 'Baked daily' } })
       vi.mocked(WebsiteService.updatePage).mockResolvedValue(page({ seo: { title: 'Fresh bread' } }) as never)
       fireEvent.click(saveBtn())
       await waitFor(() =>
@@ -435,9 +491,9 @@ describe('WebsitePageEditPage', () => {
     test('typing in a field and emptying it again is not a change', async () => {
       await loaded()
       await openSeo()
-      fireEvent.change(screen.getByLabelText('Search title'), { target: { value: 'x' } })
+      fireEvent.change(optionsField('Search title'), { target: { value: 'x' } })
       expect(saveBtn()).toBeEnabled()
-      fireEvent.change(screen.getByLabelText('Search title'), { target: { value: '' } })
+      fireEvent.change(optionsField('Search title'), { target: { value: '' } })
       expect(saveBtn()).toBeDisabled()
     })
 
@@ -467,13 +523,13 @@ describe('WebsitePageEditPage', () => {
 
     test('SEO problems from the API open the panel and show on their fields', async () => {
       await loaded()
-      fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Changed' } })
+      fireEvent.change(optionsField('Title'), { target: { value: 'Changed' } })
       vi.mocked(WebsiteService.updatePage).mockRejectedValue(
         httpError(400, { errors: [{ path: 'seo.description', message: 'Text of at most 160 characters.' }] }),
       )
       fireEvent.click(saveBtn())
       expect(await screen.findByText('Text of at most 160 characters.')).toBeInTheDocument()
-      expect(screen.getByLabelText('Search description')).toHaveAttribute('aria-invalid', 'true')
+      expect(optionsField('Search description')).toHaveAttribute('aria-invalid', 'true')
     })
   })
 })
