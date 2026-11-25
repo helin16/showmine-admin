@@ -1,0 +1,114 @@
+---
+
+description: "Task list for the website visual editor, layout and page templates"
+---
+
+# Tasks: Website Visual Editor, Layout and Page Templates
+
+**Input**: Design documents from `/specs/004-website-visual-editor/`
+
+**Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/
+
+**Tests**: Required by all three constitutions (VII): every behaviour change has tests at the narrowest useful level.
+
+**Organization**: by user story; each story is one delivery slice (research R7), started and merged only with Lin's
+approval.
+
+## Format: `[ID] [P?] [Story] Description`
+
+- **[P]**: can run in parallel (different files, no dependencies)
+- Paths are prefixed `admin:`, `api:` or `reader:`.
+
+---
+
+## Phase 1: Setup
+
+- [ ] T001 Branch per repository and slice from `master`, linking this spec in each PR
+
+---
+
+## Phase 2: User Story 1 - Edit a page like an article (P1) 🎯 slice 1, admin only
+
+**Goal**: title row with actions and an Options menu; content fills the rest.
+
+**Independent Test**: spec US1.
+
+- [ ] T002 [P] [US1] Tests in `admin:src/__tests__/pages/Website/WebsitePageEditPage.test.tsx`: title row reads "Editing: <title>"; Save, Preview, Options for a member; Publish and Delete page for an admin; title, address name and SEO edited in Options are saved with the same checks; unsaved changes warn before leaving
+- [ ] T003 [US1] `admin:src/Components/Website/PageOptions.tsx`: a drawer opened from Options with title, address name, SEO (existing `SeoFields`) and, for admins, Delete page with confirmation
+- [ ] T004 [US1] `admin:src/Pages/Website/WebsitePageEditPage.tsx`: title row via `BackendPageContentTitle` controls, as `ArticleDetailsPage`; publish moves into the title row for admins; strings in en/cn
+
+**Checkpoint**: the page editor works as today, rearranged.
+
+---
+
+## Phase 3: User Story 2 - Canvas and side panel (P1) 🎯 slice 2, Reader then admin
+
+**Goal**: the page drawn as the website shows it; select a block, edit it in the side panel.
+
+**Independent Test**: spec US2.
+
+- [ ] T005 [US2] `reader:public/website.css`: the site styles moved from `reader:src/styles/website.scss` as plain CSS, linked by the website pages; test that each block's class names are styled (`reader:src/__tests__/components/Website/`)
+- [ ] T006 [P] [US2] Tests in `admin:src/__tests__/components/Website/Canvas/SiteCanvas.test.tsx`: blocks in order with the Reader's class names, theme variables, device widths, selection, toolbar up/down/delete, problems marked; 30 blocks redraw within budget (SC-003)
+- [ ] T007 [US2] `admin:src/Components/Website/Canvas/{SiteCanvas,canvasBlocks,BlockPanel,BlockPalette}.tsx`: canvas linking `${REACT_APP_FRONT_END_URL}/website.css`, a note when it is not set; panel reusing `SectionEditors`; palette adds by click
+- [ ] T008 [US2] `admin:src/Pages/Website/WebsitePageEditPage.tsx`: canvas in the main area, panel on the right, folding below on narrow screens
+
+---
+
+## Phase 4: User Story 3 - Drag and drop (P1) 🎯 slice 3, admin only
+
+**Goal**: add and move blocks by dragging, and by keyboard.
+
+**Independent Test**: spec US3.
+
+- [ ] T009 [US3] Add `@dnd-kit/core` 6.3.1 and `@dnd-kit/sortable` 10.0.0 to `admin:package.json` (research R1)
+- [ ] T010 [P] [US3] Tests: drop from the palette at a position, reorder by drag, keyboard add/move/remove with announcements (SC-004), plan limits refused with the reason
+- [ ] T011 [US3] Drag sources in `BlockPalette`, sortable blocks and drop placeholders in `SiteCanvas`, announcements in en/cn
+
+---
+
+## Phase 5: User Story 4 - Site layout (P2) 🎯 slice 4, API then Reader then admin
+
+**Goal**: one layout for the whole site.
+
+**Independent Test**: spec US4.
+
+- [ ] T012 [P] [US4] API tests: `PUT /website` `layout` for admins (members 401), field checks and paths, shared blocks checked as sections, images in shared blocks in use (usage, delete 409, clean-up), published copy carries `layout`, `contentChangedAt` set; migration up and down
+- [ ] T013 [US4] `api:migrations/2026112200000N-add-website-layout.js` (`websites.layout`, `websitePages.template`), model fields, checks in `api:src/helpers/WebsiteHelper.ts`, `PUT /website`, publish copy, image use, clean-up
+- [ ] T014 [P] [US4] Reader tests: effective header (logo, hidden pages), footer, shared blocks above and below; a copy without `layout` shows as today (SC-005)
+- [ ] T015 [US4] `reader:src/components/Website/{Site,Nav,Footer}.tsx`
+- [ ] T016 [P] [US4] Admin tests: Layout page for admins, read-only canvas for members, menu entry
+- [ ] T017 [US4] `admin:src/Pages/Website/WebsiteLayoutPage.tsx` (header, footer, theme, shared blocks on the canvas), menu Website > Layout (admins), route
+
+---
+
+## Phase 6: User Story 5 - Page templates (P2) 🎯 slice 5, API then Reader then admin
+
+**Goal**: a page can override the layout.
+
+**Independent Test**: spec US5.
+
+- [ ] T018 [P] [US5] API tests: `template` on page create and update (members allowed), checks, published copy, page marked changed
+- [ ] T019 [US5] Page `template` in `api:src/controllers/Website/WebsitePageController.ts` and the publish copy
+- [ ] T020 [P] [US5] Reader tests: hidden header/footer, own header/footer/theme, shared blocks left out, other pages unchanged
+- [ ] T021 [US5] Effective layout per page in `reader:src/components/Website/Site.tsx`
+- [ ] T022 [US5] Page template in `admin:src/Components/Website/PageOptions.tsx`; the canvas shows the effective layout
+
+---
+
+## Phase 7: Polish
+
+- [ ] T023 Starter templates set a layout (`api:src/templates/website/`), with the Reader template preview (`/t/<id>`)
+- [ ] T024 Update `api:README.md` (layout and template fields) and `specs/001-website-builder` cross-references
+- [ ] T025 Lin runs `quickstart.md` on the test company after each slice is deployed
+
+---
+
+## Dependencies & Execution Order
+
+- Slices in order: US1 → US2 → US3 → US4 → US5 → Polish. US2 needs US1's layout of the screen; US3 needs US2's canvas; US5 needs US4's layout.
+- Within a slice: API first, then Reader, then admin; tests with the code, before the PR.
+- Every new API field is optional, so each repository can deploy alone without breaking the others.
+
+## Implementation Strategy
+
+Each slice: plan approved by Lin → code and tests → checks in the MAOS agent container (lint, tests, coverage, build) → mutation checks → one independent review → PRs → Lin approves the merge → Lin checks on the test company.
