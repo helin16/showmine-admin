@@ -54,6 +54,7 @@ approval.
 - [x] T007 [US2] `admin:src/Components/Website/Canvas/{SiteCanvas,canvasBlocks}.tsx`: canvas reading `${REACT_APP_FRONT_END_URL}/website.css` into a `<style>`, a note when it is not set or fails; unsaved HTML through `DOMPurify` (3.4.17) with the API's allow-list and inert links (research R2a; new dependency); `admin:vercel.json` unchanged (research R2)
 - [x] T008a [US2] SMN-85 (Lin, 2026-11-26): canvas, toolbar and panel as the MConnect form designer (mgg-ui `DesignTab`, `designCanvas`, `BlockPalette`): device icon bar with Preview, grey canvas, hover and selected outlines, corner tools (edit, up, down, remove), clicking the canvas around the page unselects; the panel with a tab rail (Blocks, Settings), block tiles in `admin:src/Components/Website/Canvas/BlockPalette.tsx`, a selected block with Back; nothing selected on load; a new block goes at the end
 - [x] T008 [US2] `admin:src/Pages/Website/WebsitePageEditPage.tsx`: canvas in the main area, panel (reusing `SectionEditors`) and palette (adds by click, after the selected block) on the right, folding below on narrow screens
+- [x] T008b [US2] SMN-86 (Lin, 2026-11-26): website menu as showmine.com.au: below 1024 px of site width (`@container` in `reader:public/website.css`) the links fold behind a Menu button and open stacked below, current page marked with a dot; Close, Escape or a link closes it; `reader:src/components/Website/Nav.tsx` and the canvas menu in `admin:src/Components/Website/Canvas/SiteCanvas.tsx` share the markup
 
 ---
 

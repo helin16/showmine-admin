@@ -280,3 +280,40 @@ describe('cleanHtml', () => {
     expect(html).toContain('allowfullscreen')
   })
 })
+
+// As the Reader's Nav (SMN-86): /website.css shows the button and folds the links below 1024 px of canvas width.
+describe('SiteCanvas menu', () => {
+  const nav = () => within(canvas()).getByRole('navigation')
+  const open = () => {
+    render(<SiteCanvas {...(props() as never)} />)
+    const button = within(nav()).getByRole('button', { name: 'Menu' })
+    expect(button).toHaveAttribute('aria-expanded', 'false')
+    expect(button).toHaveAttribute('aria-controls', 'site-menu')
+    expect(within(nav()).getByRole('list')).toHaveAttribute('id', 'site-menu')
+    expect(nav()).not.toHaveClass('is-open')
+    fireEvent.click(button)
+    expect(nav()).toHaveClass('site-nav', 'is-open')
+    expect(within(nav()).getByRole('button', { name: 'Close' })).toHaveAttribute('aria-expanded', 'true')
+  }
+
+  test('opens, then Close closes it', () => {
+    open()
+    fireEvent.click(within(nav()).getByRole('button', { name: 'Close' }))
+    expect(nav()).not.toHaveClass('is-open')
+    expect(within(nav()).getByRole('button', { name: 'Menu' })).toHaveAttribute('aria-expanded', 'false')
+  })
+
+  test('Escape closes it; other keys do not', () => {
+    open()
+    fireEvent.keyDown(within(nav()).getByText('Home'), { key: 'Tab' })
+    expect(nav()).toHaveClass('is-open')
+    fireEvent.keyDown(within(nav()).getByText('Home'), { key: 'Escape' })
+    expect(nav()).not.toHaveClass('is-open')
+  })
+
+  test('a page link closes it', () => {
+    open()
+    fireEvent.click(within(nav()).getByText('Home'))
+    expect(nav()).not.toHaveClass('is-open')
+  })
+})

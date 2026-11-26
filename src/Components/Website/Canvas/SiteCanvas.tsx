@@ -29,6 +29,9 @@ export const WIDTHS = { desktop: '100%', tablet: '768px', phone: '375px' }
 const WIDTH_ICONS = { desktop: Icons.DesktopOutlined, tablet: Icons.TabletOutlined, phone: Icons.MobileOutlined }
 const FONT_PAIRS = ['modern', 'classic', 'friendly']
 const COLOR = /^#[0-9a-fA-F]{6}$/
+// Bootstrap Icons "list" (MIT), as the Reader's menu button (SMN-86).
+const LIST_ICON =
+  'M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5'
 
 // Above the canvas: the widths in the middle, Preview on the right.
 const Toolbar = styled.div`
@@ -169,6 +172,7 @@ const SiteCanvas = ({
   const [css, setCss] = useState<string | null>(null)
   const [width, setWidth] = useState<keyof typeof WIDTHS>('desktop')
   const [stylesFailed, setStylesFailed] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
   const stylesUrl = WebsiteService.getReaderUrl('/website.css')
 
   useEffect(() => {
@@ -246,15 +250,40 @@ const SiteCanvas = ({
               COLOR.test(`${primaryColor}`) ? ({ '--site-primary': primaryColor } as React.CSSProperties) : undefined
             }
           >
-            <nav className={'site-nav'} aria-label={translate('website-pages')}>
+            {/* As the Reader's Nav: below 1024 px of canvas width /website.css folds the links behind the button. */}
+            <nav
+              className={`site-nav${isMenuOpen ? ' is-open' : ''}`}
+              aria-label={translate('website-pages')}
+              onKeyDown={(e) => e.key === 'Escape' && setIsMenuOpen(false)}
+            >
               <a className={'site-name'} href={'#'}>
                 {company?.LogoAsset?.url ? <img src={company.LogoAsset.url} alt={''} /> : null}
                 <span>{company?.name}</span>
               </a>
-              <ul>
+              <button
+                type={'button'}
+                className={'site-menu-button'}
+                aria-expanded={isMenuOpen}
+                aria-controls={'site-menu'}
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+              >
+                {isMenuOpen ? 'Close' : 'Menu'}
+                {isMenuOpen ? (
+                  <span aria-hidden>×</span>
+                ) : (
+                  <svg aria-hidden viewBox={'0 0 16 16'} fill={'currentColor'}>
+                    <path fillRule={'evenodd'} d={LIST_ICON} />
+                  </svg>
+                )}
+              </button>
+              <ul id={'site-menu'}>
                 {pageTitles.map((title, index) => (
                   <li key={`${index}-${title}`}>
-                    <a href={'#'} aria-current={index === currentIndex ? 'page' : undefined}>
+                    <a
+                      href={'#'}
+                      aria-current={index === currentIndex ? 'page' : undefined}
+                      onClick={() => setIsMenuOpen(false)}
+                    >
                       {title}
                     </a>
                   </li>
