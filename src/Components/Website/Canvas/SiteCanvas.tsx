@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import Alert from '../../Form/Alert'
 import Button from '../../Form/Button'
@@ -83,6 +83,11 @@ const Canvas = styled.div`
     /* Paint containment keeps fixed-position content inside the canvas, off the editor's own buttons. */
     contain: paint;
     padding-top: 1.2rem;
+  }
+  /* The open menu pushes the page down instead of covering it, so paint containment cannot cut it off. */
+  .site-canvas .site-nav.is-open ul {
+    position: static;
+    box-shadow: none;
   }
   /* A click on a map or video selects its block. */
   .site-canvas iframe {
@@ -173,6 +178,12 @@ const SiteCanvas = ({
   const [width, setWidth] = useState<keyof typeof WIDTHS>('desktop')
   const [stylesFailed, setStylesFailed] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const menuButton = useRef<HTMLButtonElement>(null)
+  // Focus goes back to the button, not to the page, when the links fold away.
+  const closeMenu = () => {
+    setIsMenuOpen(false)
+    menuButton.current?.focus()
+  }
   const stylesUrl = WebsiteService.getReaderUrl('/website.css')
 
   useEffect(() => {
@@ -215,7 +226,10 @@ const SiteCanvas = ({
                 aria-label={label}
                 title={label}
                 aria-pressed={width === key}
-                onClick={() => setWidth(key)}
+                onClick={() => {
+                  setWidth(key)
+                  setIsMenuOpen(false)
+                }}
               >
                 <Icon aria-hidden />
               </button>
@@ -254,13 +268,16 @@ const SiteCanvas = ({
             <nav
               className={`site-nav${isMenuOpen ? ' is-open' : ''}`}
               aria-label={translate('website-pages')}
-              onKeyDown={(e) => e.key === 'Escape' && setIsMenuOpen(false)}
+              onKeyDown={(e) => isMenuOpen && e.key === 'Escape' && closeMenu()}
+              // The menu is not a block: using it keeps the selected block.
+              onClick={(e) => e.stopPropagation()}
             >
               <a className={'site-name'} href={'#'}>
                 {company?.LogoAsset?.url ? <img src={company.LogoAsset.url} alt={''} /> : null}
                 <span>{company?.name}</span>
               </a>
               <button
+                ref={menuButton}
                 type={'button'}
                 className={'site-menu-button'}
                 aria-expanded={isMenuOpen}
@@ -279,11 +296,7 @@ const SiteCanvas = ({
               <ul id={'site-menu'}>
                 {pageTitles.map((title, index) => (
                   <li key={`${index}-${title}`}>
-                    <a
-                      href={'#'}
-                      aria-current={index === currentIndex ? 'page' : undefined}
-                      onClick={() => setIsMenuOpen(false)}
-                    >
+                    <a href={'#'} aria-current={index === currentIndex ? 'page' : undefined} onClick={closeMenu}>
                       {title}
                     </a>
                   </li>

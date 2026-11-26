@@ -309,11 +309,35 @@ describe('SiteCanvas menu', () => {
     expect(nav()).toHaveClass('is-open')
     fireEvent.keyDown(within(nav()).getByText('Home'), { key: 'Escape' })
     expect(nav()).not.toHaveClass('is-open')
+    expect(within(nav()).getByRole('button', { name: 'Menu' })).toHaveFocus()
+  })
+
+  test('Escape does nothing while it is closed', () => {
+    render(<SiteCanvas {...(props() as never)} />)
+    const home = within(nav()).getByText('Home')
+    home.focus()
+    fireEvent.keyDown(home, { key: 'Escape' })
+    expect(home).toHaveFocus()
+  })
+
+  test('using it keeps the selected block', () => {
+    const onSelect = vi.fn()
+    render(<SiteCanvas {...(props({ onSelect }) as never)} />)
+    fireEvent.click(within(nav()).getByRole('button', { name: 'Menu' }))
+    fireEvent.click(within(nav()).getByText('Home'))
+    expect(onSelect).not.toHaveBeenCalled()
+  })
+
+  test('another width closes it', () => {
+    open()
+    fireEvent.click(screen.getByRole('button', { name: 'Phone' }))
+    expect(nav()).not.toHaveClass('is-open')
   })
 
   test('a page link closes it', () => {
     open()
     fireEvent.click(within(nav()).getByText('Home'))
     expect(nav()).not.toHaveClass('is-open')
+    expect(within(nav()).getByRole('button', { name: 'Menu' })).toHaveFocus()
   })
 })
