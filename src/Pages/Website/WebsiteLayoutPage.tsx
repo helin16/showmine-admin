@@ -138,10 +138,13 @@ const WebsiteLayoutPage = () => {
   }, [isDirty])
 
   const reload = () => setState((s) => ({ ...s, count: s.count + 1 }))
+  // Problems are kept by position: after an edit they could mark the wrong field. The next save finds them again.
   const setDraft = (changes: Partial<iDraft>) =>
-    setState((s) => (s.draft ? { ...s, draft: { ...s.draft, ...changes } } : s))
+    setState((s) => (s.draft ? { ...s, errors: {}, draft: { ...s.draft, ...changes } } : s))
   const setLayout = (changes: Partial<IWebsiteLayout>) =>
-    setState((s) => (s.draft ? { ...s, draft: { ...s.draft, layout: { ...s.draft.layout, ...changes } } } : s))
+    setState((s) =>
+      s.draft ? { ...s, errors: {}, draft: { ...s.draft, layout: { ...s.draft.layout, ...changes } } } : s,
+    )
   const showProblems = (errors: { [path: string]: string }) => {
     setState((s) => ({ ...s, errors }))
     const [first] = Object.keys(errors)

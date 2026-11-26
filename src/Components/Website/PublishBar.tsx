@@ -14,7 +14,7 @@ import translate from '../../i18n/translate'
 import WebsiteService from '../../Services/WebsiteService'
 import Utils from '../../Services/Utils'
 import IWebsite, { IFieldError, IWebsitePage } from '../../Types/Website/IWebsite'
-import { COMPANY_WEBSITE_PAGE_URL, getUrl } from '../../UrlMap'
+import { COMPANY_WEBSITE_LAYOUT_URL, COMPANY_WEBSITE_PAGE_URL, getUrl } from '../../UrlMap'
 
 // The publish state with Publish and Unpublish (specs/001-website-builder, US3, T047). Publishing copies the saved
 // draft; a refused publish lists every problem, each linked to its page.
@@ -29,13 +29,34 @@ type iPublishBar = {
   canUnpublish?: boolean
 }
 
-type iProblem = { text: string; pageId?: string }
+// A problem in the layout links to the Layout page instead (specs/004, slice 4a).
+type iProblem = { text: string; pageId?: string; isLayout?: boolean }
 
 const PROBLEM_PATH = /^pages\[([^\]]+)\](?:\.sections\[(\d+)\])?/
+const HEADER_LINK_PATH = /^layout\.header\.links\[(\d+)\]/
+const FOOTER_PATH = /^layout\.footer\.columns\[(\d+)\](?:\.items\[(\d+)\])?/
+
+// "layout.footer.columns[0].items[2].url" becomes "Footer, column 1, item 3".
+const describeLayoutPath = (path: string) => {
+  const link = HEADER_LINK_PATH.exec(path)
+  if (link) return translate('website-publish-problem-header-link', { number: Number(link[1]) + 1 })
+  const footer = FOOTER_PATH.exec(path)
+  if (footer && footer[2] !== undefined) {
+    return translate('website-publish-problem-footer-item', {
+      column: Number(footer[1]) + 1,
+      number: Number(footer[2]) + 1,
+    })
+  }
+  if (footer) return translate('website-publish-problem-footer-column', { column: Number(footer[1]) + 1 })
+  return translate('website-layout')
+}
 
 // "pages[about].sections[2].heading" becomes "About, section 3: <message>", linked to the about page.
 export const describeProblems = (errors: IFieldError[], pages: IWebsitePage[]): iProblem[] =>
   errors.map(({ path, message: text }) => {
+    if (path.startsWith('layout.')) {
+      return { text: `${describeLayoutPath(path)}: ${text}`, isLayout: true }
+    }
     const match = PROBLEM_PATH.exec(path)
     if (!match) {
       return { text: path === 'pages' ? text : translate('website-publish-problem-site', { message: text }) }
@@ -151,6 +172,8 @@ const PublishBar = ({ website, onChanged, onStale, hasUnsavedChanges = false, ca
                 <li key={index}>
                   {problem.pageId ? (
                     <Link to={getUrl(COMPANY_WEBSITE_PAGE_URL, ':id', problem.pageId)}>{problem.text}</Link>
+                  ) : problem.isLayout ? (
+                    <Link to={COMPANY_WEBSITE_LAYOUT_URL}>{problem.text}</Link>
                   ) : (
                     problem.text
                   )}

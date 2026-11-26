@@ -122,7 +122,7 @@ describe('WebsiteLayoutPage', () => {
       within(menu())
         .getAllByRole('link')
         .map((a) => a.textContent),
-    ).toStrictEqual(['', 'Home', 'Start free'])
+    ).toStrictEqual(['Acme', 'Home', 'Start free'])
     expect(screen.getByText('Unsaved changes')).toBeInTheDocument()
     fireEvent.click(saveBtn())
 
@@ -209,6 +209,9 @@ describe('WebsiteLayoutPage', () => {
     expect(within(link).getByText('Required.')).toBeInTheDocument()
     expect(within(link).getByText('Use a web, email or phone link, or /page-name.')).toBeInTheDocument()
     expect(within(link).getByLabelText('Text')).toHaveAttribute('aria-invalid', 'true')
+    // Problems go with the next edit, as they are kept by position.
+    type(within(link).getByLabelText('Text'), 'Go')
+    expect(within(link).queryByText('Required.')).toBeNull()
   })
 
   test('builds a footer: columns, items, an image, the copyright; empty optional fields are left out', async () => {
@@ -288,6 +291,8 @@ describe('WebsiteLayoutPage', () => {
     vi.mocked(WebsiteService.update).mockResolvedValue(website() as never)
     await loaded()
     tab('Theme')
+    // The second button colour comes with the second button (SMN-88).
+    expect(screen.queryByLabelText('Second button colour')).toBeNull()
     type(screen.getByLabelText('Heading colour'), '#58468b')
     fireEvent.click(screen.getByRole('radio', { name: '1140 px' }))
     fireEvent.click(screen.getByRole('radio', { name: 'Friendly' }))

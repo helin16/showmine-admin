@@ -224,6 +224,9 @@ const SiteCanvas = ({
   const { fontPair } = website?.theme || {}
   const header = website?.layout?.header || {}
   const hidden = header.hiddenPageIds || []
+  // As the Reader: with no logo shown, the name always is, so the home link is never empty.
+  const showsLogo = header.showLogo !== false && !!company?.LogoAsset?.url
+  const showsName = header.showName !== false || !showsLogo
   const partClass = (part: iCanvasPart) =>
     onSelectPart ? `canvas-part${selectedPart === part ? ' is-selected' : ''}` : ''
   const nameOf = (section: IWebsiteSection, index: number) =>
@@ -301,11 +304,9 @@ const SiteCanvas = ({
                 onSelectPart?.('header')
               }}
             >
-              <a className={'site-name'} href={'#'} aria-label={header.showName === false ? company?.name : undefined}>
-                {header.showLogo !== false && company?.LogoAsset?.url ? (
-                  <img src={company.LogoAsset.url} alt={''} />
-                ) : null}
-                {header.showName !== false ? <span>{company?.name}</span> : null}
+              <a className={'site-name'} href={'#'} aria-label={showsName ? undefined : company?.name}>
+                {showsLogo ? <img src={company?.LogoAsset?.url} alt={''} /> : null}
+                {showsName ? <span>{company?.name}</span> : null}
               </a>
               <button
                 ref={menuButton}

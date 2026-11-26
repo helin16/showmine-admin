@@ -134,6 +134,26 @@ describe('PublishBar', () => {
     ).toStrictEqual([{ text: 'Add a page first.' }, { text: 'Page gone, section 1: Too long.', pageId: undefined }])
   })
 
+  // specs/004, slice 4a: a problem in the layout says where and links to the Layout page.
+  test('describeProblems names the place in the layout', () => {
+    expect(
+      describeProblems(
+        [
+          { path: 'layout.header.links[1].url', message: 'No page has this address.' },
+          { path: 'layout.footer.columns[0].items[2].assetId', message: 'Missing.' },
+          { path: 'layout.footer.columns[3].heading', message: 'Too long.' },
+          { path: 'layout.extra', message: 'Not a known field.' },
+        ],
+        [],
+      ),
+    ).toStrictEqual([
+      { text: 'Header, link 2: No page has this address.', isLayout: true },
+      { text: 'Footer, column 1, item 3: Missing.', isLayout: true },
+      { text: 'Footer, column 4: Too long.', isLayout: true },
+      { text: 'Website layout: Not a known field.', isLayout: true },
+    ])
+  })
+
   test('an answer arriving after a switch of company is dropped', async () => {
     let finish!: (value: unknown) => void
     vi.mocked(WebsiteService.publish).mockReturnValue(new Promise((resolve) => (finish = resolve)) as never)

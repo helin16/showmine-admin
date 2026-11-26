@@ -403,7 +403,8 @@ const THEME_COLORS = [
   ['primaryColor', '#1a73e8'],
   ['backgroundColor', '#ffffff'],
   ['headingColor', '#222222'],
-  ['secondaryColor', '#6c757d'],
+  // ponytail: secondaryColor (the second button, SMN-88) is stored and passed to the site; its picker comes with the
+  // second button, so it changes something when picked.
 ] as const
 
 type iTheme = { theme: IWebsiteTheme; errors: iErrors; onChange: (theme: IWebsiteTheme) => void }

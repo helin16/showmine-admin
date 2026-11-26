@@ -384,6 +384,18 @@ describe('SiteCanvas layout', () => {
     expect(name.querySelector('img')).toHaveAttribute('src', 'https://cdn.test/logo.png')
   })
 
+  test('with no logo shown, the name is shown anyway', () => {
+    render(
+      <SiteCanvas
+        {...(withLayout({ header: { showLogo: false, showName: false } }) as never)}
+        company={companyWithLogo as never}
+      />,
+    )
+    const name = within(nav()).getByRole('link', { name: 'Acme' })
+    expect(name).toHaveTextContent('Acme')
+    expect(name).not.toHaveAttribute('aria-label')
+  })
+
   test('a page without an id is always listed', () => {
     render(<SiteCanvas {...(withLayout({ header: { hiddenPageIds: ['p1'] } }) as never)} pages={[{ title: 'Home' }]} />)
     expect(within(nav()).getByText('Home')).toBeInTheDocument()
