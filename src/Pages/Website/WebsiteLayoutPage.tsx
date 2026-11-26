@@ -201,9 +201,11 @@ const WebsiteLayoutPage = () => {
     const withProblem = shared.find((_, i) =>
       Object.keys(errors).some((path) => path.startsWith(`${pathOf(i, split)}.`)),
     )
-    setState((s) => ({ ...s, errors, selectedId: withProblem?.id }))
     const [first] = Object.keys(errors)
-    if (first) setTab(tabOf(first))
+    const firstTab = first ? tabOf(first) : tab
+    // Only when the Blocks tab opens, so the canvas does not mark a block while another tab shows.
+    setState((s) => ({ ...s, errors, selectedId: firstTab === 'blocks' ? withProblem?.id : undefined }))
+    setTab(firstTab)
     message.error(translate('website-layout-has-problems'))
   }
   const setShared = (shared: IWebsiteSection[], split: number) => setLayout(toLists(shared, split))
@@ -339,6 +341,15 @@ const WebsiteLayoutPage = () => {
   // The selected shared block's fields with Back, as the page editor; else where new blocks go and the blocks to add.
   const getBlocksPanel = (layout: IWebsiteLayout) => {
     const { shared, split } = getShared(layout)
+    // Problems about the shared blocks as a whole, or a block's type or id, which have no field of their own.
+    const general = Object.entries(state.errors).filter(
+      ([path]) =>
+        /^layout\.shared(Above|Below)?$/.test(path) || /^layout\.shared(Above|Below)\[\d+\]\.(type|id)$/.test(path),
+    )
+    const generalAlert =
+      general.length > 0 ? (
+        <Alert type={'error'} style={{ marginBottom: 8 }} message={general.map(([, problem]) => problem).join(' ')} />
+      ) : null
     const index = shared.findIndex((section) => section.id === state.selectedId)
     const section = shared[index]
     if (section) {
@@ -353,6 +364,7 @@ const WebsiteLayoutPage = () => {
           <Button type={'link'} size={'small'} style={{ paddingLeft: 0 }} onClick={() => select(undefined)}>
             <Icons.ArrowLeftOutlined aria-hidden /> {translate('website-panel-back')}
           </Button>
+          {generalAlert}
           <BoxTitleDiv>
             {`${translate(index < split ? 'website-layout-above' : 'website-layout-below')}: ${translate(
               `website-section-type-${section.type}`,
@@ -375,17 +387,10 @@ const WebsiteLayoutPage = () => {
       )
     }
     const isFull = shared.length >= LAYOUT_LIMITS.shared
-    // Problems about the shared blocks as a whole, or a block's type or id, which have no field of their own.
-    const general = Object.entries(state.errors).filter(
-      ([path]) =>
-        /^layout\.shared(Above|Below)?$/.test(path) || /^layout\.shared(Above|Below)\[\d+\]\.(type|id)$/.test(path),
-    )
     return (
       <>
         <p style={{ color: '#6c757d' }}>{translate('website-layout-blocks-hint')}</p>
-        {general.length > 0 ? (
-          <Alert type={'error'} style={{ marginBottom: 8 }} message={general.map(([, problem]) => problem).join(' ')} />
-        ) : null}
+        {generalAlert}
         <div style={{ marginBottom: 8 }}>
           <span id={'layout-add-to'}>{translate('website-layout-add-to')}</span>{' '}
           <Radio.Group

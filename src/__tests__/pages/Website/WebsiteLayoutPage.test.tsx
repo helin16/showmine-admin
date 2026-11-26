@@ -499,5 +499,33 @@ describe('WebsiteLayoutPage', () => {
       fireEvent.click(screen.getByText('Back'))
       expect(screen.getByText('The shared blocks are too large.')).toBeInTheDocument()
     })
+
+    test('a header problem first opens the Header tab and marks no shared block', async () => {
+      vi.mocked(WebsiteService.update).mockRejectedValue(
+        httpError(400, {
+          errors: [
+            { path: 'layout.header.showLogo', message: 'Yes or no.' },
+            { path: 'layout.sharedBelow[0].heading', message: 'Too long.' },
+          ],
+        }),
+      )
+      await loaded({ layout: { sharedBelow: [shared('b', 'Band')] } })
+      fireEvent.click(screen.getByRole('checkbox', { name: 'Show the website name' }))
+      fireEvent.click(saveBtn())
+      await waitFor(() => expect(message.error).toHaveBeenCalled())
+      expect(screen.getByRole('button', { name: 'Header', pressed: true })).toBeInTheDocument()
+      expect(canvas().querySelector('.canvas-item.is-selected')).toBeNull()
+    })
+
+    test('a problem with the id of a block shows with the block', async () => {
+      vi.mocked(WebsiteService.update).mockRejectedValue(
+        httpError(400, { errors: [{ path: 'layout.sharedBelow[0].id', message: 'A unique id for the section.' }] }),
+      )
+      await loaded({ layout: { sharedBelow: [shared('b', 'Band')] } })
+      fireEvent.click(screen.getByRole('checkbox', { name: 'Show the website name' }))
+      fireEvent.click(saveBtn())
+      expect(await screen.findByText('A unique id for the section.')).toBeInTheDocument()
+      expect(screen.getByText('Below every page: Hero')).toBeInTheDocument()
+    })
   })
 })
