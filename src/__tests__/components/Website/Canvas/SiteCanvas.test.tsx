@@ -541,6 +541,8 @@ describe('SiteCanvas layout', () => {
       '--site-secondary-text': '#212529',
       '--site-width': '1280px',
     })
+    expect(getThemeStyle({ secondaryColor: '#808080' })).toMatchObject({ '--site-secondary-text': '#ffffff' })
+    expect(getThemeStyle({ secondaryColor: '#8a8a8a' })).toMatchObject({ '--site-secondary-text': '#212529' })
     expect(getThemeStyle({ secondaryColor: '#4b3f8f' })).toStrictEqual({
       '--site-secondary': '#4b3f8f',
       '--site-secondary-text': '#ffffff',

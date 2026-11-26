@@ -254,6 +254,10 @@ describe('images', () => {
     expect(screen.getByLabelText('Description for screen readers')).toHaveAttribute('maxlength', '200')
     expect(screen.getByLabelText('Second button text')).toBeInTheDocument()
     expect(screen.getByRole('radio', { name: 'Left' })).toBeChecked()
+    expect(screen.getAllByRole('radiogroup')).toHaveLength(1)
+    expect(screen.getByRole('radiogroup', { name: 'Image side' })).toContainElement(
+      screen.getByRole('radio', { name: 'Right' }),
+    )
 
     fireEvent.click(screen.getByRole('radio', { name: 'Right' }))
     expect(onChange).toHaveBeenLastCalledWith({

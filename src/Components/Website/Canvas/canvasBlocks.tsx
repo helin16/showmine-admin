@@ -182,7 +182,7 @@ export const getTextColor = (hex: string) => {
     return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
   })
   const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
-  return 1.05 / (luminance + 0.05) >= (luminance + 0.05) / 0.0657 ? '#ffffff' : '#212529'
+  return 1.05 / (luminance + 0.05) >= (luminance + 0.05) / 0.0681 ? '#ffffff' : '#212529'
 }
 export const getThemeStyle = (theme: IWebsiteTheme = {}) => {
   const style: { [name: string]: string } = {}

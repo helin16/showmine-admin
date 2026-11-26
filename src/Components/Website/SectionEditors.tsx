@@ -214,9 +214,10 @@ const SectionEditor = ({ section, onChange, errors = {}, images = {}, onImagesPi
           {imageField('imageAssetId', translate('website-section-image'), false)}
           {picker}
           {field('imageAlt', translate('website-section-alt'), text('imageAlt', 200))}
-          <div role={'radiogroup'} aria-label={translate('website-section-image-side')}>
-            <div>{translate('website-section-image-side')}</div>
+          <div>
+            <div id={fieldId('imageSide')}>{translate('website-section-image-side')}</div>
             <Radio.Group
+              aria-labelledby={fieldId('imageSide')}
               value={section.imageSide === 'right' ? 'right' : 'left'}
               onChange={(e) => set('imageSide', e.target.value)}
             >
