@@ -95,6 +95,59 @@ describe('SiteCanvas', () => {
     expect(within(page).getByText('The latest 6 articles show here.')).toBeInTheDocument()
   })
 
+  // specs/005-website-blocks, slice 88a: the same markup as the Reader's Buttons and Split.
+  test('draws a second button, a note, and an image beside text on its side', () => {
+    render(
+      <SiteCanvas
+        {...(props({
+          sections: [
+            {
+              id: 'h',
+              type: 'hero',
+              buttonText: 'Go',
+              buttonUrl: '/a',
+              button2Text: 'Login',
+              button2Url: '/b',
+              note: 'Free',
+            },
+            { id: 'x', type: 'hero', heading: 'Half', button2Text: 'No link' },
+            {
+              id: 's',
+              type: 'split',
+              heading: 'Side',
+              text: 'One\nTwo',
+              imageAssetId: 'a1',
+              imageAlt: 'Shop',
+              imageSide: 'right',
+            },
+            { id: 'l', type: 'split', heading: 'Left', imageAssetId: 'gone' },
+          ],
+        }) as never)}
+      />,
+    )
+    const [hero, half] = Array.from(canvas().querySelectorAll('.site-hero'))
+    expect(
+      Array.from(hero.querySelectorAll('.site-buttons a')).map((a) => [
+        a.textContent,
+        a.className,
+        a.getAttribute('href'),
+      ]),
+    ).toStrictEqual([
+      ['Go', 'site-button', '#'],
+      ['Login', 'site-button second', '#'],
+    ])
+    expect(hero.querySelector('.site-buttons .site-note')).toHaveTextContent('Free')
+    expect(half.querySelector('.site-buttons')).toBeNull()
+    const [right, left] = Array.from(canvas().querySelectorAll('.site-split'))
+    expect(right).toHaveClass('image-right')
+    expect(right.querySelector('img')).toHaveAttribute('src', 'https://cdn.test/a1.png')
+    expect(right.querySelector('img')).toHaveAttribute('alt', 'Shop')
+    expect(right.querySelector('.site-split-text h2')).toHaveTextContent('Side')
+    expect(right.querySelector('.site-split-text p')?.textContent).toBe('One\nTwo')
+    expect(left).toHaveClass('image-left')
+    expect(left.querySelector('img')).toBeNull()
+  })
+
   test('falls back to the default font and colour, and draws no button without a link', () => {
     render(
       <SiteCanvas
@@ -484,7 +537,13 @@ describe('SiteCanvas layout', () => {
       '--site-bg': '#e5eefe',
       '--site-heading': '#58468b',
       '--site-secondary': '#ff9900',
+      // Dark text on the orange second button, as the Reader (spec 005).
+      '--site-secondary-text': '#212529',
       '--site-width': '1280px',
+    })
+    expect(getThemeStyle({ secondaryColor: '#4b3f8f' })).toStrictEqual({
+      '--site-secondary': '#4b3f8f',
+      '--site-secondary-text': '#ffffff',
     })
     expect(getThemeStyle({ primaryColor: 'red', headingColor: 'url(x)', contentWidth: 1000 })).toBeUndefined()
     expect(getThemeStyle()).toBeUndefined()

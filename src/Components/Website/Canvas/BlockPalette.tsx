@@ -45,6 +45,7 @@ const Grid = styled.div`
 
 const ICONS: { [type: string]: React.ComponentType } = {
   hero: Icons.FileImageOutlined,
+  split: Icons.PicLeftOutlined,
   text: Icons.FileTextOutlined,
   image: Icons.PictureOutlined,
   gallery: Icons.AppstoreOutlined,

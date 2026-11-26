@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Checkbox, Input, InputNumber } from 'antd'
+import { Checkbox, Input, InputNumber, Radio } from 'antd'
 import Button from '../Form/Button'
 import RichTextEditor from '../Form/RichTextEditor'
 import MediaPicker from './MediaPicker'
@@ -11,7 +11,7 @@ import { IWebsiteSection } from '../../Types/Website/IWebsite'
 // One editor per section type (specs/001-website-builder, data-model "Section", US2 T035, US5 T062). Limits match the
 // API's. Images are chosen from the company's website images with the media picker.
 
-export const ADDABLE_SECTION_TYPES = ['hero', 'text', 'image', 'gallery', 'contact', 'articles']
+export const ADDABLE_SECTION_TYPES = ['hero', 'split', 'text', 'image', 'gallery', 'contact', 'articles']
 export const MAX_GALLERY_IMAGES = 24
 
 type iGalleryImage = { assetId: string; alt?: string }
@@ -33,6 +33,8 @@ export const newSection = (type: string): IWebsiteSection => {
   switch (type) {
     case 'hero':
       return { id, type, heading: '' }
+    case 'split':
+      return { id, type, heading: '', imageSide: 'left' }
     case 'text':
       return { id, type, html: '' }
     case 'contact':
@@ -181,6 +183,17 @@ const SectionEditor = ({ section, onChange, errors = {}, images = {}, onImagesPi
     </Field>
   )
 
+  // A band's buttons (spec 005): the first, a second and a small note under them.
+  const buttonFields = (
+    <>
+      {field('buttonText', translate('website-section-button-text'), text('buttonText', 40))}
+      {field('buttonUrl', translate('website-section-button-url'), text('buttonUrl', 2000))}
+      {field('button2Text', translate('website-section-button2-text'), text('button2Text', 40))}
+      {field('button2Url', translate('website-section-button2-url'), text('button2Url', 2000))}
+      {field('note', translate('website-section-note'), text('note', 200))}
+    </>
+  )
+
   switch (section.type) {
     case 'hero':
       return (
@@ -189,8 +202,29 @@ const SectionEditor = ({ section, onChange, errors = {}, images = {}, onImagesPi
           {imageField('imageAssetId', translate('website-section-hero-image'), true)}
           {picker}
           {field('subheading', translate('website-section-subheading'), text('subheading', 300, true))}
-          {field('buttonText', translate('website-section-button-text'), text('buttonText', 40))}
-          {field('buttonUrl', translate('website-section-button-url'), text('buttonUrl', 2000))}
+          {buttonFields}
+        </Space>
+      )
+    // Image beside text (specs/005-website-blocks, slice 88a).
+    case 'split':
+      return (
+        <Space orientation={'vertical'} style={{ width: '100%' }}>
+          {field('heading', translate('website-section-heading'), text('heading', 120))}
+          {field('text', translate('website-section-plain-text'), text('text', 1000, true))}
+          {imageField('imageAssetId', translate('website-section-image'), false)}
+          {picker}
+          {field('imageAlt', translate('website-section-alt'), text('imageAlt', 200))}
+          <div role={'radiogroup'} aria-label={translate('website-section-image-side')}>
+            <div>{translate('website-section-image-side')}</div>
+            <Radio.Group
+              value={section.imageSide === 'right' ? 'right' : 'left'}
+              onChange={(e) => set('imageSide', e.target.value)}
+            >
+              <Radio value={'left'}>{translate('website-section-image-left')}</Radio>
+              <Radio value={'right'}>{translate('website-section-image-right')}</Radio>
+            </Radio.Group>
+          </div>
+          {buttonFields}
         </Space>
       )
     case 'text':
@@ -341,8 +375,20 @@ const SectionEditor = ({ section, onChange, errors = {}, images = {}, onImagesPi
 // The checks the browser can make before saving; the API checks everything again.
 export const checkSection = (section: IWebsiteSection): { [field: string]: string } => {
   const errors: { [field: string]: string } = {}
-  if (section.type === 'hero' && typeof section.buttonUrl === 'string' && !isLink(section.buttonUrl)) {
-    errors.buttonUrl = translate('website-section-bad-link')
+  if (section.type === 'hero' || section.type === 'split') {
+    ;(['buttonUrl', 'button2Url'] as const).forEach((name) => {
+      if (typeof section[name] === 'string' && !isLink(section[name] as string)) {
+        errors[name] = translate('website-section-bad-link')
+      }
+    })
+    // The second button needs both, as the API says (spec 005); the first keeps accepting one alone.
+    const hasText = typeof section.button2Text === 'string'
+    if (hasText !== (typeof section.button2Url === 'string')) {
+      errors[hasText ? 'button2Url' : 'button2Text'] = translate('website-section-button2-both')
+    }
+  }
+  if (section.type === 'split' && typeof section.imageAssetId !== 'string') {
+    errors.imageAssetId = translate('website-section-image-required')
   }
   if (section.type === 'image' && typeof section.assetId !== 'string') {
     errors.assetId = translate('website-section-image-required')

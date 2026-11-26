@@ -45,6 +45,29 @@ export const cleanHtml = (html: string) =>
 const urlOf = (images: iImages, assetId: unknown) =>
   typeof assetId === 'string' ? images[assetId]?.url || undefined : undefined
 
+// A band's buttons (reader sections/index.tsx Buttons, spec 005): a button shows with both its text and link.
+const Buttons = ({ section }: iBlock) => {
+  const hasFirst = !!(section.buttonUrl && section.buttonText)
+  const hasSecond = !!(section.button2Url && section.button2Text)
+  if (!hasFirst && !hasSecond && !section.note) return null
+  return (
+    <div className={'site-buttons'}>
+      {/* Canvas links go nowhere. */}
+      {hasFirst ? (
+        <a className={'site-button'} href={'#'}>
+          {`${section.buttonText}`}
+        </a>
+      ) : null}
+      {hasSecond ? (
+        <a className={'site-button second'} href={'#'}>
+          {`${section.button2Text}`}
+        </a>
+      ) : null}
+      {section.note ? <p className={'site-note'}>{`${section.note}`}</p> : null}
+    </div>
+  )
+}
+
 const Hero = ({ section, images }: iBlock) => {
   const imageUrl = urlOf(images, section.imageAssetId)
   return (
@@ -54,12 +77,22 @@ const Hero = ({ section, images }: iBlock) => {
     >
       {section.heading ? <h1>{`${section.heading}`}</h1> : null}
       {section.subheading ? <p>{`${section.subheading}`}</p> : null}
-      {/* Canvas links go nowhere. */}
-      {section.buttonUrl && section.buttonText ? (
-        <a className={'site-button'} href={'#'}>
-          {`${section.buttonText}`}
-        </a>
-      ) : null}
+      <Buttons section={section} images={images} />
+    </section>
+  )
+}
+
+// Image beside text (reader sections/index.tsx Split, spec 005).
+const Split = ({ section, images }: iBlock) => {
+  const imageUrl = urlOf(images, section.imageAssetId)
+  return (
+    <section className={`site-split image-${section.imageSide === 'right' ? 'right' : 'left'}`}>
+      {imageUrl ? <img src={imageUrl} alt={`${section.imageAlt || ''}`} /> : null}
+      <div className={'site-split-text'}>
+        {section.heading ? <h2>{`${section.heading}`}</h2> : null}
+        {section.text ? <p>{`${section.text}`}</p> : null}
+        <Buttons section={section} images={images} />
+      </div>
     </section>
   )
 }
@@ -142,11 +175,21 @@ const COLOR_VARS = {
   headingColor: '--site-heading',
   secondaryColor: '--site-secondary',
 } as const
+// The text colour that reads best on a colour (reader Site.tsx getTextColor): dark on light colours, else white.
+export const getTextColor = (hex: string) => {
+  const [r, g, b] = [1, 3, 5].map((i) => {
+    const c = parseInt(hex.slice(i, i + 2), 16) / 255
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+  })
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
+  return 1.05 / (luminance + 0.05) >= (luminance + 0.05) / 0.0657 ? '#ffffff' : '#212529'
+}
 export const getThemeStyle = (theme: IWebsiteTheme = {}) => {
   const style: { [name: string]: string } = {}
   ;(Object.keys(COLOR_VARS) as (keyof typeof COLOR_VARS)[]).forEach((key) => {
     if (COLOR.test(`${theme[key]}`)) style[COLOR_VARS[key]] = `${theme[key]}`
   })
+  if (style['--site-secondary']) style['--site-secondary-text'] = getTextColor(style['--site-secondary'])
   if ([960, 1140, 1280].includes(Number(theme.contentWidth))) style['--site-width'] = `${theme.contentWidth}px`
   return Object.keys(style).length > 0 ? (style as React.CSSProperties) : undefined
 }
@@ -222,6 +265,7 @@ export const Footer = ({ layout, images }: { layout?: IWebsiteLayout | null; ima
 
 export const BLOCKS: { [type: string]: (props: iBlock) => React.ReactElement | null } = {
   hero: Hero,
+  split: Split,
   text: Text,
   image: Image,
   gallery: Gallery,

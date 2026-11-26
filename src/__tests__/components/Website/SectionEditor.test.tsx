@@ -57,6 +57,11 @@ describe('newSection', () => {
     expect(a.id).not.toBe(b.id)
   })
 
+  test('an image beside text starts with the image on the left (spec 005)', () => {
+    expect(ADDABLE_SECTION_TYPES.indexOf('split')).toBe(1)
+    expect(newSection('split')).toMatchObject({ type: 'split', heading: '', imageSide: 'left' })
+  })
+
   test('image and gallery can be added now', () => {
     expect(ADDABLE_SECTION_TYPES).toEqual(expect.arrayContaining(['image', 'gallery']))
     expect(newSection('gallery')).toMatchObject({ type: 'gallery', images: [] })
@@ -78,6 +83,18 @@ describe('hero', () => {
     const onChange = renderEditor({ type: 'hero', heading: 'Hi', buttonUrl: '/about' })
     fireEvent.change(screen.getByLabelText(/Button link/), { target: { value: '' } })
     expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'hero', heading: 'Hi' })
+  })
+
+  // specs/005-website-blocks, slice 88a
+  test('edits a second button and a note within their limits', () => {
+    const onChange = renderEditor({ type: 'hero', heading: 'Hi' })
+    expect(screen.getByLabelText('Second button text')).toHaveAttribute('maxlength', '40')
+    expect(screen.getByLabelText('Second button link')).toHaveAttribute('maxlength', '2000')
+    expect(screen.getByLabelText('Small note under the buttons')).toHaveAttribute('maxlength', '200')
+    fireEvent.change(screen.getByLabelText('Second button text'), { target: { value: 'Login' } })
+    expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'hero', heading: 'Hi', button2Text: 'Login' })
+    fireEvent.change(screen.getByLabelText('Small note under the buttons'), { target: { value: 'Free' } })
+    expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'hero', heading: 'Hi', note: 'Free' })
   })
 
   test('shows a problem on its field', () => {
@@ -227,6 +244,43 @@ describe('images', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('Missing.')
   })
 
+  test('an image beside text edits its text, image, description, side and buttons; its image cannot be removed', () => {
+    const { onChange } = renderWithImages({ type: 'split', heading: 'Hi', imageAssetId: 'a1' }, [images.a2])
+    expect(screen.queryByRole('button', { name: 'Remove image' })).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Heading')).toHaveAttribute('maxlength', '120')
+    const text = screen.getByLabelText('Text (line breaks are kept)')
+    expect(text.tagName).toBe('TEXTAREA')
+    expect(text).toHaveAttribute('maxlength', '1000')
+    expect(screen.getByLabelText('Description for screen readers')).toHaveAttribute('maxlength', '200')
+    expect(screen.getByLabelText('Second button text')).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: 'Left' })).toBeChecked()
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Right' }))
+    expect(onChange).toHaveBeenLastCalledWith({
+      id: 's1',
+      type: 'split',
+      heading: 'Hi',
+      imageAssetId: 'a1',
+      imageSide: 'right',
+    })
+    fireEvent.change(text, { target: { value: 'One\nTwo' } })
+    expect(onChange).toHaveBeenLastCalledWith({
+      id: 's1',
+      type: 'split',
+      heading: 'Hi',
+      imageAssetId: 'a1',
+      text: 'One\nTwo',
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Change image' }))
+    fireEvent.click(screen.getByRole('button', { name: 'pick (one)' }))
+    expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'split', heading: 'Hi', imageAssetId: 'a2' })
+  })
+
+  test('an image beside text shows its side as saved', () => {
+    renderWithImages({ type: 'split', imageAssetId: 'a1', imageSide: 'right' })
+    expect(screen.getByRole('radio', { name: 'Right' })).toBeChecked()
+  })
+
   test('an image section needs an image and a gallery at least one, before saving', () => {
     expect(checkSection({ id: 's', type: 'image' })).toStrictEqual({ assetId: 'Choose an image.' })
     expect(checkSection({ id: 's', type: 'gallery', images: [] })).toStrictEqual({ images: 'Add at least one image.' })
@@ -258,5 +312,27 @@ describe('checks before saving', () => {
       mapUrl: 'Use a link starting with https://.',
     })
     expect(checkSection({ id: 's', type: 'hero', buttonUrl: '/about' })).toStrictEqual({})
+  })
+
+  test('the second button needs both its text and its link, and a good link; the first may have one alone', () => {
+    const both = 'The second button needs both its text and its link.'
+    expect(checkSection({ id: 's', type: 'hero', button2Text: 'Login' })).toStrictEqual({ button2Url: both })
+    expect(checkSection({ id: 's', type: 'hero', button2Url: '/login' })).toStrictEqual({ button2Text: both })
+    expect(checkSection({ id: 's', type: 'hero', button2Text: 'x', button2Url: 'javascript:x' })).toStrictEqual({
+      button2Url: 'Use a web, email or phone link, or /page-name.',
+    })
+    expect(checkSection({ id: 's', type: 'hero', button2Text: 'x', button2Url: '/login' })).toStrictEqual({})
+    expect(checkSection({ id: 's', type: 'hero', buttonText: 'Go' })).toStrictEqual({})
+  })
+
+  test('an image beside text needs an image, and its links are checked as the hero', () => {
+    expect(checkSection({ id: 's', type: 'split' })).toStrictEqual({ imageAssetId: 'Choose an image.' })
+    expect(
+      checkSection({ id: 's', type: 'split', imageAssetId: 'a1', buttonUrl: 'nope', button2Text: 'x' }),
+    ).toStrictEqual({
+      buttonUrl: 'Use a web, email or phone link, or /page-name.',
+      button2Url: 'The second button needs both its text and its link.',
+    })
+    expect(checkSection({ id: 's', type: 'split', imageAssetId: 'a1' })).toStrictEqual({})
   })
 })

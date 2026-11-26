@@ -65,6 +65,7 @@ import {
   VerticalAlignTopOutlined,
   VerticalAlignBottomOutlined,
   BgColorsOutlined,
+  PicLeftOutlined,
 } from '@ant-design/icons'
 
 const Icons = {
@@ -134,6 +135,7 @@ const Icons = {
   VerticalAlignTopOutlined,
   VerticalAlignBottomOutlined,
   BgColorsOutlined,
+  PicLeftOutlined,
 }
 
 export default Icons

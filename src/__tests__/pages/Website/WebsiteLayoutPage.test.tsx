@@ -317,9 +317,9 @@ describe('WebsiteLayoutPage', () => {
     vi.mocked(WebsiteService.update).mockResolvedValue(website() as never)
     await loaded()
     tab('Theme')
-    // The second button colour comes with the second button (SMN-88).
-    expect(screen.queryByLabelText('Second button colour')).toBeNull()
     type(screen.getByLabelText('Heading colour'), '#58468b')
+    // The second button's colour (spec 005), with the text the site picks for it.
+    type(screen.getByLabelText('Second button colour'), '#facc15')
     fireEvent.click(screen.getByRole('radio', { name: '1140 px' }))
     fireEvent.click(screen.getByRole('radio', { name: 'Friendly' }))
 
@@ -327,12 +327,15 @@ describe('WebsiteLayoutPage', () => {
     expect(site.style.getPropertyValue('--site-heading')).toBe('#58468b')
     expect(site.style.getPropertyValue('--site-width')).toBe('1140px')
     expect(site).toHaveClass('site-font-friendly')
+    expect(site.style.getPropertyValue('--site-secondary')).toBe('#facc15')
+    expect(site.style.getPropertyValue('--site-secondary-text')).toBe('#212529')
     fireEvent.click(saveBtn())
     await waitFor(() => expect(WebsiteService.update).toHaveBeenCalled())
     expect(lastSaved().theme).toStrictEqual({
       primaryColor: '#111111',
       fontPair: 'friendly',
       headingColor: '#58468b',
+      secondaryColor: '#facc15',
       contentWidth: 1140,
     })
   })
