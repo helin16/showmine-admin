@@ -27,6 +27,7 @@ import {
   COMPANY_WEBSITE_PAGES_URL,
   COMPANY_WEBSITE_TEMPLATES_URL,
   COMPANY_WEBSITE_SETTINGS_URL,
+  COMPANY_WEBSITE_LAYOUT_URL,
 } from '../../UrlMap'
 
 export const MENU_KEY_DASHBOARD = 'dashboard'
@@ -44,6 +45,7 @@ export const MENU_KEY_WEBSITE_PAGES = 'website-pages'
 export const MENU_KEY_WEBSITE_PUBLISH = 'website-publish'
 export const MENU_KEY_WEBSITE_TEMPLATES = 'website-templates'
 export const MENU_KEY_WEBSITE_SETTINGS = 'website-settings'
+export const MENU_KEY_WEBSITE_LAYOUT = 'website-layout'
 export const MENU_ACCESS_LEVEL_COMPANY_ADMIN = 'access-company-admin'
 export const defaultSelectedKey = MENU_KEY_DASHBOARD
 export const MENU_ACCESS_LEVEL_SUPER_ADMIN = 'access-super-admin'
@@ -93,6 +95,12 @@ const MenuItems = [
             key: MENU_KEY_WEBSITE_PUBLISH,
             name: <FormattedMessage id='website-menu-publish' />,
             url: COMPANY_WEBSITE_URL,
+            adminOnly: true,
+          },
+          {
+            key: MENU_KEY_WEBSITE_LAYOUT,
+            name: <FormattedMessage id='website-menu-layout' />,
+            url: COMPANY_WEBSITE_LAYOUT_URL,
             adminOnly: true,
           },
           {

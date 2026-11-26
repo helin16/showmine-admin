@@ -3,6 +3,51 @@ import IBaseModel from '../IBaseModel'
 // Search and sharing details of the site or a page; an empty one falls back to the site's, then the company's.
 export type IWebsiteSeo = { title?: string; description?: string; imageAssetId?: string | null }
 
+// Colours, fonts and width (specs/001; slice 4a of specs/004 adds all but the main colour and fonts).
+export type IWebsiteTheme = {
+  primaryColor?: string
+  fontPair?: string
+  backgroundColor?: string
+  headingColor?: string
+  secondaryColor?: string
+  contentWidth?: number
+}
+export const CONTENT_WIDTHS = [960, 1140, 1280]
+export const FONT_PAIRS = ['modern', 'classic', 'friendly']
+
+// The site layout as the API checks it (specs/004 data-model). Plain text only.
+export type IWebsiteFooterItem =
+  | { type: 'text'; text: string }
+  | { type: 'contact'; icon: string; text: string }
+  | { type: 'button'; label: string; url: string }
+  // link: where the image leads.
+  | { type: 'image'; assetId: string; alt?: string; link?: string }
+export type IWebsiteFooterColumn = { heading?: string; items: IWebsiteFooterItem[] }
+export type IWebsiteLayout = {
+  header?: {
+    showLogo?: boolean
+    showName?: boolean
+    hiddenPageIds?: string[]
+    links?: { label: string; url: string }[]
+  }
+  footer?: { columns: IWebsiteFooterColumn[]; copyright?: string } | null
+}
+// The API's limits on the layout.
+export const LAYOUT_LIMITS = {
+  links: 4,
+  columns: 4,
+  items: 8,
+  linkLabel: 40,
+  heading: 60,
+  text: 500,
+  contact: 100,
+  buttonLabel: 40,
+  alt: 120,
+  copyright: 200,
+}
+export const FOOTER_ITEM_TYPES = ['text', 'contact', 'button', 'image'] as const
+export const CONTACT_ICONS = ['address', 'phone', 'email', 'wechat', 'message']
+
 // A company's website as GET /website returns it (specs/001-website-builder, data-model "Website").
 type IWebsite = IBaseModel & {
   companyId: string
@@ -12,7 +57,9 @@ type IWebsite = IBaseModel & {
   addressCode?: string | null
   // Where it is, to show: its ShowMine subdomain and its Reader address; null when not configured.
   addresses?: { subdomain: string | null; reader: string | null }
-  theme?: { primaryColor?: string; fontPair?: string } | null
+  theme?: IWebsiteTheme | null
+  // Header and footer (specs/004-website-visual-editor, slice 4a); null: the site shows as before.
+  layout?: IWebsiteLayout | null
   seo?: IWebsiteSeo | null
   publishedAt?: string | null
   hasUnpublishedChanges: boolean

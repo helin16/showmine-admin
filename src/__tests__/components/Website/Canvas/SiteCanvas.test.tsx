@@ -2,7 +2,7 @@ import React from 'react'
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { vi } from 'vitest'
 import SiteCanvas from '../../../../Components/Website/Canvas/SiteCanvas'
-import { cleanHtml } from '../../../../Components/Website/Canvas/canvasBlocks'
+import { cleanHtml, FOOTER_ICONS, getThemeStyle } from '../../../../Components/Website/Canvas/canvasBlocks'
 import WebsiteService from '../../../../Services/WebsiteService'
 import { IWebsiteSection } from '../../../../Types/Website/IWebsite'
 import { stubMatchMedia } from '../../Access/domHelpers'
@@ -38,7 +38,10 @@ const props = (extra = {}) => ({
     theme: { primaryColor: '#ff0000', fontPair: 'classic' },
   },
   company,
-  pageTitles: ['Home', 'About'],
+  pages: [
+    { id: 'p1', title: 'Home' },
+    { id: 'p2', title: 'About' },
+  ],
   currentIndex: 1,
   sections,
   images,
@@ -339,5 +342,182 @@ describe('SiteCanvas menu', () => {
     fireEvent.click(within(nav()).getByText('Home'))
     expect(nav()).not.toHaveClass('is-open')
     expect(within(nav()).getByRole('button', { name: 'Menu' })).toHaveFocus()
+  })
+})
+
+// The layout's header, footer and theme (specs/004, slice 4a): as the Reader draws them.
+describe('SiteCanvas layout', () => {
+  const withLayout = (layout: object, theme: object = {}) =>
+    props({ website: { ...props().website, theme: { ...props().website.theme, ...theme }, layout } })
+  const nav = () => within(canvas()).getByRole('navigation')
+  const companyWithLogo = { ...company, LogoAsset: { url: 'https://cdn.test/logo.png' } }
+
+  test('the header leaves hidden pages out, adds outside links, and hides the logo or the name', () => {
+    const { unmount } = render(
+      <SiteCanvas
+        {...(withLayout({
+          header: {
+            hiddenPageIds: ['p1'],
+            showLogo: false,
+            links: [
+              { label: 'Login', url: 'https://a.test' },
+              { label: '', url: '/x' },
+            ],
+          },
+        }) as never)}
+        company={companyWithLogo as never}
+      />,
+    )
+    expect(
+      within(nav())
+        .getAllByRole('link')
+        .map((link) => link.textContent),
+    ).toStrictEqual(['Acme', 'About', 'Login'])
+    expect(nav().querySelector('img')).toBeNull()
+    unmount()
+
+    render(
+      <SiteCanvas {...(withLayout({ header: { showName: false } }) as never)} company={companyWithLogo as never} />,
+    )
+    const name = within(nav()).getByRole('link', { name: 'Acme' })
+    expect(name).not.toHaveTextContent('Acme')
+    expect(name.querySelector('img')).toHaveAttribute('src', 'https://cdn.test/logo.png')
+  })
+
+  test('a page without an id is always listed', () => {
+    render(<SiteCanvas {...(withLayout({ header: { hiddenPageIds: ['p1'] } }) as never)} pages={[{ title: 'Home' }]} />)
+    expect(within(nav()).getByText('Home')).toBeInTheDocument()
+  })
+
+  test('draws the footer items as the Reader does', () => {
+    render(
+      <SiteCanvas
+        {...(withLayout({
+          footer: {
+            columns: [
+              {
+                heading: 'Contact Info',
+                items: [
+                  { type: 'contact', icon: 'wechat', text: 'acme6' },
+                  { type: 'contact', icon: 'fax', text: 'No icon' },
+                  { type: 'text', text: 'Hello' },
+                  { type: 'button', label: 'Contact Us', url: '/about' },
+                  { type: 'button', label: '', url: '/about' },
+                ],
+              },
+              {
+                items: [
+                  { type: 'image', assetId: 'a1', alt: 'QR' },
+                  { type: 'image', assetId: 'a1', alt: 'Licence', link: 'https://gov.test' },
+                  { type: 'image', assetId: 'gone', alt: 'Gone' },
+                  { type: 'video' },
+                ],
+              },
+            ],
+            copyright: '© Acme',
+          },
+        }) as never)}
+      />,
+    )
+    const footer = within(canvas()).getByRole('contentinfo')
+    expect(footer).toHaveClass('site-footer')
+    const [first, second] = Array.from(footer.querySelectorAll('.site-footer-columns > .site-footer-column'))
+    expect(within(first as HTMLElement).getByRole('heading', { name: 'Contact Info' })).toBeInTheDocument()
+    const [wechat, noIcon] = Array.from(first.querySelectorAll('.site-footer-contact'))
+    expect(wechat.querySelectorAll('svg path')).toHaveLength(FOOTER_ICONS.wechat.length)
+    expect(wechat.querySelector('svg')).toHaveAttribute('aria-hidden')
+    expect(noIcon.querySelector('svg')).toBeNull()
+    expect(within(first as HTMLElement).getByText('Hello')).toHaveClass('site-footer-text')
+    expect(within(first as HTMLElement).getAllByRole('link')).toHaveLength(1)
+    expect(within(first as HTMLElement).getByRole('link', { name: 'Contact Us' })).toHaveAttribute('href', '#')
+    expect(
+      within(second as HTMLElement)
+        .getByAltText('QR')
+        .closest('a'),
+    ).toBeNull()
+    expect(
+      within(second as HTMLElement)
+        .getByAltText('QR')
+        .closest('p'),
+    ).toHaveClass('site-footer-image')
+    expect(
+      within(second as HTMLElement)
+        .getByAltText('Licence')
+        .closest('a'),
+    ).toHaveAttribute('href', '#')
+    expect(within(second as HTMLElement).queryByAltText('Gone')).toBeNull()
+    expect(second.children).toHaveLength(2)
+    expect(within(footer).getByText('© Acme')).toHaveClass('site-copyright')
+  })
+
+  test('no footer without one; a footer without columns or copyright is still drawn', () => {
+    const { unmount } = render(<SiteCanvas {...(withLayout({ footer: null }) as never)} />)
+    expect(within(canvas()).queryByRole('contentinfo')).toBeNull()
+    unmount()
+    render(<SiteCanvas {...(withLayout({ footer: {} }) as never)} />)
+    expect(within(canvas()).getByRole('contentinfo').querySelector('.site-copyright')).toBeNull()
+  })
+
+  test('sets the theme variables the API allows, and nothing else', () => {
+    expect(
+      getThemeStyle({
+        primaryColor: '#111111',
+        backgroundColor: '#e5eefe',
+        headingColor: '#58468b',
+        secondaryColor: '#ff9900',
+        contentWidth: 1280,
+      }),
+    ).toStrictEqual({
+      '--site-primary': '#111111',
+      '--site-bg': '#e5eefe',
+      '--site-heading': '#58468b',
+      '--site-secondary': '#ff9900',
+      '--site-width': '1280px',
+    })
+    expect(getThemeStyle({ primaryColor: 'red', headingColor: 'url(x)', contentWidth: 1000 })).toBeUndefined()
+    expect(getThemeStyle()).toBeUndefined()
+    render(<SiteCanvas {...(withLayout(null, { backgroundColor: '#e5eefe' }) as never)} />)
+    expect((canvas().firstElementChild as HTMLElement).style.getPropertyValue('--site-bg')).toBe('#e5eefe')
+  })
+
+  test('read only: blocks are shown without tools, and clicking them selects nothing', () => {
+    const onSelect = vi.fn()
+    render(<SiteCanvas {...(props({ onSelect }) as never)} readOnly />)
+    expect(within(canvas()).getByRole('heading', { name: 'Hello' }).closest('.canvas-sample')).not.toBeNull()
+    expect(within(canvas()).queryByRole('button', { name: /^Edit/ })).toBeNull()
+    expect(canvas().querySelector('.canvas-item')).toBeNull()
+    fireEvent.click(within(canvas()).getByRole('heading', { name: 'Hello' }))
+    expect(onSelect).toHaveBeenCalledWith(undefined)
+  })
+
+  test('picks the header or the footer when asked to, and marks the one picked', () => {
+    const onSelectPart = vi.fn()
+    const onSelect = vi.fn()
+    render(
+      <SiteCanvas
+        {...(withLayout({ footer: { columns: [] } }) as never)}
+        onSelect={onSelect}
+        onSelectPart={onSelectPart}
+        selectedPart={'footer'}
+      />,
+    )
+    const footerPart = within(canvas()).getByRole('contentinfo').parentElement as HTMLElement
+    expect(footerPart).toHaveClass('canvas-part', 'is-selected')
+    expect(nav()).toHaveClass('site-nav', 'canvas-part')
+    expect(nav()).not.toHaveClass('is-selected')
+    fireEvent.click(footerPart)
+    fireEvent.click(nav())
+    expect(onSelectPart.mock.calls).toStrictEqual([['footer'], ['header']])
+    expect(onSelect).not.toHaveBeenCalled()
+  })
+
+  test('without picking, the header and footer are not marked and a footer click unselects', () => {
+    const onSelect = vi.fn()
+    render(<SiteCanvas {...(withLayout({ footer: { columns: [] } }) as never)} onSelect={onSelect} />)
+    const footerPart = within(canvas()).getByRole('contentinfo').parentElement as HTMLElement
+    expect(footerPart).not.toHaveClass('canvas-part')
+    expect(nav()).not.toHaveClass('canvas-part')
+    fireEvent.click(footerPart)
+    expect(onSelect).toHaveBeenCalledWith(undefined)
   })
 })

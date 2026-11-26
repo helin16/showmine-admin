@@ -8,7 +8,7 @@ import ICompany from '../../../Types/Company/ICompany'
 import IWebsite, { IWebsiteSection } from '../../../Types/Website/IWebsite'
 import WebsiteService from '../../../Services/WebsiteService'
 import translate from '../../../i18n/translate'
-import { BLOCKS, iImages } from './canvasBlocks'
+import { BLOCKS, Footer, getThemeStyle, iImages } from './canvasBlocks'
 
 // The page as the website shows it (specs/004-website-visual-editor, US2): the Reader's /website.css, the theme, the
 // menu and the blocks, at three widths. Laid out as the MConnect form designer (mgg-ui DesignTab, SMN-85): a bar with
@@ -28,7 +28,6 @@ export const loadSiteStyles = (url: string) => {
 export const WIDTHS = { desktop: '100%', tablet: '768px', phone: '375px' }
 const WIDTH_ICONS = { desktop: Icons.DesktopOutlined, tablet: Icons.TabletOutlined, phone: Icons.MobileOutlined }
 const FONT_PAIRS = ['modern', 'classic', 'friendly']
-const COLOR = /^#[0-9a-fA-F]{6}$/
 // Bootstrap Icons "list" (MIT), as the Reader's menu button (SMN-86).
 const LIST_ICON =
   'M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5'
@@ -93,6 +92,21 @@ const Canvas = styled.div`
   .site-canvas iframe {
     pointer-events: none;
   }
+  /* On the Layout page the header and footer are picked like blocks. */
+  .canvas-part {
+    cursor: pointer;
+    outline: 1px dashed transparent;
+    outline-offset: -2px;
+    &:hover {
+      outline-color: #91caff;
+    }
+    &.is-selected {
+      outline: 2px solid #1677ff;
+    }
+  }
+  .canvas-sample {
+    margin: 24px 0;
+  }
   .canvas-item {
     position: relative;
     margin: 24px 0;
@@ -139,10 +153,13 @@ const Canvas = styled.div`
   }
 `
 
+export type iCanvasPart = 'header' | 'footer'
 type iSiteCanvas = {
+  // Its theme and layout are drawn: the Layout page passes its unsaved ones.
   website?: IWebsite
   company?: ICompany
-  pageTitles: string[]
+  // Every page, in order, with the title as typed; the layout's hidden pages are left out of the menu.
+  pages: { id?: string; title: string }[]
   // The page being edited, by position; its title as typed.
   currentIndex: number
   sections: IWebsiteSection[]
@@ -157,12 +174,16 @@ type iSiteCanvas = {
   onPreview: () => void
   // Not while a save is in flight or the page is stale.
   canPreview: boolean
+  // The Layout page: blocks are shown, not edited; the header and footer are picked instead.
+  readOnly?: boolean
+  selectedPart?: iCanvasPart
+  onSelectPart?: (part: iCanvasPart) => void
 }
 
 const SiteCanvas = ({
   website,
   company,
-  pageTitles,
+  pages,
   currentIndex,
   sections,
   images,
@@ -173,6 +194,9 @@ const SiteCanvas = ({
   onRemove,
   onPreview,
   canPreview,
+  readOnly = false,
+  selectedPart,
+  onSelectPart,
 }: iSiteCanvas) => {
   const [css, setCss] = useState<string | null>(null)
   const [width, setWidth] = useState<keyof typeof WIDTHS>('desktop')
@@ -197,7 +221,11 @@ const SiteCanvas = ({
     }
   }, [stylesUrl])
 
-  const { primaryColor, fontPair } = website?.theme || {}
+  const { fontPair } = website?.theme || {}
+  const header = website?.layout?.header || {}
+  const hidden = header.hiddenPageIds || []
+  const partClass = (part: iCanvasPart) =>
+    onSelectPart ? `canvas-part${selectedPart === part ? ' is-selected' : ''}` : ''
   const nameOf = (section: IWebsiteSection, index: number) =>
     `${index + 1}. ${translate(`website-section-type-${section.type}`)}`
 
@@ -260,21 +288,24 @@ const SiteCanvas = ({
         >
           <div
             className={`site site-font-${FONT_PAIRS.includes(`${fontPair}`) ? fontPair : 'modern'}`}
-            style={
-              COLOR.test(`${primaryColor}`) ? ({ '--site-primary': primaryColor } as React.CSSProperties) : undefined
-            }
+            style={getThemeStyle(website?.theme || {})}
           >
             {/* As the Reader's Nav: below 1024 px of canvas width /website.css folds the links behind the button. */}
             <nav
-              className={`site-nav${isMenuOpen ? ' is-open' : ''}`}
+              className={`site-nav${isMenuOpen ? ' is-open' : ''} ${partClass('header')}`.trim()}
               aria-label={translate('website-pages')}
               onKeyDown={(e) => isMenuOpen && e.key === 'Escape' && closeMenu()}
-              // The menu is not a block: using it keeps the selected block.
-              onClick={(e) => e.stopPropagation()}
+              // The menu is not a block: using it keeps the selected block. On the Layout page it picks the header.
+              onClick={(e) => {
+                e.stopPropagation()
+                onSelectPart?.('header')
+              }}
             >
-              <a className={'site-name'} href={'#'}>
-                {company?.LogoAsset?.url ? <img src={company.LogoAsset.url} alt={''} /> : null}
-                <span>{company?.name}</span>
+              <a className={'site-name'} href={'#'} aria-label={header.showName === false ? company?.name : undefined}>
+                {header.showLogo !== false && company?.LogoAsset?.url ? (
+                  <img src={company.LogoAsset.url} alt={''} />
+                ) : null}
+                {header.showName !== false ? <span>{company?.name}</span> : null}
               </a>
               <button
                 ref={menuButton}
@@ -294,13 +325,24 @@ const SiteCanvas = ({
                 )}
               </button>
               <ul id={'site-menu'}>
-                {pageTitles.map((title, index) => (
-                  <li key={`${index}-${title}`}>
-                    <a href={'#'} aria-current={index === currentIndex ? 'page' : undefined} onClick={closeMenu}>
-                      {title}
-                    </a>
-                  </li>
-                ))}
+                {pages.map(({ id, title }, index) =>
+                  id && hidden.includes(id) ? null : (
+                    <li key={`${index}-${title}`}>
+                      <a href={'#'} aria-current={index === currentIndex ? 'page' : undefined} onClick={closeMenu}>
+                        {title}
+                      </a>
+                    </li>
+                  ),
+                )}
+                {(header.links || []).map((link, index) =>
+                  link.label ? (
+                    <li key={`link-${index}`}>
+                      <a href={'#'} onClick={closeMenu}>
+                        {link.label}
+                      </a>
+                    </li>
+                  ) : null,
+                )}
               </ul>
             </nav>
             <div className={'site-page'}>
@@ -309,6 +351,13 @@ const SiteCanvas = ({
                 const name = nameOf(section, index)
                 const isSelected = section.id === selectedId
                 const hasProblem = problemIds.includes(section.id)
+                if (readOnly) {
+                  return Block ? (
+                    <div key={section.id} className={'canvas-sample'}>
+                      <Block section={section} images={images} company={company} />
+                    </div>
+                  ) : null
+                }
                 return (
                   <div
                     key={section.id}
@@ -370,6 +419,16 @@ const SiteCanvas = ({
                   </div>
                 )
               })}
+            </div>
+            <div
+              className={partClass('footer')}
+              onClick={(e) => {
+                if (!onSelectPart) return
+                e.stopPropagation()
+                onSelectPart('footer')
+              }}
+            >
+              <Footer layout={website?.layout} images={images} />
             </div>
           </div>
         </div>

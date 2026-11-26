@@ -730,7 +730,7 @@ const WebsitePageEditPage = () => {
             <SiteCanvas
               website={website}
               company={company ?? undefined}
-              pageTitles={pages.map((p) => (p.id === state.page?.id ? draft.title : p.title))}
+              pages={pages.map((p) => ({ id: `${p.id}`, title: p.id === state.page?.id ? draft.title : p.title }))}
               currentIndex={pages.findIndex((p) => p.id === state.page?.id)}
               sections={draft.sections}
               images={state.images}

@@ -15,6 +15,7 @@ import MenuItems, {
   MENU_KEY_WEBSITE_PAGES,
   MENU_KEY_WEBSITE_PUBLISH,
   MENU_KEY_WEBSITE_SETTINGS,
+  MENU_KEY_WEBSITE_LAYOUT,
   MENU_KEY_WEBSITE_TEMPLATES,
 } from '../../../Components/Menu/MenuItems'
 import { messages } from '../../../i18n/messages'
@@ -24,6 +25,7 @@ import {
   COMPANY_USERS_URL,
   COMPANY_WEBSITE_PAGES_URL,
   COMPANY_WEBSITE_SETTINGS_URL,
+  COMPANY_WEBSITE_LAYOUT_URL,
   COMPANY_WEBSITE_TEMPLATES_URL,
   COMPANY_WEBSITE_URL,
 } from '../../../UrlMap'
@@ -77,6 +79,7 @@ describe('MenuItems', () => {
     expect(website?.children?.map(({ key, url, adminOnly }) => [key, url, adminOnly === true])).toEqual([
       [MENU_KEY_WEBSITE_PAGES, COMPANY_WEBSITE_PAGES_URL, false],
       [MENU_KEY_WEBSITE_PUBLISH, COMPANY_WEBSITE_URL, true],
+      [MENU_KEY_WEBSITE_LAYOUT, COMPANY_WEBSITE_LAYOUT_URL, true],
       [MENU_KEY_WEBSITE_TEMPLATES, COMPANY_WEBSITE_TEMPLATES_URL, true],
       [MENU_KEY_WEBSITE_SETTINGS, COMPANY_WEBSITE_SETTINGS_URL, true],
     ])

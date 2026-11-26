@@ -2,7 +2,7 @@ import React, { useMemo } from 'react'
 import DOMPurify from 'dompurify'
 import IAsset from '../../../Types/Asset/IAsset'
 import ICompany from '../../../Types/Company/ICompany'
-import { IWebsiteSection } from '../../../Types/Website/IWebsite'
+import { IWebsiteFooterItem, IWebsiteLayout, IWebsiteSection, IWebsiteTheme } from '../../../Types/Website/IWebsite'
 import translate from '../../../i18n/translate'
 
 // The blocks as the Reader draws them (specs/004-website-visual-editor, research R2): markup and class names copied
@@ -133,6 +133,92 @@ const Articles = ({ section }: iBlock) => (
     <p>{translate('website-canvas-articles', { count: Number(section.count) || 3 })}</p>
   </section>
 )
+
+// The Reader's theme variables (reader:src/components/Website/Site.tsx getThemeStyle): only values the API allows.
+const COLOR = /^#[0-9a-fA-F]{6}$/
+const COLOR_VARS = {
+  primaryColor: '--site-primary',
+  backgroundColor: '--site-bg',
+  headingColor: '--site-heading',
+  secondaryColor: '--site-secondary',
+} as const
+export const getThemeStyle = (theme: IWebsiteTheme = {}) => {
+  const style: { [name: string]: string } = {}
+  ;(Object.keys(COLOR_VARS) as (keyof typeof COLOR_VARS)[]).forEach((key) => {
+    if (COLOR.test(`${theme[key]}`)) style[COLOR_VARS[key]] = `${theme[key]}`
+  })
+  if ([960, 1140, 1280].includes(Number(theme.contentWidth))) style['--site-width'] = `${theme.contentWidth}px`
+  return Object.keys(style).length > 0 ? (style as React.CSSProperties) : undefined
+}
+
+// The Reader's footer icons (reader:src/components/Website/Footer.tsx), copied: tests in both pin the names.
+export const FOOTER_ICONS: { [icon: string]: string[] } = {
+  address: ['M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11Z', 'M14.5 10a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z'],
+  phone: ['M9 2h6a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z', 'M11 18h2'],
+  email: ['M5 5h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z', 'm3 7 9 6 9-6'],
+  wechat: [
+    'M9 4C5.1 4 2 6.5 2 9.6c0 1.8 1 3.3 2.6 4.3L4 16l2.6-1.3c.8.2 1.6.3 2.4.3',
+    'M15.5 9c3.6 0 6.5 2.3 6.5 5.2 0 1.5-.8 2.9-2.1 3.8l.6 2-2.3-1.1c-.9.3-1.8.4-2.7.4-3.6 0-6.5-2.3-6.5-5.1S11.9 9 15.5 9Z',
+  ],
+  message: ['M4 5h16v11H9l-5 4V5Z'],
+}
+
+const FooterItem = ({ item, images }: { item: IWebsiteFooterItem; images: iImages }) => {
+  switch (item.type) {
+    case 'text':
+      return <p className={'site-footer-text'}>{item.text}</p>
+    case 'contact':
+      return (
+        <p className={'site-footer-contact'}>
+          {FOOTER_ICONS[item.icon] ? (
+            <svg aria-hidden viewBox={'0 0 24 24'}>
+              {FOOTER_ICONS[item.icon].map((d) => (
+                <path key={d} d={d} />
+              ))}
+            </svg>
+          ) : null}
+          <span>{item.text}</span>
+        </p>
+      )
+    case 'button':
+      return item.label ? (
+        <p>
+          <a className={'site-button'} href={'#'}>
+            {item.label}
+          </a>
+        </p>
+      ) : null
+    case 'image': {
+      const url = urlOf(images, item.assetId)
+      if (!url) return null
+      const image = <img src={url} alt={item.alt || ''} />
+      return <p className={'site-footer-image'}>{item.link ? <a href={'#'}>{image}</a> : image}</p>
+    }
+    default:
+      return null
+  }
+}
+
+// The layout's footer, as the Reader's Footer draws it; none without one.
+export const Footer = ({ layout, images }: { layout?: IWebsiteLayout | null; images: iImages }) => {
+  const footer = layout?.footer
+  if (!footer) return null
+  return (
+    <footer className={'site-footer'}>
+      <div className={'site-footer-columns'}>
+        {(footer.columns || []).map((column, index) => (
+          <div key={index} className={'site-footer-column'}>
+            {column.heading ? <h2>{column.heading}</h2> : null}
+            {(column.items || []).map((item, itemIndex) => (
+              <FooterItem key={itemIndex} item={item} images={images} />
+            ))}
+          </div>
+        ))}
+      </div>
+      {footer.copyright ? <p className={'site-copyright'}>{footer.copyright}</p> : null}
+    </footer>
+  )
+}
 
 export const BLOCKS: { [type: string]: (props: iBlock) => React.ReactElement | null } = {
   hero: Hero,
