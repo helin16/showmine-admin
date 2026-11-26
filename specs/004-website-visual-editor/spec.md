@@ -74,7 +74,7 @@ The palette lists the block types (hero, text, image, gallery, contact details, 
 
 ### User Story 4 - Set the site layout (Priority: P2)
 
-An admin edits the Layout once for the whole site: a header (logo, website name, menu of pages), a footer (contact details, a short text, links), the theme (main colour and fonts, as today) and shared blocks that appear on every page, above or below its own blocks. Shared blocks are built on the same canvas, with the same palette. Layout changes, like page changes, go live when the site is published.
+An admin edits the Layout once for the whole site: a header (logo, website name, menu of pages, and up to four outside links such as Start free and Login), a footer (up to four columns of text, contact lines with icons, buttons and images, and a copyright line), the theme (main colour and fonts as today, plus background, heading and second-button colours and the content width) and shared blocks that appear on every page, above or below its own blocks. Shared blocks are built on the same canvas, with the same palette. Layout changes, like page changes, go live when the site is published.
 
 **Why this priority**: Header, footer and shared blocks repeat on every page; editing them once saves work and keeps the site consistent.
 
@@ -83,7 +83,7 @@ An admin edits the Layout once for the whole site: a header (logo, website name,
 **Acceptance Scenarios**:
 
 1. **Given** the Layout editor, **When** an admin changes the header, footer, theme or shared blocks and saves, **Then** every page's canvas shows the change and the site shows it has changes to publish.
-2. **Given** the header menu, **Then** it lists the site's pages in their order; an admin can hide a page from the menu.
+2. **Given** the header menu, **Then** it lists the site's pages in their order, then the outside links, all shown alike; an admin can hide a page from the menu.
 3. **Given** a member, **Then** they can see the layout on the canvas but not change it.
 4. **Given** a published site, **When** the layout changes, **Then** visitors see the old layout until the next publish.
 
@@ -125,7 +125,7 @@ In a page's Options, its page template can, for that page only: hide the header 
 - **FR-003**: Selecting a block MUST show its fields in a side panel; changes MUST show on the canvas at once and be saved only by Save.
 - **FR-004**: Blocks MUST be addable from a palette by drag and drop and by click, and movable by drag and drop and by the selected block's up and down controls. Every action MUST also work with the keyboard and be announced to screen readers.
 - **FR-005**: Section types, their fields, limits and checks MUST stay those of 001 (FR-006 to FR-008 and plan limits); the API remains their authority.
-- **FR-006**: The site MUST have one Layout: header (logo, website name, menu of its pages with each page shown or hidden), footer (contact details shown or hidden, a short text, a few links), theme (as 001), and shared blocks above and below each page's own blocks.
+- **FR-006**: The site MUST have one Layout: header (logo and website name shown or hidden, menu of its pages with each page shown or hidden, then up to four outside links), footer (up to four columns, each a heading and up to eight items: text, a contact line with an icon, a button, or an image with an optional link; and a copyright line), theme (001's main colour and fonts, plus background, heading and second-button colours and a content width of 960, 1140 or 1280 px), and shared blocks above and below each page's own blocks. Layout text is plain text.
 - **FR-007**: Only admins MAY change the Layout; members MAY see it on the canvas.
 - **FR-008**: Each page MAY have a page template, which members MAY change, that, for that page only, hides the header and/or footer, replaces them with its own, sets its own theme, or leaves out the shared blocks. With none, the page follows the layout.
 - **FR-009**: The layout and page templates MUST be part of the published copy: changing them MUST mark the site as having changes to publish, and visitors MUST see them only after publishing.
@@ -134,7 +134,7 @@ In a page's Options, its page template can, for that page only: hide the header 
 
 ### Key Entities
 
-- **Layout**: one per website. Header (logo shown or not, menu entries by page with a shown flag), footer (show contact details, text, links), theme, shared blocks above and below.
+- **Layout**: one per website. Header (logo and name shown or not, pages hidden from the menu, outside links), footer (columns of items, copyright line), shared blocks above and below. The theme stays in its own field.
 - **Page template**: on each page. Header: layout, hidden or own; footer: layout, hidden or own; theme: layout or own; shared blocks: included or left out. An own header, footer or theme has the same shape as the layout's.
 - **Published copy**: as 001, plus the layout and each page's effective layout.
 
@@ -156,11 +156,18 @@ In a page's Options, its page template can, for that page only: hide the header 
 - Members edit pages and their page templates (SMN-80, Clarifications); only admins change the Layout, publish and delete pages.
 - How drag and drop is built (a library or the browser's own) is decided in the plan; a new dependency must be justified (admin constitution I).
 - No new block types, and no code view (the form builder's `</>`): out of scope.
-- Delivered in slices, API first each time: (1) editor shell with Options; (2) canvas and side panel; (3) drag and drop; (4) layout; (5) page templates.
+- Delivered in slices, API first each time: (1) editor shell with Options; (2) canvas and side panel; (3) drag and drop; (4) layout, in two parts (Lin, 2026-11-26): 4a header, footer and theme, 4b shared blocks; (5) page templates.
 
 ## Clarifications
 
 ### Session 2026-11-25
 
 - Q: May members change a page's template (its overrides), or only admins? → A: Members may, as for the page's content; only admins publish (Lin).
-- Q: Does the header menu list only the site's pages, or also outside links? → A: Only the site's pages, in their order, each shown or hidden (Lin).
+- Q: Does the header menu list only the site's pages, or also outside links? → A: Only the site's pages, in their order, each shown or hidden (Lin). Superseded 2026-11-26, below.
+
+### Session 2026-11-26 (moving showmine.com.au onto the builder, SMN-87)
+
+- Q: Outside links in the menu? → A: Yes, up to four after the pages, shown like the page links (Lin).
+- Q: Footer? → A: Up to four columns of text, contact lines with icons, buttons and images, and a copyright line, as showmine.com.au (Lin).
+- Q: Content widths? → A: 960, 1140 or 1280 px (Lin).
+- Q: One delivery? → A: Two parts: 4a header, footer, theme; 4b shared blocks (Lin).

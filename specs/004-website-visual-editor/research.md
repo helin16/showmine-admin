@@ -41,8 +41,14 @@
 
 ## R5a. Saving the layout without false stale errors
 
-- **Decision**: `websites.layoutUpdatedAt` versions the layout alone. `PUT /website` with `layout` needs `layoutUpdatedAt` as loaded; an absent `layout` leaves it unchanged; `layout: null` resets it to the default. Other website saves (settings, SEO, address, publishing) neither need nor move it, so they cannot make a layout save stale, and the reverse.
+- **Superseded (2026-11-26, slice 4a)**: the layout is saved with the website's `updatedAt`, as the theme already is. Header, footer and theme are edited together on one Layout page, so a second version field would add a column and checks without a real case it protects; an admin whose save is refused reloads, as for settings.
+- **Original decision**: `websites.layoutUpdatedAt` versions the layout alone. `PUT /website` with `layout` needs `layoutUpdatedAt` as loaded; an absent `layout` leaves it unchanged; `layout: null` resets it to the default. Other website saves (settings, SEO, address, publishing) neither need nor move it, so they cannot make a layout save stale, and the reverse.
 - **Rationale**: `websites.updatedAt` moves on every website save; using it would refuse layout saves after unrelated edits.
+
+## R5c. Layout text is plain text
+
+- **Decision**: footer and header text is plain text with line breaks kept (`white-space: pre-line`), not HTML. Footer items are four small kinds (text, contact line with an icon from a fixed list, button, image with an optional link), enough for showmine.com.au's footer.
+- **Rationale**: no second HTML cleaning path (API and canvas) for a few lines of text; icons from a fixed list are drawn by the Reader, so no uploaded icon or SVG reaches the page.
 
 ## R5b. Limits
 

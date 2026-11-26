@@ -76,12 +76,19 @@ approval.
 
 **Independent Test**: spec US4.
 
-- [ ] T012 [P] [US4] API tests: `PUT /website` `layout` for admins (members 401), `layoutUpdatedAt` stale checks independent of other website saves, absent vs null `layout`, field checks and paths, at most 10 shared blocks, shared blocks checked as sections, images in shared blocks in use (usage, delete 409, clean-up), published copy carries `layout`, `contentChangedAt` set; migration up and down
-- [ ] T013 [US4] `api:migrations/2026112200000N-add-website-layout.js` (`websites.layout`, `websites.layoutUpdatedAt`, and `websitePages.template`, which stays unused until T019), model fields, checks in `api:src/helpers/WebsiteHelper.ts`, `PUT /website`, publish copy, image use, clean-up
-- [ ] T014 [P] [US4] Reader tests: effective header (logo, hidden pages), footer, shared blocks above and below; a copy without `layout` shows as today (SC-005)
-- [ ] T015 [US4] `reader:src/components/Website/{Site,Nav,Footer}.tsx`
-- [ ] T016 [P] [US4] Admin tests: Layout page for admins, read-only canvas for members, menu entry
-- [ ] T017 [US4] `admin:src/Pages/Website/WebsiteLayoutPage.tsx` (header, footer, theme, shared blocks on the canvas; the only place the theme is edited), `admin:src/UrlMap.ts`, route in `admin:src/Router.tsx` behind the admin route, menu Website > Layout (admins)
+Slice 4a (SMN-87a, Lin 2026-11-26): header, footer, theme.
+
+- [ ] T012 [P] [US4] API tests: `PUT /website` `layout` for admins (members 401), stale with `updatedAt` (R5a superseded), absent vs null `layout`, field checks and paths (header links, footer columns and items, urls, unknown fields), footer images checked and counted as used (usage, delete 409, clean-up), published copy carries `layout` with image addresses, `contentChangedAt` set; theme colours and `contentWidth`; migration up and down
+- [ ] T013 [US4] `api:migrations/20261126000000-add-website-layout.js` (`websites.layout`), model field, layout checks in `api:src/helpers/WebsiteHelper.ts`, theme keys and `PUT /website` in `api:src/controllers/Website/WebsiteController.ts`, publish copy, image use and clean-up
+- [ ] T014 [P] [US4] Reader tests: header (logo and name switches, hidden pages, outside links also in the folded menu), footer columns and items, copyright, theme variables; a copy without `layout` shows as today (SC-005)
+- [ ] T015 [US4] `reader:src/components/Website/{Site,Nav,Footer}.tsx`, `reader:public/website.css`
+- [ ] T016 [P] [US4] Admin tests: Layout page for admins (header, footer, theme tabs, save, stale), read-only for members, menu entry; the page editor's canvas shows the layout's header, footer and theme
+- [ ] T017 [US4] `admin:src/Pages/Website/WebsiteLayoutPage.tsx` (header, footer and theme on the canvas; the only place the theme is edited), `admin:src/UrlMap.ts`, route in `admin:src/Router.tsx`, menu Website > Layout
+
+Slice 4b (SMN-87b): shared blocks.
+
+- [ ] T017b [US4] Shared blocks above and below: API checks (as sections, at most 10 in all), image use, copy; Reader draws them; the Layout page's Blocks tab with the palette
+
 - [ ] T017a [US4] Starter templates set a layout (`api:src/templates/website/`), shown by the Reader template preview (`/t/<id>`); applying one replaces the layout (spec edge case)
 
 ---
