@@ -3,7 +3,7 @@ import { Checkbox, Input, Radio, Select } from 'antd'
 import Button from '../Form/Button'
 import Space from '../Form/Space'
 import MediaPicker from './MediaPicker'
-import { isLink, Thumbnail } from './SectionEditors'
+import { checkSection, getImageIds, isLink, Thumbnail } from './SectionEditors'
 import IAsset from '../../Types/Asset/IAsset'
 import {
   CONTACT_ICONS,
@@ -503,11 +503,20 @@ export const checkLayout = (layout: IWebsiteLayout): iErrors => {
       }
     }),
   )
+  ;(['sharedAbove', 'sharedBelow'] as const).forEach((key) =>
+    (layout[key] || []).forEach((section, index) =>
+      Object.entries(checkSection(section)).forEach(([field, problem]) => {
+        errors[`layout.${key}[${index}].${field}`] = problem
+      }),
+    ),
+  )
   return errors
 }
 
 // Every image id the layout uses.
-export const getLayoutImageIds = (layout?: IWebsiteLayout | null) =>
-  (layout?.footer?.columns || []).flatMap((column) =>
+export const getLayoutImageIds = (layout?: IWebsiteLayout | null) => [
+  ...(layout?.footer?.columns || []).flatMap((column) =>
     column.items.flatMap((item) => (item.type === 'image' && item.assetId ? [item.assetId] : [])),
-  )
+  ),
+  ...getImageIds([...(layout?.sharedAbove || []), ...(layout?.sharedBelow || [])]),
+]

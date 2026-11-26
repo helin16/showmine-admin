@@ -17,6 +17,7 @@ import PublishBar from '../../Components/Website/PublishBar'
 import SectionEditor, { checkSection, getImageIds, newSection } from '../../Components/Website/SectionEditors'
 import SeoFields from '../../Components/Website/SeoFields'
 import SiteCanvas from '../../Components/Website/Canvas/SiteCanvas'
+import { getLayoutImageIds } from '../../Components/Website/LayoutEditors'
 import BlockPalette, { BLOCK_TILE_GAP, BLOCK_TILE_SIZE } from '../../Components/Website/Canvas/BlockPalette'
 import styled from 'styled-components'
 import Dropdown from '../../Components/Form/Dropdown'
@@ -246,10 +247,13 @@ const WebsitePageEditPage = () => {
             : { ...s, page: undefined, draft: undefined, notFound: true },
         )
         const shown = kept ?? (page ? toDraft(page) : undefined)
-        const ids = [
-          ...getImageIds(shown?.sections || []),
-          ...(shown?.seo.imageAssetId ? [shown.seo.imageAssetId] : []),
-        ]
+        const ids = Array.from(
+          new Set([
+            ...getImageIds(shown?.sections || []),
+            ...(shown?.seo.imageAssetId ? [shown.seo.imageAssetId] : []),
+            ...getLayoutImageIds(website.layout),
+          ]),
+        )
         if (ids.length > 0) {
           // Thumbnails only: a failure leaves them loading, and saving or publishing still works.
           WebsiteService.getImages(1, ids)
@@ -733,6 +737,15 @@ const WebsitePageEditPage = () => {
               pages={pages.map((p) => ({ id: `${p.id}`, title: p.id === state.page?.id ? draft.title : p.title }))}
               currentIndex={pages.findIndex((p) => p.id === state.page?.id)}
               sections={draft.sections}
+              // The layout's shared blocks, shown around the page's own; they are edited on the Layout page.
+              fixedBlocks={[
+                { at: 0, sections: website?.layout?.sharedAbove || [], note: translate('website-canvas-shared') },
+                {
+                  at: draft.sections.length,
+                  sections: website?.layout?.sharedBelow || [],
+                  note: translate('website-canvas-shared'),
+                },
+              ]}
               images={state.images}
               selectedId={state.selectedId}
               problemIds={draft.sections

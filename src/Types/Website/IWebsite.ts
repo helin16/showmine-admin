@@ -31,9 +31,13 @@ export type IWebsiteLayout = {
     links?: { label: string; url: string }[]
   }
   footer?: { columns: IWebsiteFooterColumn[]; copyright?: string } | null
+  // Shared blocks above and below every page's own (slice 4b): page sections, at most LAYOUT_LIMITS.shared in all.
+  sharedAbove?: IWebsiteSection[]
+  sharedBelow?: IWebsiteSection[]
 }
 // The API's limits on the layout.
 export const LAYOUT_LIMITS = {
+  shared: 10,
   links: 4,
   columns: 4,
   items: 8,

@@ -13,7 +13,11 @@ import Spin from '../../Components/Form/Spin'
 import message from '../../Components/Form/message'
 import PublishBar from '../../Components/Website/PublishBar'
 import SiteCanvas, { iCanvasPart } from '../../Components/Website/Canvas/SiteCanvas'
-import { getImageIds } from '../../Components/Website/SectionEditors'
+import SectionEditor, { getImageIds, newSection } from '../../Components/Website/SectionEditors'
+import BlockPalette from '../../Components/Website/Canvas/BlockPalette'
+import { Radio } from 'antd'
+import Icons from '../../Components/Icons'
+import { BoxTitleDiv } from '../../Styles/AppWrapper'
 import {
   checkLayout,
   FooterEditor,
@@ -23,15 +27,23 @@ import {
   toLayoutPayload,
 } from '../../Components/Website/LayoutEditors'
 import IAsset from '../../Types/Asset/IAsset'
-import IWebsite, { IFieldError, IWebsiteLayout, IWebsitePage, IWebsiteTheme } from '../../Types/Website/IWebsite'
+import IWebsite, {
+  IFieldError,
+  IWebsiteLayout,
+  IWebsitePage,
+  IWebsiteSection,
+  IWebsiteTheme,
+  LAYOUT_LIMITS,
+} from '../../Types/Website/IWebsite'
 import WebsiteService from '../../Services/WebsiteService'
 import Utils from '../../Services/Utils'
 import translate from '../../i18n/translate'
 
-// The site layout (specs/004-website-visual-editor, US4, slice 4a): the header, footer and theme every page shows,
-// edited on the canvas with the first page as a sample. Admins only; members see it in the page editor.
+// The site layout (specs/004-website-visual-editor, US4, slices 4a and 4b): the header, footer, theme and shared
+// blocks every page shows, edited on the canvas with the first page as a sample. Admins only; members see it in the
+// page editor.
 type iDraft = { theme: IWebsiteTheme; layout: IWebsiteLayout }
-type iTab = 'header' | 'footer' | 'theme'
+type iTab = 'header' | 'footer' | 'theme' | 'blocks'
 type iState = {
   loading: boolean
   website?: IWebsite
@@ -44,17 +56,43 @@ type iState = {
   isStale: boolean
   images: { [assetId: string]: IAsset | null }
   count: number
+  // The shared block being edited.
+  selectedId?: string
 }
 const initState: iState = { loading: false, pages: [], errors: {}, saving: false, isStale: false, images: {}, count: 0 }
 
 const toDraft = (website: IWebsite): iDraft => ({
   theme: website.theme || {},
-  layout: { header: website.layout?.header || {}, footer: website.layout?.footer ?? null },
+  layout: {
+    header: website.layout?.header || {},
+    footer: website.layout?.footer ?? null,
+    sharedAbove: website.layout?.sharedAbove || [],
+    sharedBelow: website.layout?.sharedBelow || [],
+  },
 })
 const isSame = (a?: iDraft, b?: iDraft) => JSON.stringify(a) === JSON.stringify(b)
 // The tab a problem's field is on.
 const tabOf = (path: string): iTab =>
-  path.startsWith('layout.footer') ? 'footer' : path.startsWith('theme') ? 'theme' : 'header'
+  path.startsWith('layout.footer')
+    ? 'footer'
+    : path.startsWith('theme')
+      ? 'theme'
+      : path.startsWith('layout.shared')
+        ? 'blocks'
+        : 'header'
+
+// The canvas edits the shared blocks as one list, above ones first; `split` is how many are above the sample page.
+const getShared = (layout: IWebsiteLayout) => ({
+  shared: [...(layout.sharedAbove || []), ...(layout.sharedBelow || [])],
+  split: (layout.sharedAbove || []).length,
+})
+const toLists = (shared: IWebsiteSection[], split: number) => ({
+  sharedAbove: shared.slice(0, split),
+  sharedBelow: shared.slice(split),
+})
+// The API's path of a block in the one list: layout.sharedAbove[1] or layout.sharedBelow[0].
+const pathOf = (index: number, split: number) =>
+  index < split ? `layout.sharedAbove[${index}]` : `layout.sharedBelow[${index - split}]`
 
 // The canvas and the panel side by side, as the page editor; the panel goes under the canvas below 992px.
 const Layout = styled.div`
@@ -91,6 +129,7 @@ const WebsiteLayoutPage = () => {
   const isOn = company?.websiteBuilderEnabled === true
   const [state, setState] = useState(initState)
   const [tab, setTab] = useState<iTab>('header')
+  const [addTo, setAddTo] = useState<'above' | 'below'>('below')
   const companyIdRef = useRef(company?.id)
   companyIdRef.current = company?.id
   const isDirty = !!state.website && !!state.draft && !isSame(state.draft, toDraft(state.website))
@@ -104,7 +143,9 @@ const WebsiteLayoutPage = () => {
         if (!isCurrent) return
         const sorted = [...pages].sort((a, b) => a.position - b.position)
         setState((s) => ({ ...s, website, pages: sorted, draft: toDraft(website) }))
-        const ids = [...getLayoutImageIds(website.layout), ...getImageIds(sorted[0]?.sections || [])]
+        const ids = Array.from(
+          new Set([...getLayoutImageIds(website.layout), ...getImageIds(sorted[0]?.sections || [])]),
+        )
         if (ids.length > 0) {
           // Thumbnails only: a failure leaves them loading, and saving still works.
           WebsiteService.getImages(1, ids)
@@ -145,11 +186,54 @@ const WebsiteLayoutPage = () => {
     setState((s) =>
       s.draft ? { ...s, errors: {}, draft: { ...s.draft, layout: { ...s.draft.layout, ...changes } } } : s,
     )
-  const showProblems = (errors: { [path: string]: string }) => {
-    setState((s) => ({ ...s, errors }))
+  const addImages = (assets: IAsset[]) =>
+    setState((s) => ({
+      ...s,
+      images: { ...s.images, ...Object.fromEntries(assets.map((asset) => [`${asset.id}`, asset])) },
+    }))
+  const select = (selectedId?: string) => {
+    setState((s) => ({ ...s, selectedId }))
+    if (selectedId) setTab('blocks')
+  }
+  // A problem in a shared block selects that block, so its field is seen.
+  const showProblems = (errors: { [path: string]: string }, layout: IWebsiteLayout) => {
+    const { shared, split } = getShared(layout)
+    const withProblem = shared.find((_, i) =>
+      Object.keys(errors).some((path) => path.startsWith(`${pathOf(i, split)}.`)),
+    )
+    setState((s) => ({ ...s, errors, selectedId: withProblem?.id }))
     const [first] = Object.keys(errors)
     if (first) setTab(tabOf(first))
     message.error(translate('website-layout-has-problems'))
+  }
+  const setShared = (shared: IWebsiteSection[], split: number) => setLayout(toLists(shared, split))
+  // Added at the end of its place (above: just before the sample page), and selected.
+  const addBlock = (type: string) => {
+    if (!state.draft) return
+    const { shared, split } = getShared(state.draft.layout)
+    const section = newSection(type)
+    const at = addTo === 'above' ? split : shared.length
+    setShared([...shared.slice(0, at), section, ...shared.slice(at)], addTo === 'above' ? split + 1 : split)
+    select(section.id)
+  }
+  // Moving the last block above down, or the first below up, takes it past the sample page.
+  const moveBlock = (index: number, by: number) => {
+    if (!state.draft) return
+    const { shared, split } = getShared(state.draft.layout)
+    if (by === 1 && index === split - 1) return setShared(shared, split - 1)
+    if (by === -1 && index === split) return setShared(shared, split + 1)
+    const moved = [...shared]
+    const [section] = moved.splice(index, 1)
+    moved.splice(index + by, 0, section)
+    setShared(moved, split)
+  }
+  const removeBlock = (index: number) => {
+    if (!state.draft) return
+    const { shared, split } = getShared(state.draft.layout)
+    setShared(
+      shared.filter((_, i) => i !== index),
+      index < split ? split - 1 : split,
+    )
   }
 
   const save = () => {
@@ -157,7 +241,7 @@ const WebsiteLayoutPage = () => {
     if (!draft || !website) return
     const errors = checkLayout(draft.layout)
     if (Object.keys(errors).length > 0) {
-      showProblems(errors)
+      showProblems(errors, draft.layout)
       return
     }
     const companyId = company?.id
@@ -175,7 +259,7 @@ const WebsiteLayoutPage = () => {
         const { status, data } = err?.response || {}
         const fieldErrors = Object.fromEntries(((data?.errors || []) as IFieldError[]).map((e) => [e.path, e.message]))
         if (Object.keys(fieldErrors).length > 0) {
-          showProblems(fieldErrors)
+          showProblems(fieldErrors, draft.layout)
         } else if (status === 409) {
           // Another admin saved first: their change is kept, and this one waits for a reload.
           setState((s) => ({ ...s, isStale: true }))
@@ -204,6 +288,7 @@ const WebsiteLayoutPage = () => {
       { key: 'header', label: translate('website-layout-header') },
       { key: 'footer', label: translate('website-layout-footer') },
       { key: 'theme', label: translate('website-layout-theme') },
+      { key: 'blocks', label: translate('website-layout-blocks') },
     ] as const
     return (
       <div className={'layout-panel'}>
@@ -214,7 +299,10 @@ const WebsiteLayoutPage = () => {
                 key={key}
                 type={tab === key ? 'primary' : 'default'}
                 aria-pressed={tab === key}
-                onClick={() => setTab(key)}
+                onClick={() => {
+                  setTab(key)
+                  setState((s) => ({ ...s, selectedId: undefined }))
+                }}
               >
                 {label}
               </Button>
@@ -235,20 +323,88 @@ const WebsiteLayoutPage = () => {
               footer={draft.layout.footer}
               errors={state.errors}
               images={state.images}
-              onImagesPicked={(assets) =>
-                setState((s) => ({
-                  ...s,
-                  images: { ...s.images, ...Object.fromEntries(assets.map((asset) => [`${asset.id}`, asset])) },
-                }))
-              }
+              onImagesPicked={addImages}
               onChange={(footer) => setLayout({ footer })}
             />
           ) : null}
           {tab === 'theme' ? (
             <ThemeEditor theme={draft.theme} errors={state.errors} onChange={(theme) => setDraft({ theme })} />
           ) : null}
+          {tab === 'blocks' ? getBlocksPanel(draft.layout) : null}
         </div>
       </div>
+    )
+  }
+
+  // The selected shared block's fields with Back, as the page editor; else where new blocks go and the blocks to add.
+  const getBlocksPanel = (layout: IWebsiteLayout) => {
+    const { shared, split } = getShared(layout)
+    const index = shared.findIndex((section) => section.id === state.selectedId)
+    const section = shared[index]
+    if (section) {
+      const prefix = `${pathOf(index, split)}.`
+      const errors = Object.fromEntries(
+        Object.entries(state.errors)
+          .filter(([path]) => path.startsWith(prefix))
+          .map(([path, problem]) => [path.slice(prefix.length), problem]),
+      )
+      return (
+        <>
+          <Button type={'link'} size={'small'} style={{ paddingLeft: 0 }} onClick={() => select(undefined)}>
+            <Icons.ArrowLeftOutlined aria-hidden /> {translate('website-panel-back')}
+          </Button>
+          <BoxTitleDiv>
+            {`${translate(index < split ? 'website-layout-above' : 'website-layout-below')}: ${translate(
+              `website-section-type-${section.type}`,
+            )}`}
+          </BoxTitleDiv>
+          <SectionEditor
+            key={section.id}
+            section={section}
+            errors={errors}
+            images={state.images}
+            onImagesPicked={addImages}
+            onChange={(changed) =>
+              setShared(
+                shared.map((s) => (s.id === section.id ? changed : s)),
+                split,
+              )
+            }
+          />
+        </>
+      )
+    }
+    const isFull = shared.length >= LAYOUT_LIMITS.shared
+    // Problems about the shared blocks as a whole, or a block's type or id, which have no field of their own.
+    const general = Object.entries(state.errors).filter(
+      ([path]) =>
+        /^layout\.shared(Above|Below)?$/.test(path) || /^layout\.shared(Above|Below)\[\d+\]\.(type|id)$/.test(path),
+    )
+    return (
+      <>
+        <p style={{ color: '#6c757d' }}>{translate('website-layout-blocks-hint')}</p>
+        {general.length > 0 ? (
+          <Alert type={'error'} style={{ marginBottom: 8 }} message={general.map(([, problem]) => problem).join(' ')} />
+        ) : null}
+        <div style={{ marginBottom: 8 }}>
+          <span id={'layout-add-to'}>{translate('website-layout-add-to')}</span>{' '}
+          <Radio.Group
+            aria-labelledby={'layout-add-to'}
+            value={addTo}
+            onChange={(e) => setAddTo(e.target.value)}
+            options={[
+              { value: 'above', label: translate('website-layout-above') },
+              { value: 'below', label: translate('website-layout-below') },
+            ]}
+          />
+        </div>
+        <BlockPalette isFull={isFull} onAdd={addBlock} />
+        <small style={{ display: 'block', marginTop: 8, color: '#6c757d' }}>
+          {isFull
+            ? translate('website-layout-blocks-full', { max: LAYOUT_LIMITS.shared })
+            : translate('website-layout-blocks-count', { count: shared.length, max: LAYOUT_LIMITS.shared })}
+        </small>
+      </>
     )
   }
 
@@ -265,6 +421,7 @@ const WebsiteLayoutPage = () => {
     const { draft, website } = state
     if (!draft || !website) return null
     const sample = state.pages[0]
+    const { shared, split } = getShared(draft.layout)
     return (
       <Space orientation={'vertical'} style={{ width: '100%' }}>
         {state.isStale ? (
@@ -282,15 +439,33 @@ const WebsiteLayoutPage = () => {
               company={company ?? undefined}
               pages={state.pages.map((page) => ({ id: `${page.id}`, title: page.title }))}
               currentIndex={0}
-              sections={sample?.sections || []}
+              // The shared blocks are edited here; the first page is shown between them as a sample.
+              sections={shared}
+              fixedBlocks={[
+                {
+                  at: split,
+                  sections: sample?.sections || [],
+                  note: sample ? translate('website-layout-sample', { page: sample.title }) : undefined,
+                },
+              ]}
               images={state.images}
-              problemIds={[]}
-              readOnly
-              selectedPart={tab === 'theme' ? undefined : tab}
-              onSelectPart={(part: iCanvasPart) => setTab(part)}
-              onSelect={() => undefined}
-              onMove={() => undefined}
-              onRemove={() => undefined}
+              selectedId={state.selectedId}
+              problemIds={shared
+                .filter((_, i) => Object.keys(state.errors).some((path) => path.startsWith(`${pathOf(i, split)}.`)))
+                .map((section) => section.id)}
+              selectedPart={tab === 'header' || tab === 'footer' ? tab : undefined}
+              onSelectPart={(part: iCanvasPart) => {
+                setTab(part)
+                setState((s) => ({ ...s, selectedId: undefined }))
+              }}
+              onSelect={select}
+              onMove={moveBlock}
+              canMove={(index, by) =>
+                (by === -1 && index === split) ||
+                (by === 1 && index === split - 1) ||
+                (index + by >= 0 && index + by < shared.length)
+              }
+              onRemove={removeBlock}
               onPreview={preview}
               // The preview shows what is saved.
               canPreview={!isDirty && !state.saving}

@@ -110,6 +110,28 @@ describe('WebsitePageEditPage', () => {
     expect(optionsField('Title')).toHaveValue('Home')
   })
 
+  // Slice 4b: the layout's shared blocks are shown around the page's own, not edited here.
+  test('shows the shared blocks read-only around the page, marked as shared', async () => {
+    vi.mocked(WebsiteService.getPages).mockResolvedValue([page()] as never)
+    vi.mocked(WebsiteService.get).mockResolvedValue({
+      ...website,
+      layout: {
+        sharedAbove: [{ id: 'a', type: 'hero', heading: 'Top' }],
+        sharedBelow: [{ id: 'b', type: 'hero', heading: 'Band' }],
+      },
+    } as never)
+    renderPage()
+    const canvas = await screen.findByTestId('site-canvas')
+    await within(canvas).findByRole('heading', { name: 'Hello' })
+    expect(
+      within(canvas)
+        .getAllByRole('heading', { level: 1 })
+        .map((h) => h.textContent),
+    ).toStrictEqual(['Top', 'Hello', 'Band'])
+    expect(within(canvas).getAllByText('Shared on every page: edit it in Website > Layout')).toHaveLength(2)
+    expect(within(canvas).getAllByRole('button', { name: /^Edit / })).toHaveLength(2)
+  })
+
   test('a selected block shows its fields with Back; Back returns to the blocks', async () => {
     await loaded()
     expect(screen.getByText('1. Hero')).toBeInTheDocument()

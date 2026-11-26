@@ -35,6 +35,7 @@ type iProblem = { text: string; pageId?: string; isLayout?: boolean }
 const PROBLEM_PATH = /^pages\[([^\]]+)\](?:\.sections\[(\d+)\])?/
 const HEADER_LINK_PATH = /^layout\.header\.links\[(\d+)\]/
 const FOOTER_PATH = /^layout\.footer\.columns\[(\d+)\](?:\.items\[(\d+)\])?/
+const SHARED_PATH = /^layout\.shared(Above|Below)\[(\d+)\]/
 
 // "layout.footer.columns[0].items[2].url" becomes "Footer, column 1, item 3".
 const describeLayoutPath = (path: string) => {
@@ -48,6 +49,10 @@ const describeLayoutPath = (path: string) => {
     })
   }
   if (footer) return translate('website-publish-problem-footer-column', { column: Number(footer[1]) + 1 })
+  const shared = SHARED_PATH.exec(path)
+  if (shared) {
+    return translate(`website-publish-problem-shared-${shared[1].toLowerCase()}`, { number: Number(shared[2]) + 1 })
+  }
   return translate('website-layout')
 }
 

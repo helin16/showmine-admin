@@ -107,6 +107,17 @@ const Canvas = styled.div`
   .canvas-sample {
     margin: 24px 0;
   }
+  .canvas-sample-note {
+    display: inline-block;
+    margin-bottom: 4px;
+    padding: 0 6px;
+    border-radius: 4px;
+    background: #f0f2f5;
+    color: #6c757d;
+    font:
+      12px/20px system-ui,
+      sans-serif;
+  }
   .canvas-item {
     position: relative;
     margin: 24px 0;
@@ -170,12 +181,16 @@ type iSiteCanvas = {
   // A block's id, or nothing when the grey canvas around the page is clicked.
   onSelect: (id?: string) => void
   onMove: (index: number, by: number) => void
+  // Whether a block may move; by default, within the list. The Layout page also moves one past the sample page.
+  canMove?: (index: number, by: number) => boolean
   onRemove: (index: number) => void
   onPreview: () => void
   // Not while a save is in flight or the page is stale.
   canPreview: boolean
-  // The Layout page: blocks are shown, not edited; the header and footer are picked instead.
-  readOnly?: boolean
+  // Blocks shown, not edited, before the editable block at `at` (or after the last): the layout's shared blocks in
+  // the page editor, the sample page on the Layout page. A note says why they cannot be edited here.
+  fixedBlocks?: { at: number; sections: IWebsiteSection[]; note?: string }[]
+  // The Layout page: the header and footer are picked.
   selectedPart?: iCanvasPart
   onSelectPart?: (part: iCanvasPart) => void
 }
@@ -191,10 +206,11 @@ const SiteCanvas = ({
   problemIds,
   onSelect,
   onMove,
+  canMove = (index: number, by: number) => index + by >= 0 && index + by < sections.length,
   onRemove,
   onPreview,
   canPreview,
-  readOnly = false,
+  fixedBlocks = [],
   selectedPart,
   onSelectPart,
 }: iSiteCanvas) => {
@@ -231,6 +247,18 @@ const SiteCanvas = ({
     onSelectPart ? `canvas-part${selectedPart === part ? ' is-selected' : ''}` : ''
   const nameOf = (section: IWebsiteSection, index: number) =>
     `${index + 1}. ${translate(`website-section-type-${section.type}`)}`
+  const getFixed = (at: number) =>
+    fixedBlocks
+      .filter((group) => group.at === at && group.sections.length > 0)
+      .map((group, groupIndex) => (
+        <div key={`fixed-${at}-${groupIndex}`} className={'canvas-sample'}>
+          {group.note ? <span className={'canvas-sample-note'}>{group.note}</span> : null}
+          {group.sections.map((section) => {
+            const Block = BLOCKS[section.type]
+            return Block ? <Block key={section.id} section={section} images={images} company={company} /> : null
+          })}
+        </div>
+      ))
 
   return (
     <div>
@@ -352,74 +380,70 @@ const SiteCanvas = ({
                 const name = nameOf(section, index)
                 const isSelected = section.id === selectedId
                 const hasProblem = problemIds.includes(section.id)
-                if (readOnly) {
-                  return Block ? (
-                    <div key={section.id} className={'canvas-sample'}>
-                      <Block section={section} images={images} company={company} />
-                    </div>
-                  ) : null
-                }
                 return (
-                  <div
-                    key={section.id}
-                    data-testid={`canvas-item-${section.id}`}
-                    className={`canvas-item${isSelected ? ' is-selected' : ''}${hasProblem ? ' has-problem' : ''}`}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onSelect(section.id)
-                    }}
-                  >
-                    {hasProblem ? (
-                      <span className={'canvas-problem ant-form-item-explain-error'}>
-                        {translate('website-canvas-has-problems')}
-                      </span>
-                    ) : null}
-                    {/* The keyboard way in: the tools show while one of them has focus. */}
-                    <div className={'canvas-tools'} onClick={(e) => e.stopPropagation()}>
-                      <Button
-                        type={'primary'}
-                        size={'small'}
-                        aria-label={translate('website-canvas-edit', { name })}
-                        aria-pressed={isSelected}
-                        icon={<Icons.EditOutlined aria-hidden />}
-                        onClick={() => onSelect(section.id)}
-                      />
-                      <Button
-                        type={'primary'}
-                        size={'small'}
-                        aria-label={translate('website-move-up', { name })}
-                        disabled={index === 0}
-                        icon={<Icons.UpOutlined aria-hidden />}
-                        onClick={() => onMove(index, -1)}
-                      />
-                      <Button
-                        type={'primary'}
-                        size={'small'}
-                        aria-label={translate('website-move-down', { name })}
-                        disabled={index === sections.length - 1}
-                        icon={<Icons.DownOutlined aria-hidden />}
-                        onClick={() => onMove(index, 1)}
-                      />
-                      <PopConfirm
-                        title={translate('website-section-remove-confirm')}
-                        okText={translate('website-remove')}
-                        cancelText={translate('cancel')}
-                        okButtonProps={{ danger: true }}
-                        onConfirm={() => onRemove(index)}
-                      >
+                  <React.Fragment key={section.id}>
+                    {getFixed(index)}
+                    <div
+                      data-testid={`canvas-item-${section.id}`}
+                      className={`canvas-item${isSelected ? ' is-selected' : ''}${hasProblem ? ' has-problem' : ''}`}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onSelect(section.id)
+                      }}
+                    >
+                      {hasProblem ? (
+                        <span className={'canvas-problem ant-form-item-explain-error'}>
+                          {translate('website-canvas-has-problems')}
+                        </span>
+                      ) : null}
+                      {/* The keyboard way in: the tools show while one of them has focus. */}
+                      <div className={'canvas-tools'} onClick={(e) => e.stopPropagation()}>
                         <Button
                           type={'primary'}
-                          danger
                           size={'small'}
-                          aria-label={translate('website-remove-named', { name })}
-                          icon={<Icons.DeleteOutlined aria-hidden />}
+                          aria-label={translate('website-canvas-edit', { name })}
+                          aria-pressed={isSelected}
+                          icon={<Icons.EditOutlined aria-hidden />}
+                          onClick={() => onSelect(section.id)}
                         />
-                      </PopConfirm>
+                        <Button
+                          type={'primary'}
+                          size={'small'}
+                          aria-label={translate('website-move-up', { name })}
+                          disabled={!canMove(index, -1)}
+                          icon={<Icons.UpOutlined aria-hidden />}
+                          onClick={() => onMove(index, -1)}
+                        />
+                        <Button
+                          type={'primary'}
+                          size={'small'}
+                          aria-label={translate('website-move-down', { name })}
+                          disabled={!canMove(index, 1)}
+                          icon={<Icons.DownOutlined aria-hidden />}
+                          onClick={() => onMove(index, 1)}
+                        />
+                        <PopConfirm
+                          title={translate('website-section-remove-confirm')}
+                          okText={translate('website-remove')}
+                          cancelText={translate('cancel')}
+                          okButtonProps={{ danger: true }}
+                          onConfirm={() => onRemove(index)}
+                        >
+                          <Button
+                            type={'primary'}
+                            danger
+                            size={'small'}
+                            aria-label={translate('website-remove-named', { name })}
+                            icon={<Icons.DeleteOutlined aria-hidden />}
+                          />
+                        </PopConfirm>
+                      </div>
+                      {Block ? <Block section={section} images={images} company={company} /> : null}
                     </div>
-                    {Block ? <Block section={section} images={images} company={company} /> : null}
-                  </div>
+                  </React.Fragment>
                 )
               })}
+              {getFixed(sections.length)}
             </div>
             <div
               className={partClass('footer')}

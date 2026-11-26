@@ -492,14 +492,44 @@ describe('SiteCanvas layout', () => {
     expect((canvas().firstElementChild as HTMLElement).style.getPropertyValue('--site-bg')).toBe('#e5eefe')
   })
 
-  test('read only: blocks are shown without tools, and clicking them selects nothing', () => {
+  test('fixed blocks are shown in their places without tools, with their note; clicking them selects nothing', () => {
     const onSelect = vi.fn()
-    render(<SiteCanvas {...(props({ onSelect }) as never)} readOnly />)
-    expect(within(canvas()).getByRole('heading', { name: 'Hello' }).closest('.canvas-sample')).not.toBeNull()
+    const fixed = (id: string, heading: string) => ({ id, type: 'hero', heading })
+    render(
+      <SiteCanvas
+        {...(props({ onSelect, sections: [] }) as never)}
+        fixedBlocks={[
+          { at: 0, sections: [fixed('f1', 'Top')], note: 'Shared' },
+          { at: 0, sections: [] },
+          { at: 0, sections: [fixed('f2', 'Bottom')] },
+        ]}
+      />,
+    )
+    const top = within(canvas()).getByRole('heading', { name: 'Top' }).closest('.canvas-sample') as HTMLElement
+    expect(within(top).getByText('Shared')).toHaveClass('canvas-sample-note')
+    expect(canvas().querySelectorAll('.canvas-sample')).toHaveLength(2)
     expect(within(canvas()).queryByRole('button', { name: /^Edit/ })).toBeNull()
-    expect(canvas().querySelector('.canvas-item')).toBeNull()
-    fireEvent.click(within(canvas()).getByRole('heading', { name: 'Hello' }))
+    fireEvent.click(within(canvas()).getByRole('heading', { name: 'Top' }))
     expect(onSelect).toHaveBeenCalledWith(undefined)
+  })
+
+  test('fixed blocks go before the editable block at their place, or after the last', () => {
+    const hero = (id: string, heading: string) => ({ id, type: 'hero', heading })
+    render(
+      <SiteCanvas
+        {...(props({ sections: [hero('a', 'One'), hero('b', 'Two')] }) as never)}
+        fixedBlocks={[
+          { at: 1, sections: [hero('m', 'Middle')] },
+          { at: 2, sections: [hero('z', 'End')] },
+        ]}
+      />,
+    )
+    expect(
+      within(canvas())
+        .getAllByRole('heading', { level: 1 })
+        .map((h) => h.textContent),
+    ).toStrictEqual(['One', 'Middle', 'Two', 'End'])
+    expect(within(canvas()).getAllByRole('button', { name: /^Edit/ })).toHaveLength(2)
   })
 
   test('picks the header or the footer when asked to, and marks the one picked', () => {

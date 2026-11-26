@@ -136,6 +136,8 @@ describe('WebsiteLayoutPage', () => {
           links: [{ label: 'Start free', url: 'https://admin.test/signup' }],
         },
         footer: null,
+        sharedAbove: [],
+        sharedBelow: [],
       },
       updatedAt: 'w-time',
     })
@@ -380,5 +382,122 @@ describe('WebsiteLayoutPage', () => {
     vi.mocked(WebsiteService.get).mockResolvedValue(website() as never)
     fireEvent.click(screen.getByText('Try again'))
     await screen.findByRole('heading', { name: 'Hello' })
+  })
+
+  // Slice 4b (T017d): shared blocks above and below every page.
+  describe('shared blocks', () => {
+    const shared = (id: string, heading: string) => ({ id, type: 'hero', heading })
+    const headings = () =>
+      within(canvas())
+        .getAllByRole('heading', { level: 1 })
+        .map((h) => h.textContent)
+    const sentLayout = () => vi.mocked(WebsiteService.update).mock.calls[0][0].layout
+
+    test('adds blocks below and above every page, edits one, and saves them', async () => {
+      vi.mocked(WebsiteService.update).mockResolvedValue(website() as never)
+      await loaded()
+      tab('Blocks')
+      expect(screen.getByText('0 of 10 shared blocks')).toBeInTheDocument()
+
+      fireEvent.click(screen.getByRole('button', { name: 'Add Hero' }))
+      type(screen.getByLabelText('Heading'), 'Signup Today')
+      fireEvent.click(screen.getByText('Back'))
+      fireEvent.click(screen.getByLabelText('Above every page'))
+      fireEvent.click(screen.getByRole('button', { name: 'Add Hero' }))
+      type(screen.getByLabelText('Heading'), 'Welcome')
+
+      // The sample page sits between them, marked as a sample.
+      expect(headings()).toStrictEqual(['Welcome', 'Hello', 'Signup Today'])
+      expect(within(canvas()).getByText('Sample: the page Home')).toBeInTheDocument()
+      fireEvent.click(saveBtn())
+      await waitFor(() => expect(WebsiteService.update).toHaveBeenCalled())
+      expect(sentLayout().sharedAbove).toStrictEqual([{ id: expect.any(String), type: 'hero', heading: 'Welcome' }])
+      expect(sentLayout().sharedBelow).toStrictEqual([
+        { id: expect.any(String), type: 'hero', heading: 'Signup Today' },
+      ])
+    })
+
+    test('moving a block past the sample page moves it below or above', async () => {
+      vi.mocked(WebsiteService.update).mockResolvedValue(website() as never)
+      await loaded({ layout: { sharedAbove: [shared('a', 'Top')], sharedBelow: [shared('b', 'Band')] } })
+      expect(headings()).toStrictEqual(['Top', 'Hello', 'Band'])
+
+      fireEvent.click(within(canvas()).getByRole('button', { name: 'Move 1. Hero down' }))
+      expect(headings()).toStrictEqual(['Hello', 'Top', 'Band'])
+      expect(within(canvas()).getByRole('button', { name: 'Move 2. Hero down' })).toBeDisabled()
+      fireEvent.click(within(canvas()).getByRole('button', { name: 'Move 1. Hero down' }))
+      expect(headings()).toStrictEqual(['Hello', 'Band', 'Top'])
+      // The first block below can still go up, past the sample page.
+      fireEvent.click(within(canvas()).getByRole('button', { name: 'Move 1. Hero up' }))
+      expect(headings()).toStrictEqual(['Band', 'Hello', 'Top'])
+      expect(within(canvas()).getByRole('button', { name: 'Move 1. Hero up' })).toBeDisabled()
+
+      fireEvent.click(saveBtn())
+      await waitFor(() => expect(WebsiteService.update).toHaveBeenCalled())
+      expect(sentLayout().sharedAbove).toStrictEqual([shared('b', 'Band')])
+      expect(sentLayout().sharedBelow).toStrictEqual([shared('a', 'Top')])
+    })
+
+    test('a lone block above can still go down, past the sample page', async () => {
+      await loaded({ layout: { sharedAbove: [shared('a', 'Top')] } })
+      fireEvent.click(within(canvas()).getByRole('button', { name: 'Move 1. Hero down' }))
+      expect(headings()).toStrictEqual(['Hello', 'Top'])
+      expect(within(canvas()).getByRole('button', { name: 'Move 1. Hero down' })).toBeDisabled()
+    })
+
+    test('removes a block', async () => {
+      vi.mocked(WebsiteService.update).mockResolvedValue(website() as never)
+      await loaded({ layout: { sharedAbove: [shared('a', 'Top')], sharedBelow: [shared('b', 'Band')] } })
+      fireEvent.click(within(canvas()).getByRole('button', { name: 'Remove 1. Hero' }))
+      fireEvent.click(await screen.findByRole('button', { name: 'Remove' }))
+      expect(headings()).toStrictEqual(['Hello', 'Band'])
+      fireEvent.click(saveBtn())
+      await waitFor(() => expect(WebsiteService.update).toHaveBeenCalled())
+      expect(sentLayout().sharedAbove).toStrictEqual([])
+      expect(sentLayout().sharedBelow).toStrictEqual([shared('b', 'Band')])
+    })
+
+    test('clicking a block on the canvas opens it in the Blocks tab', async () => {
+      await loaded({ layout: { sharedBelow: [shared('b', 'Band')] } })
+      fireEvent.click(within(canvas()).getByRole('heading', { name: 'Band' }))
+      expect(screen.getByText('Below every page: Hero')).toBeInTheDocument()
+      expect(screen.getByLabelText('Heading')).toHaveValue('Band')
+    })
+
+    test('ten in all is the most', async () => {
+      const ten = Array.from({ length: 10 }, (_, i) => shared(`s${i}`, `B${i}`))
+      await loaded({ layout: { sharedAbove: ten.slice(0, 4), sharedBelow: ten.slice(4) } })
+      tab('Blocks')
+      expect(screen.getByText('10 shared blocks is the most.')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Add Hero' })).toBeDisabled()
+    })
+
+    test('a bad link is found before saving and its block opened', async () => {
+      await loaded({ layout: { sharedBelow: [{ ...shared('b', 'Band'), buttonUrl: 'javascript:alert(1)' }] } })
+      fireEvent.click(screen.getByRole('checkbox', { name: 'Show the website name' }))
+      fireEvent.click(saveBtn())
+      expect(WebsiteService.update).not.toHaveBeenCalled()
+      expect(screen.getByText('Below every page: Hero')).toBeInTheDocument()
+      expect(within(canvas()).getByText('Needs fixing')).toBeInTheDocument()
+    })
+
+    test('problems from the API open the block, or show over the blocks', async () => {
+      vi.mocked(WebsiteService.update).mockRejectedValue(
+        httpError(400, {
+          errors: [
+            { path: 'layout.sharedBelow[0].heading', message: 'Too long.' },
+            { path: 'layout.shared', message: 'The shared blocks are too large.' },
+          ],
+        }),
+      )
+      await loaded({ layout: { sharedAbove: [shared('a', 'Top')], sharedBelow: [shared('b', 'Band')] } })
+      fireEvent.click(screen.getByRole('checkbox', { name: 'Show the website name' }))
+      fireEvent.click(saveBtn())
+
+      expect(await screen.findByText('Too long.')).toBeInTheDocument()
+      expect(screen.getByText('Below every page: Hero')).toBeInTheDocument()
+      fireEvent.click(screen.getByText('Back'))
+      expect(screen.getByText('The shared blocks are too large.')).toBeInTheDocument()
+    })
   })
 })

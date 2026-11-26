@@ -143,6 +143,8 @@ describe('PublishBar', () => {
           { path: 'layout.footer.columns[0].items[2].assetId', message: 'Missing.' },
           { path: 'layout.footer.columns[3].heading', message: 'Too long.' },
           { path: 'layout.extra', message: 'Not a known field.' },
+          { path: 'layout.sharedAbove[0].buttonUrl', message: 'No page has this address.' },
+          { path: 'layout.sharedBelow[2].assetId', message: 'Missing.' },
         ],
         [],
       ),
@@ -151,6 +153,8 @@ describe('PublishBar', () => {
       { text: 'Footer, column 1, item 3: Missing.', isLayout: true },
       { text: 'Footer, column 4: Too long.', isLayout: true },
       { text: 'Website layout: Not a known field.', isLayout: true },
+      { text: 'Above every page, block 1: No page has this address.', isLayout: true },
+      { text: 'Below every page, block 3: Missing.', isLayout: true },
     ])
   })
 
