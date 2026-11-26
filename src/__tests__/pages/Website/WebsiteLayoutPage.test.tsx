@@ -106,6 +106,30 @@ describe('WebsiteLayoutPage', () => {
     expect(screen.getByText('Show the logo')).toBeInTheDocument()
   })
 
+  test('has the tabs in a rail on the right of the panel, as the page editor, opening Header first', async () => {
+    await loaded()
+    const rail = screen.getByRole('group', { name: 'Panel tabs' })
+    const content = screen.getByRole('region', { name: 'Panel' })
+    expect(content.parentElement).toBe(rail.parentElement)
+    expect(content.nextElementSibling).toBe(rail)
+    expect(
+      within(rail)
+        .getAllByRole('button')
+        .map((button) => button.textContent),
+    ).toStrictEqual(['Header', 'Footer', 'Theme', 'Blocks'])
+    within(rail)
+      .getAllByRole('button')
+      .forEach((button) => expect(button.querySelector('.anticon')).not.toBeNull())
+    expect(within(rail).getByRole('button', { name: 'Header', pressed: true })).toBeInTheDocument()
+    expect(within(content).getByText('Show the logo')).toBeInTheDocument()
+
+    tab('Footer')
+    expect(within(rail).getByRole('button', { name: 'Footer', pressed: true })).toBeInTheDocument()
+    expect(within(rail).getByRole('button', { name: 'Header', pressed: false })).toBeInTheDocument()
+    expect(within(content).getByText('Show a footer')).toBeInTheDocument()
+    expect(within(content).queryByText('Show the logo')).toBeNull()
+  })
+
   test('hides a page, adds an outside link and saves the whole layout with the theme', async () => {
     const saved = website({ layout: { header: { hiddenPageIds: ['p2'] }, footer: null }, updatedAt: 'later' })
     vi.mocked(WebsiteService.update).mockResolvedValue(saved as never)
@@ -392,6 +416,18 @@ describe('WebsiteLayoutPage', () => {
         .getAllByRole('heading', { level: 1 })
         .map((h) => h.textContent)
     const sentLayout = () => vi.mocked(WebsiteService.update).mock.calls[0][0].layout
+
+    test('a tab in the rail closes the open block', async () => {
+      await loaded({ layout: { sharedBelow: [shared('b', 'Band')] } })
+      tab('Blocks')
+      fireEvent.click(screen.getByRole('button', { name: 'Edit 1. Hero' }))
+      expect(screen.getByText('Below every page: Hero')).toBeInTheDocument()
+      tab('Header')
+      tab('Blocks')
+      expect(screen.queryByText('Below every page: Hero')).toBeNull()
+      expect(screen.getByRole('button', { name: 'Add Hero' })).toBeInTheDocument()
+      expect(canvas().querySelector('.canvas-item.is-selected')).toBeNull()
+    })
 
     test('adds blocks below and above every page, edits one, and saves them', async () => {
       vi.mocked(WebsiteService.update).mockResolvedValue(website() as never)

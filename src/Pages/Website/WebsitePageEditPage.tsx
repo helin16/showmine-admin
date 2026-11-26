@@ -17,8 +17,9 @@ import PublishBar from '../../Components/Website/PublishBar'
 import SectionEditor, { checkSection, getImageIds, newSection } from '../../Components/Website/SectionEditors'
 import SeoFields from '../../Components/Website/SeoFields'
 import SiteCanvas from '../../Components/Website/Canvas/SiteCanvas'
+import SidePanel from '../../Components/Website/SidePanel'
 import { getLayoutImageIds } from '../../Components/Website/LayoutEditors'
-import BlockPalette, { BLOCK_TILE_GAP, BLOCK_TILE_SIZE } from '../../Components/Website/Canvas/BlockPalette'
+import BlockPalette from '../../Components/Website/Canvas/BlockPalette'
 import styled from 'styled-components'
 import Dropdown from '../../Components/Form/Dropdown'
 import Modal from '../../Components/Form/Modal'
@@ -91,9 +92,8 @@ const toDraft = (page: IWebsitePage): iDraft => ({
 })
 const isSame = (a?: iDraft, b?: iDraft) => JSON.stringify(a) === JSON.stringify(b)
 
-// The canvas and the panel side by side, as the MConnect form designer (mgg-ui DesignTab): the panel is as wide as a
-// row of block tiles (3, then 4 from 1600px and 5 from 1920px); narrower than 992px it goes under the canvas.
-const PANEL_PADDING = '12px'
+// The canvas and the panel side by side, as the MConnect form designer (mgg-ui DesignTab); narrower than 992px the
+// panel goes under the canvas. The panel sizes itself to its block tiles.
 const DesignLayout = styled.div`
   display: flex;
   flex-direction: column;
@@ -104,7 +104,6 @@ const DesignLayout = styled.div`
   @media (min-width: 992px) {
     flex-direction: row;
     align-items: flex-start;
-    --block-tiles: 3;
     .design-canvas {
       flex: 1 1 0;
     }
@@ -115,81 +114,6 @@ const DesignLayout = styled.div`
       /* A long Settings tab still scrolls while the panel sticks. */
       max-height: 100vh;
       overflow-y: auto;
-    }
-    .panel-content {
-      width: calc(
-        var(--block-tiles) * ${BLOCK_TILE_SIZE} + (var(--block-tiles) - 1) * ${BLOCK_TILE_GAP} + 2 * ${PANEL_PADDING}
-      );
-    }
-  }
-  @media (min-width: 1600px) {
-    --block-tiles: 4;
-  }
-  @media (min-width: 1920px) {
-    --block-tiles: 5;
-  }
-`
-
-// The panel: the open tab's content, with the tab rail on the far right and a notch on the active tab.
-const SidePanel = styled.div`
-  display: flex;
-  border: 1px solid #dee2e6;
-  border-radius: 6px;
-  background: #f8f9fa;
-  min-height: 300px;
-  .panel-content {
-    flex: 1;
-    min-width: 0;
-    padding: ${PANEL_PADDING};
-  }
-  .panel-tabs {
-    flex: 0 0 auto;
-    display: flex;
-    flex-direction: column;
-    border-left: 1px solid #dee2e6;
-    background: #f1f3f5;
-    button {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      padding: 12px 10px;
-      border: 0;
-      border-radius: 0;
-      background: transparent;
-      color: #495057;
-      font-size: 0.8rem;
-      cursor: pointer;
-      position: relative;
-      .anticon {
-        font-size: 20px;
-      }
-      &.active {
-        background: #fff;
-        color: #212529;
-        font-weight: 600;
-      }
-      &.active::before,
-      &.active::after {
-        content: '';
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 0;
-        height: 0;
-        border-style: solid;
-        border-color: transparent;
-      }
-      &.active::before {
-        left: -10px;
-        border-width: 10px 10px 10px 0;
-        border-right-color: #dee2e6;
-      }
-      &.active::after {
-        left: -9px;
-        border-width: 9px 9px 9px 0;
-        border-right-color: #fff;
-      }
     }
   }
 `
@@ -455,54 +379,42 @@ const WebsitePageEditPage = () => {
       { key: 'settings', label: translate('website-panel-settings'), Icon: Icons.SettingOutlined },
     ] as const
     return (
-      <SidePanel>
-        <div className={'panel-content'} role={'region'} aria-label={translate('website-panel')}>
-          {section ? (
-            <>
-              <Button type={'link'} size={'small'} style={{ paddingLeft: 0 }} onClick={() => select(undefined)}>
-                <Icons.ArrowLeftOutlined aria-hidden /> {translate('website-panel-back')}
-              </Button>
-              <BoxTitleDiv>{`${index + 1}. ${translate(`website-section-type-${section.type}`)}`}</BoxTitleDiv>
-              <SectionEditor
-                key={section.id}
-                section={section}
-                errors={sectionErrors(index)}
-                images={state.images}
-                onImagesPicked={addImages}
-                onChange={(changed) => setSections(sections.map((s) => (s.id === section.id ? changed : s)))}
-              />
-            </>
-          ) : null}
-          {!section && panelTab === 'blocks' ? (
-            <>
-              <BlockPalette isFull={isFull} onAdd={addSection} />
-              <small style={{ display: 'block', marginTop: 8, color: '#6c757d' }}>
-                {translate('website-blocks-hint')}{' '}
-                {isFull
-                  ? translate('website-sections-full', { max: MAX_SECTIONS })
-                  : translate('website-section-count', { count: sections.length, max: MAX_SECTIONS })}
-              </small>
-            </>
-          ) : null}
-          {!section && panelTab === 'settings' ? getSettings() : null}
-        </div>
-        <div className={'panel-tabs'} role={'group'} aria-label={translate('website-panel-tabs')}>
-          {tabs.map(({ key, label, Icon }) => (
-            <button
-              key={key}
-              type={'button'}
-              className={!section && panelTab === key ? 'active' : ''}
-              aria-pressed={!section && panelTab === key}
-              onClick={() => {
-                select(undefined)
-                setPanelTab(key)
-              }}
-            >
-              <Icon aria-hidden />
-              {label}
-            </button>
-          ))}
-        </div>
+      <SidePanel
+        tabs={tabs}
+        active={section ? undefined : panelTab}
+        onTab={(key) => {
+          select(undefined)
+          setPanelTab(key)
+        }}
+      >
+        {section ? (
+          <>
+            <Button type={'link'} size={'small'} style={{ paddingLeft: 0 }} onClick={() => select(undefined)}>
+              <Icons.ArrowLeftOutlined aria-hidden /> {translate('website-panel-back')}
+            </Button>
+            <BoxTitleDiv>{`${index + 1}. ${translate(`website-section-type-${section.type}`)}`}</BoxTitleDiv>
+            <SectionEditor
+              key={section.id}
+              section={section}
+              errors={sectionErrors(index)}
+              images={state.images}
+              onImagesPicked={addImages}
+              onChange={(changed) => setSections(sections.map((s) => (s.id === section.id ? changed : s)))}
+            />
+          </>
+        ) : null}
+        {!section && panelTab === 'blocks' ? (
+          <>
+            <BlockPalette isFull={isFull} onAdd={addSection} />
+            <small style={{ display: 'block', marginTop: 8, color: '#6c757d' }}>
+              {translate('website-blocks-hint')}{' '}
+              {isFull
+                ? translate('website-sections-full', { max: MAX_SECTIONS })
+                : translate('website-section-count', { count: sections.length, max: MAX_SECTIONS })}
+            </small>
+          </>
+        ) : null}
+        {!section && panelTab === 'settings' ? getSettings() : null}
       </SidePanel>
     )
   }

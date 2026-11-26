@@ -62,6 +62,9 @@ import {
   ContactsOutlined,
   ReadOutlined,
   ArrowLeftOutlined,
+  VerticalAlignTopOutlined,
+  VerticalAlignBottomOutlined,
+  BgColorsOutlined,
 } from '@ant-design/icons'
 
 const Icons = {
@@ -128,6 +131,9 @@ const Icons = {
   ContactsOutlined,
   ReadOutlined,
   ArrowLeftOutlined,
+  VerticalAlignTopOutlined,
+  VerticalAlignBottomOutlined,
+  BgColorsOutlined,
 }
 
 export default Icons

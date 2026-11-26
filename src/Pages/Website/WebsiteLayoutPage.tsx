@@ -15,6 +15,7 @@ import PublishBar from '../../Components/Website/PublishBar'
 import SiteCanvas, { iCanvasPart } from '../../Components/Website/Canvas/SiteCanvas'
 import SectionEditor, { getImageIds, newSection } from '../../Components/Website/SectionEditors'
 import BlockPalette from '../../Components/Website/Canvas/BlockPalette'
+import SidePanel from '../../Components/Website/SidePanel'
 import { Radio } from 'antd'
 import Icons from '../../Components/Icons'
 import { BoxTitleDiv } from '../../Styles/AppWrapper'
@@ -102,12 +103,6 @@ const Layout = styled.div`
   .layout-canvas {
     min-width: 0;
   }
-  .layout-panel {
-    border: 1px solid #dee2e6;
-    border-radius: 6px;
-    background: #f8f9fa;
-    padding: 12px;
-  }
   @media (min-width: 992px) {
     flex-direction: row;
     align-items: flex-start;
@@ -115,7 +110,7 @@ const Layout = styled.div`
       flex: 1 1 0;
     }
     .layout-panel {
-      flex: 0 0 380px;
+      flex: 0 0 auto;
       position: sticky;
       top: 0;
       max-height: 100vh;
@@ -287,54 +282,42 @@ const WebsiteLayoutPage = () => {
 
   const getPanel = (draft: iDraft) => {
     const tabs = [
-      { key: 'header', label: translate('website-layout-header') },
-      { key: 'footer', label: translate('website-layout-footer') },
-      { key: 'theme', label: translate('website-layout-theme') },
-      { key: 'blocks', label: translate('website-layout-blocks') },
+      { key: 'header', label: translate('website-layout-header'), Icon: Icons.VerticalAlignTopOutlined },
+      { key: 'footer', label: translate('website-layout-footer'), Icon: Icons.VerticalAlignBottomOutlined },
+      { key: 'theme', label: translate('website-layout-theme'), Icon: Icons.BgColorsOutlined },
+      { key: 'blocks', label: translate('website-layout-blocks'), Icon: Icons.BuildOutlined },
     ] as const
     return (
-      <div className={'layout-panel'}>
-        <div role={'group'} aria-label={translate('website-panel-tabs')} style={{ marginBottom: 12 }}>
-          <Space wrap>
-            {tabs.map(({ key, label }) => (
-              <Button
-                key={key}
-                type={tab === key ? 'primary' : 'default'}
-                aria-pressed={tab === key}
-                onClick={() => {
-                  setTab(key)
-                  setState((s) => ({ ...s, selectedId: undefined }))
-                }}
-              >
-                {label}
-              </Button>
-            ))}
-          </Space>
-        </div>
-        <div role={'region'} aria-label={translate('website-panel')}>
-          {tab === 'header' ? (
-            <HeaderEditor
-              header={draft.layout.header || {}}
-              pages={state.pages.map((page) => ({ id: `${page.id}`, title: page.title }))}
-              errors={state.errors}
-              onChange={(header) => setLayout({ header })}
-            />
-          ) : null}
-          {tab === 'footer' ? (
-            <FooterEditor
-              footer={draft.layout.footer}
-              errors={state.errors}
-              images={state.images}
-              onImagesPicked={addImages}
-              onChange={(footer) => setLayout({ footer })}
-            />
-          ) : null}
-          {tab === 'theme' ? (
-            <ThemeEditor theme={draft.theme} errors={state.errors} onChange={(theme) => setDraft({ theme })} />
-          ) : null}
-          {tab === 'blocks' ? getBlocksPanel(draft.layout) : null}
-        </div>
-      </div>
+      <SidePanel
+        tabs={tabs}
+        active={tab}
+        onTab={(key) => {
+          setTab(key)
+          setState((s) => ({ ...s, selectedId: undefined }))
+        }}
+      >
+        {tab === 'header' ? (
+          <HeaderEditor
+            header={draft.layout.header || {}}
+            pages={state.pages.map((page) => ({ id: `${page.id}`, title: page.title }))}
+            errors={state.errors}
+            onChange={(header) => setLayout({ header })}
+          />
+        ) : null}
+        {tab === 'footer' ? (
+          <FooterEditor
+            footer={draft.layout.footer}
+            errors={state.errors}
+            images={state.images}
+            onImagesPicked={addImages}
+            onChange={(footer) => setLayout({ footer })}
+          />
+        ) : null}
+        {tab === 'theme' ? (
+          <ThemeEditor theme={draft.theme} errors={state.errors} onChange={(theme) => setDraft({ theme })} />
+        ) : null}
+        {tab === 'blocks' ? getBlocksPanel(draft.layout) : null}
+      </SidePanel>
     )
   }
 
@@ -476,7 +459,7 @@ const WebsiteLayoutPage = () => {
               canPreview={!isDirty && !state.saving}
             />
           </div>
-          {getPanel(draft)}
+          <div className={'layout-panel'}>{getPanel(draft)}</div>
         </Layout>
       </Space>
     )
