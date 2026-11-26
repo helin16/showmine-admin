@@ -87,7 +87,9 @@ Slice 4a (SMN-87a, Lin 2026-11-26): header, footer, theme.
 
 Slice 4b (SMN-87b): shared blocks.
 
-- [ ] T017b [US4] Shared blocks above and below: API checks (as sections, at most 10 in all), image use, copy; Reader draws them; the Layout page's Blocks tab with the palette
+- [ ] T017b [US4] API: `layout.sharedAbove` / `sharedBelow` checked as sections (at most 10 in all, 200 KB, ids unique across both, Text HTML cleaned and stored cleaned), image use, publish checks (links to missing pages, contact details) and copy; tests first in `api:tests/controllers/Website/WebsiteLayout.test.ts`
+- [ ] T017c [US4] Reader: `reader:src/components/Website/Site.tsx` draws the shared blocks above and below the page's own, with tests
+- [ ] T017d [US4] Admin: the Layout page's Blocks tab (above and below, same palette and block editor, "n of 10"), shared blocks editable on its canvas; the page editor's canvas shows them read-only, marked shared; publish problems name them; with tests
 
 - [ ] T017a [US4] Starter templates set a layout (`api:src/templates/website/`), shown by the Reader template preview (`/t/<id>`); applying one replaces the layout (spec edge case)
 
