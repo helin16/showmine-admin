@@ -29,7 +29,12 @@ item = { type: 'text', text ≤500 }                                         // 
      | { type: 'image', assetId, alt ≤120, link? }                           // link: where the image leads
 ```
 
-Every url is checked as section links (https, http, mailto, tel, /page). All layout text is plain text (R5c).
+Every url is checked as section links (https, http, mailto, tel, /page). Header and footer text is plain text (R5c).
+
+Shared blocks (4b) are page sections: same types, fields and checks, a Text block's HTML cleaned as on a page, and the
+cleaned blocks are what is stored. Section ids are unique across both lists; both lists together are at most 10 blocks
+and 200 KB (as a page). A missing list means none. A shared Contact block makes the published copy carry the company's
+contact details, as a page's does; a shared block's `/page` link to a missing page is refused at publish.
 
 ### Theme (`websites.theme`, 001), additions in 4a
 

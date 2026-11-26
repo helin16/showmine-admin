@@ -49,6 +49,7 @@
 
 - **Decision**: footer and header text is plain text with line breaks kept (`white-space: pre-line`), not HTML. Footer items are four small kinds (text, contact line with an icon from a fixed list, button, image with an optional link), enough for showmine.com.au's footer.
 - **Rationale**: no second HTML cleaning path (API and canvas) for a few lines of text; icons from a fixed list are drawn by the Reader, so no uploaded icon or SVG reaches the page.
+- **Shared blocks (4b)** are page sections, not layout text: a shared Text block keeps the HTML a page's Text block allows, cleaned by the same cleaner (Lin, SMN-87b plan).
 
 ## R5b. Limits
 
