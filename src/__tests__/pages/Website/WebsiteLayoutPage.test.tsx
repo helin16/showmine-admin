@@ -422,6 +422,10 @@ describe('WebsiteLayoutPage', () => {
       tab('Blocks')
       fireEvent.click(screen.getByRole('button', { name: 'Edit 1. Hero' }))
       expect(screen.getByText('Below every page: Hero')).toBeInTheDocument()
+      // The open tab itself closes the block too.
+      tab('Blocks')
+      expect(screen.queryByText('Below every page: Hero')).toBeNull()
+      fireEvent.click(screen.getByRole('button', { name: 'Edit 1. Hero' }))
       tab('Header')
       tab('Blocks')
       expect(screen.queryByText('Below every page: Hero')).toBeNull()

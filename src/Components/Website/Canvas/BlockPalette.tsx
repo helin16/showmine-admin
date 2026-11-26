@@ -5,7 +5,7 @@ import translate from '../../../i18n/translate'
 import { ADDABLE_SECTION_TYPES } from '../SectionEditors'
 
 // The blocks to add, as square tiles with an icon and a name, as in the MConnect form designer's Content panel
-// (mgg-ui BlockPalette). The page sets --block-tiles (3, 4 or 5 a row) and sizes its panel to fit them.
+// (mgg-ui BlockPalette). The side panel (SidePanel) sets --block-tiles (3, 4 or 5 a row) and sizes itself to fit them.
 export const BLOCK_TILE_SIZE = '120px'
 export const BLOCK_TILE_GAP = '8px'
 

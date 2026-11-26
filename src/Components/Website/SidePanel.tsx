@@ -9,20 +9,6 @@ const PANEL_PADDING = '12px'
 // canvas (992px and wider) the content is as wide as a row of block tiles: 3, then 4 from 1600px and 5 from 1920px.
 const PanelDiv = styled.div`
   display: flex;
-  @media (min-width: 992px) {
-    --block-tiles: 3;
-    .panel-content {
-      width: calc(
-        var(--block-tiles) * ${BLOCK_TILE_SIZE} + (var(--block-tiles) - 1) * ${BLOCK_TILE_GAP} + 2 * ${PANEL_PADDING}
-      );
-    }
-  }
-  @media (min-width: 1600px) {
-    --block-tiles: 4;
-  }
-  @media (min-width: 1920px) {
-    --block-tiles: 5;
-  }
   border: 1px solid #dee2e6;
   border-radius: 6px;
   background: #f8f9fa;
@@ -81,6 +67,20 @@ const PanelDiv = styled.div`
         border-right-color: #fff;
       }
     }
+  }
+  @media (min-width: 992px) {
+    --block-tiles: 3;
+    .panel-content {
+      width: calc(
+        var(--block-tiles) * ${BLOCK_TILE_SIZE} + (var(--block-tiles) - 1) * ${BLOCK_TILE_GAP} + 2 * ${PANEL_PADDING}
+      );
+    }
+  }
+  @media (min-width: 1600px) {
+    --block-tiles: 4;
+  }
+  @media (min-width: 1920px) {
+    --block-tiles: 5;
   }
 `
 
