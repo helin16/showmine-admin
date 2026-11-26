@@ -26,7 +26,7 @@ Adds columns to the tables of `specs/001-website-builder/data-model.md`. Slice 4
 item = { type: 'text', text ≤500 }                                         // plain text; line breaks kept
      | { type: 'contact', icon: 'address'|'phone'|'email'|'wechat'|'message', text ≤100 }
      | { type: 'button', label ≤40, url }
-     | { type: 'image', assetId, alt ≤120, url? }                            // url: the image links there
+     | { type: 'image', assetId, alt ≤120, link? }                           // link: where the image leads
 ```
 
 Every url is checked as section links (https, http, mailto, tel, /page). All layout text is plain text (R5c).
