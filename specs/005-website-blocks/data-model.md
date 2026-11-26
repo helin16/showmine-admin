@@ -2,13 +2,13 @@
 
 Sections stay JSON objects `{ id, type, ...fields }` in `websitePages.sections` and in `websites.layout.sharedAbove` /
 `sharedBelow` (spec 004). No migration. Text limits are characters; "link" is a link as the Hero's button link today
-(`https://`, `http://`, `mailto:`, `tel:` or `/address`). Empty optional fields are dropped.
+(`https://`, `http://`, `mailto:`, `tel:` or `/address`). Empty optional fields are left out by the admin; fields a type does not have are refused.
 
 ## Field kinds (API `SECTION_TYPES`)
 
 Existing: `text` (max, required), `html`, `asset`, `images`, `link`, `httpsUrl`, `bool`, `int`, `oneOf`.
 New: `list` — an array of objects, `{ kind: 'list', min, max, fields }`; each item is checked with `fields` and the
-items' unknown fields are dropped. Paths: `sections[2].items[3].title`. A `list` of plain lines uses
+items' unknown fields are refused. Paths: `sections[2].items[3].title`. A `list` of plain lines uses
 `{ kind: 'lines', max, lineMax }` (an array of strings).
 
 ## Hero (changed, slice 88a)
@@ -58,6 +58,12 @@ first button with text only, so old drafts still save (the Reader draws a button
 |---|---|---|
 | mapUrl | httpsUrl, required | an embed address, as the Contact block's map |
 | height | oneOf `small`, `medium`, `large` | 240, 360, 480 px; default `medium` |
+
+## Theme
+
+`theme.secondaryColor` (stored since spec 004 slice 4a) gets its picker in Layout > Theme (88a). The Reader and the
+canvas set `--site-secondary` and `--site-secondary-text` (`#212529` or `#ffffff`, whichever has the higher WCAG
+contrast on the colour).
 
 ## Published copy
 

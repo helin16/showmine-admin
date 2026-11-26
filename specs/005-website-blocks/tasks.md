@@ -14,12 +14,12 @@ description: "Task list for more website blocks"
 
 ## Slice 88a: Hero second button and note; Image beside text (US1, US2)
 
-- [ ] T001 [P] api: tests in `api:src/__tests__/` for the Hero's `button2Text`, `button2Url`, `note`, and the `split` type (required image, side, plain text, paths), as page sections and as shared blocks; publish refuses a missing-page `button2Url`
-- [ ] T002 api: `SECTION_TYPES` in `api:src/helpers/WebsiteHelper.ts`; the publish link check covers the new link fields
-- [ ] T003 [P] reader: tests for Hero with two buttons and a note, and `Split` left and right; `reader:public/website.css` rules
-- [ ] T004 reader: `Buttons` part and `Split` component in `reader:src/components/Website/sections/index.tsx`
-- [ ] T005 [P] admin: tests for the Hero editor's second button and note, the `split` editor and its checks, palette tile and canvas markup
-- [ ] T006 admin: `SectionEditors.tsx`, `canvasBlocks.tsx`, `BlockPalette.tsx`, en/cn strings
+- [x] T001 [P] api: tests in `api:tests/` for the Hero's `button2Text`, `button2Url`, `note`, and the `split` type (required image, side, plain text, paths), as page sections and as shared blocks; publish refuses a missing-page `button2Url`
+- [x] T002 api: `SECTION_TYPES` in `api:src/helpers/WebsiteHelper.ts`; the publish link check covers the new link fields
+- [x] T003 [P] reader: tests for Hero with two buttons and a note, and `Split` left and right; `reader:public/website.css` rules
+- [x] T004 reader: `Buttons` part and `Split` component in `reader:src/components/Website/sections/index.tsx`
+- [x] T005 [P] admin: tests for the Hero editor's second button and note, the `split` editor and its checks, palette tile and canvas markup
+- [x] T006 admin: `SectionEditors.tsx`, `canvasBlocks.tsx`, `BlockPalette.tsx`, en/cn strings; the second colour's picker in Layout > Theme
 
 ## Slice 88b: Card grid (US3)
 

@@ -30,7 +30,7 @@ A member gives a Hero block a second button (for example "Start Free" and "Login
 
 **Acceptance Scenarios**:
 
-1. **Given** a Hero with a second button text and link, **Then** the website shows two buttons side by side (stacked on a phone), the second in the second colour.
+1. **Given** a Hero with a second button text and link, **Then** the website shows two buttons side by side (wrapping on a narrow phone), the second in the theme's second colour (set in Layout > Theme), with dark or white text, whichever reads better on it.
 2. **Given** a second button with text but no link, or a link but no text, **Then** saving is refused for that field, as for the first button.
 3. **Given** a Hero saved before this feature, **Then** it looks exactly as before.
 
@@ -77,7 +77,7 @@ A member adds a "Map" block with a map embed address (https) and a height (small
 
 ## Requirements *(mandatory)*
 
-- **FR-001**: The API MUST accept and check the new section types and fields (data-model.md); unknown fields are dropped as today.
+- **FR-001**: The API MUST accept and check the new section types and fields (data-model.md); unknown fields are refused as today.
 - **FR-002**: The API MUST check list fields item by item, with minimum and maximum counts, and report paths down to the item's field.
 - **FR-003**: Publishing MUST refuse `/address` links to pages that do not exist, including links inside lists and the Hero's second button.
 - **FR-004**: The Reader and the admin canvas MUST draw each new block from the same markup and stylesheet, at desktop, tablet and phone widths.
