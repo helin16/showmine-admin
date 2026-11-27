@@ -44,6 +44,9 @@ first button with text only, so old drafts still save (the Reader draws a button
 | boxed | bool | cards drawn in boxes |
 | items | list 1–12 | `{ imageAssetId? asset, title text 80, text text 300, link? link }` |
 
+A card's image is drawn as a 48 px icon beside its title and text. Columns: 1 below 560 px of site width, 2 from
+560 px, the block's own count from 900 px. A card with a link is a link as a whole. Every card field is optional.
+
 ## Pricing plans `pricing` (new, slice 88c)
 
 | Field | Kind | Notes |
@@ -61,9 +64,13 @@ first button with text only, so old drafts still save (the Reader draws a button
 
 ## Theme
 
-`theme.secondaryColor` (stored since spec 004 slice 4a) gets its picker in Layout > Theme (88a). The Reader and the
-canvas set `--site-secondary` and `--site-secondary-text` (`#212529` or `#ffffff`, whichever has the higher WCAG
-contrast on the colour).
+- `theme.secondaryColor` (stored since spec 004 slice 4a): the second button's colour; picker in Layout > Theme (88a).
+- `theme.buttonColor` (new, 88b, Lin 2026-11-27): the first button's colour, `#rrggbb`; absent, the main colour, so
+  sites look as before. It also colours the footer's buttons.
+- The Reader and the canvas set `--site-button` / `--site-secondary` and a text colour for each
+  (`--site-button-text`, `--site-secondary-text`): white while white has a WCAG contrast of 3 or more on the colour
+  (most blues and greens), else `#212529` (yellow, light colours). Changed in 88b from "whichever contrast is
+  higher", which put dark text on mid blue.
 
 ## Published copy
 

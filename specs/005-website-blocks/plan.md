@@ -32,7 +32,8 @@ dependencies, no migration, no new endpoints.
   a shared `Buttons` part (first, second, note) used by Hero and Split. Grids use `auto-fit` / `minmax`; Split
   switches to two columns at 768px.
 - **Admin** `SectionEditors.tsx` (editors and checks), `canvasBlocks.tsx` (markup as the Reader), `BlockPalette.tsx`
-  (tiles), i18n en/cn. A small `ListEditor` for list items (add, remove, up, down), as the footer columns.
+  (tiles), i18n en/cn. List items are edited in the block's editor (add, remove, up, down), as gallery images; a
+  shared `ListEditor` waits until the pricing block needs the same.
 
 ## Order per slice
 

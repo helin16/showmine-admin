@@ -23,9 +23,10 @@ description: "Task list for more website blocks"
 
 ## Slice 88b: Card grid (US3)
 
-- [ ] T007 api: the `list` field kind (min, max, item fields, paths) with tests that old types still pass; `cards` type; link check walks list items
-- [ ] T008 reader: `Cards` component and grid rules, with tests
-- [ ] T009 admin: `ListEditor`, the `cards` editor, canvas and palette, with tests
+- [x] T007 api: the `list` field kind (min, max, item fields, paths) with tests that old types still pass; `cards` type; link check walks list items
+- [x] T008 reader: `Cards` component and grid rules, with tests
+- [x] T009 admin: the `cards` editor (cards added, removed and moved in the panel, as gallery images), canvas and palette, with tests
+- [x] T009a all three: `theme.buttonColor` (API theme keys, Reader and canvas variables with a text colour, picker in Layout > Theme); button text white at contrast 3 or more
 
 ## Slice 88c: Pricing plans; Map (US4, US5)
 
