@@ -466,6 +466,7 @@ const LanguageCN = {
     'website-plan-count': '{count} / {max} 个方案',
     'website-plan-moved': '方案已移到第 {number} 位。',
     'website-plan-features-max': '最多 {max} 行。',
+    'website-plan-feature-long': '每行最多 {max} 个字。',
     'website-section-plans-required': '至少添加一个方案。',
     'website-section-required': '必填。',
     'website-map-height': '高度',

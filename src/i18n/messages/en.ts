@@ -473,6 +473,7 @@ const LanguageEN = {
     'website-plan-count': '{count} of {max} plans',
     'website-plan-moved': 'Plan moved to position {number}.',
     'website-plan-features-max': 'At most {max} lines.',
+    'website-plan-feature-long': 'Each line at most {max} characters.',
     'website-section-plans-required': 'Add at least one plan.',
     'website-section-required': 'Required.',
     'website-map-height': 'Height',

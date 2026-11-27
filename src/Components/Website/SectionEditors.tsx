@@ -27,6 +27,7 @@ export const MAX_GALLERY_IMAGES = 24
 export const MAX_CARDS = 12
 export const MAX_PLANS = 4
 export const MAX_FEATURES = 10
+export const MAX_FEATURE_LENGTH = 100
 
 type iGalleryImage = { assetId: string; alt?: string }
 // A card of a card grid (specs/005-website-blocks, slice 88b).
@@ -498,6 +499,12 @@ const SectionEditor = ({ section, onChange, errors = {}, images = {}, onImagesPi
                     onChange={(e) =>
                       setPlan(index, { features: e.target.value === '' ? [] : e.target.value.split('\n') })
                     }
+                    // Blank lines are dropped on leaving the box, so they never count against the 10.
+                    onBlur={() => {
+                      const lines = plan.features || []
+                      const kept = lines.filter((line) => line.trim())
+                      if (kept.length !== lines.length) setPlan(index, { features: kept })
+                    }}
                   />
                 </Field>
                 {planText(index, 'buttonText', translate('website-section-button-text'), 40)}
@@ -744,8 +751,11 @@ export const checkSection = (section: IWebsiteSection): { [field: string]: strin
     plans.forEach((plan, index) => {
       if (!`${plan?.name ?? ''}`.trim()) errors[`plans[${index}].name`] = translate('website-section-required')
       if (!`${plan?.price ?? ''}`.trim()) errors[`plans[${index}].price`] = translate('website-section-required')
-      if ((plan?.features || []).length > MAX_FEATURES) {
+      const lines = (plan?.features || []).filter((line) => `${line}`.trim())
+      if (lines.length > MAX_FEATURES) {
         errors[`plans[${index}].features`] = translate('website-plan-features-max', { max: MAX_FEATURES })
+      } else if (lines.some((line) => `${line}`.length > MAX_FEATURE_LENGTH)) {
+        errors[`plans[${index}].features`] = translate('website-plan-feature-long', { max: MAX_FEATURE_LENGTH })
       }
       if (typeof plan?.buttonUrl === 'string' && !isLink(plan.buttonUrl)) {
         errors[`plans[${index}].buttonUrl`] = translate('website-section-bad-link')

@@ -427,6 +427,41 @@ describe('images', () => {
       })
     })
 
+    test('blank feature lines are dropped on leaving the box, and do not count', () => {
+      const onChange = renderEditor(pricing([{ name: 'A', price: '1', features: ['a', '', '  ', 'b', ''] }]))
+      fireEvent.blur(plan(1).getByLabelText('Features, one per line (up to 10)'))
+      expect(onChange).toHaveBeenLastCalledWith({
+        id: 's1',
+        ...pricing([{ name: 'A', price: '1', features: ['a', 'b'] }]),
+      })
+      expect(
+        checkSection({
+          id: 's',
+          type: 'pricing',
+          plans: [{ name: 'A', price: '1', features: [...Array(10).fill('x'), '', ' '] }],
+        }),
+      ).toStrictEqual({})
+    })
+
+    test('blank-free features are left alone on leaving the box', () => {
+      const onChange = renderEditor(pricing([{ name: 'A', price: '1', features: ['a'] }]))
+      fireEvent.blur(plan(1).getByLabelText('Features, one per line (up to 10)'))
+      expect(onChange).not.toHaveBeenCalled()
+    })
+
+    test('a feature line over 100 characters is named before saving', () => {
+      expect(
+        checkSection({ id: 's', type: 'pricing', plans: [{ name: 'A', price: '1', features: ['x'.repeat(100)] }] }),
+      ).toStrictEqual({})
+      expect(
+        checkSection({
+          id: 's',
+          type: 'pricing',
+          plans: [{ name: 'A', price: '1', features: ['ok', 'x'.repeat(101)] }],
+        }),
+      ).toStrictEqual({ 'plans[0].features': 'Each line at most 100 characters.' })
+    })
+
     test('with 4 plans no more can be added', () => {
       renderEditor(pricing(Array.from({ length: 4 }, () => ({ name: 'a', price: '1' }))))
       expect(screen.getByRole('button', { name: 'Add a plan' })).toBeDisabled()
