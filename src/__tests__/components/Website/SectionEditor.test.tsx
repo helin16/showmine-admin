@@ -1,9 +1,10 @@
 import React from 'react'
-import { fireEvent, screen } from '@testing-library/react'
+import { fireEvent, screen, within } from '@testing-library/react'
 import { vi } from 'vitest'
 import SectionEditor, {
   ADDABLE_SECTION_TYPES,
   checkSection,
+  getImageIds,
   isLink,
   newSection,
 } from '../../../Components/Website/SectionEditors'
@@ -55,6 +56,11 @@ describe('newSection', () => {
     expect(a.type).toBe(type)
     expect(a.id).toMatch(/^[0-9a-f-]{36}$/)
     expect(a.id).not.toBe(b.id)
+  })
+
+  test('a card grid starts with three columns and one empty card (spec 005)', () => {
+    expect(ADDABLE_SECTION_TYPES.indexOf('cards')).toBe(2)
+    expect(newSection('cards')).toMatchObject({ type: 'cards', columns: '3', items: [{}] })
   })
 
   test('an image beside text starts with the image on the left (spec 005)', () => {
@@ -283,6 +289,120 @@ describe('images', () => {
   test('an image beside text shows its side as saved', () => {
     renderWithImages({ type: 'split', imageAssetId: 'a1', imageSide: 'right' })
     expect(screen.getByRole('radio', { name: 'Right' })).toBeChecked()
+  })
+
+  // specs/005-website-blocks, slice 88b
+  describe('card grid', () => {
+    const cards = (items: object[], extra = {}) => ({ type: 'cards', columns: '3', items, ...extra })
+    const card = (number: number) => within(screen.getByRole('group', { name: `Card ${number}` }))
+
+    test('edits the heading, intro, columns and boxes', () => {
+      const { onChange } = renderWithImages(cards([{ title: 'A' }]))
+      expect(screen.getByLabelText('Heading')).toHaveAttribute('maxlength', '120')
+      expect(screen.getByLabelText('Intro')).toHaveAttribute('maxlength', '500')
+      expect(screen.getByRole('radiogroup', { name: 'Columns' })).toBeInTheDocument()
+      expect(screen.getByRole('radio', { name: '3' })).toBeChecked()
+      fireEvent.click(screen.getByRole('radio', { name: '4' }))
+      expect(onChange).toHaveBeenLastCalledWith({ id: 's1', ...cards([{ title: 'A' }]), columns: '4' })
+      fireEvent.click(screen.getByRole('checkbox', { name: 'Show the cards in boxes' }))
+      expect(onChange).toHaveBeenLastCalledWith({ id: 's1', ...cards([{ title: 'A' }]), boxed: true })
+    })
+
+    test('shows the saved columns and boxes; 3 columns when none is saved', () => {
+      renderWithImages({ type: 'cards', columns: '2', boxed: true, items: [{}] })
+      expect(screen.getByRole('radio', { name: '2' })).toBeChecked()
+      expect(screen.getByRole('checkbox', { name: 'Show the cards in boxes' })).toBeChecked()
+    })
+
+    test('edits the title, text and link of a card within their limits; a cleared field is left out', () => {
+      const { onChange } = renderWithImages(cards([{ title: 'A' }, { title: 'B', link: '/b' }]))
+      expect(card(1).getByLabelText('Title')).toHaveAttribute('maxlength', '80')
+      expect(card(1).getByLabelText('Text')).toHaveAttribute('maxlength', '300')
+      expect(card(1).getByLabelText('Text').tagName).toBe('TEXTAREA')
+      expect(card(2).getByLabelText('Link (optional)')).toHaveValue('/b')
+      fireEvent.change(card(2).getByLabelText('Text'), { target: { value: 'Words' } })
+      expect(onChange).toHaveBeenLastCalledWith({
+        id: 's1',
+        ...cards([{ title: 'A' }, { title: 'B', link: '/b', text: 'Words' }]),
+      })
+      fireEvent.change(card(2).getByLabelText('Link (optional)'), { target: { value: '' } })
+      expect(onChange).toHaveBeenLastCalledWith({ id: 's1', ...cards([{ title: 'A' }, { title: 'B' }]) })
+    })
+
+    test('chooses, shows and removes the image of a card', () => {
+      const { onChange, onImagesPicked } = renderWithImages(cards([{ title: 'A' }, { imageAssetId: 'a1' }]), [
+        images.a2,
+      ])
+      expect(card(1).getByText('No image')).toBeInTheDocument()
+      expect(card(2).getByRole('img', { name: 'shop.png' })).toBeInTheDocument()
+      fireEvent.click(card(1).getByRole('button', { name: 'Choose image' }))
+      fireEvent.click(screen.getByRole('button', { name: 'pick (one)' }))
+      expect(onChange).toHaveBeenLastCalledWith({
+        id: 's1',
+        ...cards([{ title: 'A', imageAssetId: 'a2' }, { imageAssetId: 'a1' }]),
+      })
+      expect(onImagesPicked).toHaveBeenCalledWith([images.a2])
+      fireEvent.click(card(2).getByRole('button', { name: 'Remove image' }))
+      expect(onChange).toHaveBeenLastCalledWith({ id: 's1', ...cards([{ title: 'A' }, {}]) })
+    })
+
+    test('adds, moves and removes cards, up to 12', () => {
+      const { onChange } = renderWithImages(cards([{ title: 'A' }, { title: 'B' }, { title: 'C' }]))
+      expect(screen.getByText('3 of 12 cards')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Move Card 1 up' })).toBeDisabled()
+      expect(screen.getByRole('button', { name: 'Move Card 3 down' })).toBeDisabled()
+      fireEvent.click(screen.getByRole('button', { name: 'Move Card 1 down' }))
+      expect(onChange).toHaveBeenLastCalledWith({
+        id: 's1',
+        ...cards([{ title: 'B' }, { title: 'A' }, { title: 'C' }]),
+      })
+      expect(screen.getByText('Card moved to position 2.')).toBeInTheDocument()
+      fireEvent.click(screen.getByRole('button', { name: 'Move Card 3 up' }))
+      expect(onChange).toHaveBeenLastCalledWith({
+        id: 's1',
+        ...cards([{ title: 'A' }, { title: 'C' }, { title: 'B' }]),
+      })
+      fireEvent.click(screen.getByRole('button', { name: 'Remove Card 2' }))
+      expect(onChange).toHaveBeenLastCalledWith({ id: 's1', ...cards([{ title: 'A' }, { title: 'C' }]) })
+      fireEvent.click(screen.getByRole('button', { name: 'Add a card' }))
+      expect(onChange).toHaveBeenLastCalledWith({
+        id: 's1',
+        ...cards([{ title: 'A' }, { title: 'B' }, { title: 'C' }, {}]),
+      })
+    })
+
+    test('with 12 cards no more can be added', () => {
+      renderWithImages(cards(Array.from({ length: 12 }, () => ({}))))
+      expect(screen.getByRole('button', { name: 'Add a card' })).toBeDisabled()
+      expect(screen.getByText('12 of 12 cards')).toBeInTheDocument()
+    })
+
+    test('problems show on the card field, the card image and the list', () => {
+      renderWithImages(cards([{ title: 'A' }, { imageAssetId: 'a1', link: 'x' }]), [], {
+        'items[1].link': 'Bad link.',
+        'items[1].imageAssetId': 'Missing.',
+        items: 'A list of 1 to 12.',
+      })
+      expect(card(2).getByLabelText('Link (optional)')).toHaveAttribute('aria-invalid', 'true')
+      expect(card(2).getByText('Bad link.')).toBeInTheDocument()
+      expect(card(2).getByText('Missing.')).toBeInTheDocument()
+      expect(card(1).queryByRole('alert')).toBeNull()
+      expect(screen.getByText('A list of 1 to 12.')).toBeInTheDocument()
+    })
+
+    test('needs a card, and good links, before saving; its images count as used', () => {
+      expect(checkSection({ id: 's', type: 'cards', items: [] })).toStrictEqual({ items: 'Add at least one card.' })
+      expect(checkSection({ id: 's', type: 'cards' })).toStrictEqual({ items: 'Add at least one card.' })
+      expect(checkSection({ id: 's', type: 'cards', items: [{ link: '/a' }, { link: 'nope' }, {}] })).toStrictEqual({
+        'items[1].link': 'Use a web, email or phone link, or /page-name.',
+      })
+      expect(
+        getImageIds([
+          { id: 's', type: 'cards', items: [{ imageAssetId: 'a1' }, {}, { imageAssetId: 'a2' }] },
+          { id: 'h', type: 'hero', imageAssetId: 'a1' },
+        ]),
+      ).toStrictEqual(['a1', 'a2'])
+    })
   })
 
   test('an image section needs an image and a gallery at least one, before saving', () => {

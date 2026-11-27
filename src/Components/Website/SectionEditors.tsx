@@ -11,10 +11,14 @@ import { IWebsiteSection } from '../../Types/Website/IWebsite'
 // One editor per section type (specs/001-website-builder, data-model "Section", US2 T035, US5 T062). Limits match the
 // API's. Images are chosen from the company's website images with the media picker.
 
-export const ADDABLE_SECTION_TYPES = ['hero', 'split', 'text', 'image', 'gallery', 'contact', 'articles']
+export const ADDABLE_SECTION_TYPES = ['hero', 'split', 'cards', 'text', 'image', 'gallery', 'contact', 'articles']
 export const MAX_GALLERY_IMAGES = 24
+export const MAX_CARDS = 12
 
 type iGalleryImage = { assetId: string; alt?: string }
+// A card of a card grid (specs/005-website-blocks, slice 88b).
+type iCard = { imageAssetId?: string; title?: string; text?: string; link?: string }
+const getCards = (section: IWebsiteSection) => (Array.isArray(section.items) ? (section.items as iCard[]) : [])
 
 // Every image id a page's sections use.
 export const getImageIds = (sections: IWebsiteSection[]) =>
@@ -24,6 +28,7 @@ export const getImageIds = (sections: IWebsiteSection[]) =>
         ...(typeof section.imageAssetId === 'string' ? [section.imageAssetId] : []),
         ...(typeof section.assetId === 'string' ? [section.assetId] : []),
         ...(Array.isArray(section.images) ? (section.images as iGalleryImage[]).map((image) => image.assetId) : []),
+        ...getCards(section).flatMap((card) => (typeof card?.imageAssetId === 'string' ? [card.imageAssetId] : [])),
       ]),
     ),
   )
@@ -35,6 +40,8 @@ export const newSection = (type: string): IWebsiteSection => {
       return { id, type, heading: '' }
     case 'split':
       return { id, type, heading: '', imageSide: 'left' }
+    case 'cards':
+      return { id, type, columns: '3', items: [{}] }
     case 'text':
       return { id, type, html: '' }
     case 'contact':
@@ -99,7 +106,8 @@ export const Thumbnail = ({ id, images }: { id: string; images: { [assetId: stri
 
 const SectionEditor = ({ section, onChange, errors = {}, images = {}, onImagesPicked }: iSectionEditor) => {
   // Which image the picker is choosing: a single field, or more for the gallery.
-  const [picking, setPicking] = useState<'imageAssetId' | 'assetId' | 'images'>()
+  // The image being picked: a field, the gallery, or the card at an index.
+  const [picking, setPicking] = useState<'imageAssetId' | 'assetId' | 'images' | number>()
   // Read by screen readers after a gallery image moves.
   const [announcement, setAnnouncement] = useState('')
   const picked = (assets: IAsset[]) => {
@@ -107,6 +115,13 @@ const SectionEditor = ({ section, onChange, errors = {}, images = {}, onImagesPi
     if (picking === 'images') {
       const old = (section.images as iGalleryImage[]) || []
       onChange({ ...section, images: [...old, ...assets.map((asset) => ({ assetId: `${asset.id}` }))] })
+    } else if (typeof picking === 'number') {
+      onChange({
+        ...section,
+        items: getCards(section).map((card, i) =>
+          i === picking ? { ...card, imageAssetId: `${assets[0].id}` } : card,
+        ),
+      })
     } else if (picking) {
       onChange({ ...section, [picking]: `${assets[0].id}` })
     }
@@ -228,6 +243,157 @@ const SectionEditor = ({ section, onChange, errors = {}, images = {}, onImagesPi
           {buttonFields}
         </Space>
       )
+    // Card grid (specs/005-website-blocks, slice 88b).
+    case 'cards': {
+      const cards = getCards(section)
+      const setCards = (next: iCard[]) => onChange({ ...section, items: next })
+      const setCard = (index: number, name: keyof iCard, value?: string) =>
+        setCards(
+          cards.map((card, i) => {
+            if (i !== index) return card
+            const next = { ...card, [name]: value }
+            // An empty field is left out, as the API refuses an empty link.
+            if (!value) delete next[name]
+            return next
+          }),
+        )
+      const moveCard = (index: number, by: number) => {
+        const next = [...cards]
+        const [card] = next.splice(index, 1)
+        next.splice(index + by, 0, card)
+        setCards(next)
+        setAnnouncement(translate('website-card-moved', { number: index + by + 1 }))
+      }
+      const cardText = (
+        index: number,
+        name: 'title' | 'text' | 'link',
+        label: string,
+        max: number,
+        multiLine = false,
+      ) => {
+        const id = fieldId(`items-${index}-${name}`)
+        const error = errors[`items[${index}].${name}`]
+        const props = {
+          id,
+          value: `${cards[index][name] ?? ''}`,
+          maxLength: max,
+          status: error ? ('error' as const) : undefined,
+          'aria-invalid': error ? true : undefined,
+          'aria-describedby': error ? `${id}-error` : undefined,
+        }
+        return (
+          <Field id={id} label={label} error={error}>
+            {multiLine ? (
+              <Input.TextArea
+                {...props}
+                autoSize={{ minRows: 2 }}
+                onChange={(e) => setCard(index, name, e.target.value)}
+              />
+            ) : (
+              <Input {...props} onChange={(e) => setCard(index, name, e.target.value)} />
+            )}
+          </Field>
+        )
+      }
+      const columns = ['2', '3', '4'].includes(`${section.columns}`) ? `${section.columns}` : '3'
+      return (
+        <Space orientation={'vertical'} style={{ width: '100%' }}>
+          {field('heading', translate('website-section-heading'), text('heading', 120))}
+          {field('intro', translate('website-section-intro'), text('intro', 500, true))}
+          <div>
+            <div id={fieldId('columns')}>{translate('website-section-columns')}</div>
+            <Radio.Group
+              aria-labelledby={fieldId('columns')}
+              value={columns}
+              onChange={(e) => set('columns', e.target.value)}
+            >
+              {['2', '3', '4'].map((count) => (
+                <Radio key={count} value={count}>
+                  {count}
+                </Radio>
+              ))}
+            </Radio.Group>
+          </div>
+          <Checkbox
+            checked={section.boxed === true}
+            onChange={(e) => onChange({ ...section, boxed: e.target.checked })}
+          >
+            {translate('website-section-boxed')}
+          </Checkbox>
+          {cards.map((card, index) => {
+            const name = translate('website-card-number', { number: index + 1 })
+            const imageError = errors[`items[${index}].imageAssetId`]
+            return (
+              // eslint-disable-next-line react/no-array-index-key
+              <div key={index} role={'group'} aria-label={name} className={'website-card-editor'}>
+                <strong>{name}</strong>
+                <div className={'website-section-field'}>
+                  <div>{translate('website-card-image')}</div>
+                  <Space wrap>
+                    {card.imageAssetId ? (
+                      <Thumbnail id={card.imageAssetId} images={images} />
+                    ) : (
+                      <span>{translate('website-image-none')}</span>
+                    )}
+                    <Button onClick={() => setPicking(index)}>
+                      {translate(card.imageAssetId ? 'website-image-change' : 'website-image-choose')}
+                    </Button>
+                    {card.imageAssetId ? (
+                      <Button onClick={() => setCard(index, 'imageAssetId')}>
+                        {translate('website-image-remove')}
+                      </Button>
+                    ) : null}
+                  </Space>
+                  {imageError ? (
+                    <div role={'alert'} className={'ant-form-item-explain-error'}>
+                      {imageError}
+                    </div>
+                  ) : null}
+                </div>
+                {cardText(index, 'title', translate('website-card-title'), 80)}
+                {cardText(index, 'text', translate('website-card-text'), 300, true)}
+                {cardText(index, 'link', translate('website-card-link'), 2000)}
+                <Space>
+                  <Button
+                    aria-label={translate('website-move-up', { name })}
+                    disabled={index === 0}
+                    onClick={() => moveCard(index, -1)}
+                  >
+                    ↑
+                  </Button>
+                  <Button
+                    aria-label={translate('website-move-down', { name })}
+                    disabled={index === cards.length - 1}
+                    onClick={() => moveCard(index, 1)}
+                  >
+                    ↓
+                  </Button>
+                  <Button
+                    aria-label={translate('website-remove-named', { name })}
+                    onClick={() => setCards(cards.filter((_, i) => i !== index))}
+                  >
+                    {translate('website-remove')}
+                  </Button>
+                </Space>
+              </div>
+            )
+          })}
+          <Button disabled={cards.length >= MAX_CARDS} onClick={() => setCards([...cards, {}])}>
+            {translate('website-card-add')}
+          </Button>
+          <small>{translate('website-card-count', { count: cards.length, max: MAX_CARDS })}</small>
+          <div aria-live={'polite'} style={{ position: 'absolute', left: -10000 }}>
+            {announcement}
+          </div>
+          {errors.items ? (
+            <div role={'alert'} className={'ant-form-item-explain-error'}>
+              {errors.items}
+            </div>
+          ) : null}
+          {picker}
+        </Space>
+      )
+    }
     case 'text':
       return field(
         'html',
@@ -387,6 +553,15 @@ export const checkSection = (section: IWebsiteSection): { [field: string]: strin
     if (hasText !== (typeof section.button2Url === 'string')) {
       errors[hasText ? 'button2Url' : 'button2Text'] = translate('website-section-button2-both')
     }
+  }
+  if (section.type === 'cards') {
+    const cards = getCards(section)
+    if (cards.length === 0) errors.items = translate('website-section-cards-required')
+    cards.forEach((card, index) => {
+      if (typeof card?.link === 'string' && !isLink(card.link)) {
+        errors[`items[${index}].link`] = translate('website-section-bad-link')
+      }
+    })
   }
   if (section.type === 'split' && typeof section.imageAssetId !== 'string') {
     errors.imageAssetId = translate('website-section-image-required')

@@ -403,7 +403,9 @@ const THEME_COLORS = [
   ['primaryColor', '#1a73e8'],
   ['backgroundColor', '#ffffff'],
   ['headingColor', '#222222'],
-  // The second button's colour (specs/005-website-blocks); the site picks dark or white text for it.
+  // The buttons' colours (specs/005-website-blocks); the site picks dark or white text for each. With no button
+  // colour the first button has the main colour.
+  ['buttonColor', undefined],
   ['secondaryColor', '#6c757d'],
 ] as const
 
@@ -418,7 +420,7 @@ export const ThemeEditor = ({ theme, errors, onChange }: iTheme) => (
           <input
             id={idOf(`theme.${key}`)}
             type={'color'}
-            value={theme[key] || fallback}
+            value={theme[key] || fallback || theme.primaryColor || '#1a73e8'}
             onChange={(e) => onChange({ ...theme, [key]: e.target.value })}
           />
         </div>

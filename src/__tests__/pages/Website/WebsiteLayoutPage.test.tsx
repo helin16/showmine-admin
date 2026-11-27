@@ -318,6 +318,9 @@ describe('WebsiteLayoutPage', () => {
     await loaded()
     tab('Theme')
     type(screen.getByLabelText('Heading colour'), '#58468b')
+    // With no button colour the picker shows the main colour (spec 005, slice 88b).
+    expect(screen.getByLabelText('Button colour')).toHaveValue('#111111')
+    type(screen.getByLabelText('Button colour'), '#3d82f4')
     // The second button's colour (spec 005), with the text the site picks for it.
     type(screen.getByLabelText('Second button colour'), '#facc15')
     fireEvent.click(screen.getByRole('radio', { name: '1140 px' }))
@@ -327,6 +330,8 @@ describe('WebsiteLayoutPage', () => {
     expect(site.style.getPropertyValue('--site-heading')).toBe('#58468b')
     expect(site.style.getPropertyValue('--site-width')).toBe('1140px')
     expect(site).toHaveClass('site-font-friendly')
+    expect(site.style.getPropertyValue('--site-button')).toBe('#3d82f4')
+    expect(site.style.getPropertyValue('--site-button-text')).toBe('#ffffff')
     expect(site.style.getPropertyValue('--site-secondary')).toBe('#facc15')
     expect(site.style.getPropertyValue('--site-secondary-text')).toBe('#212529')
     fireEvent.click(saveBtn())
@@ -335,6 +340,7 @@ describe('WebsiteLayoutPage', () => {
       primaryColor: '#111111',
       fontPair: 'friendly',
       headingColor: '#58468b',
+      buttonColor: '#3d82f4',
       secondaryColor: '#facc15',
       contentWidth: 1140,
     })

@@ -148,6 +148,47 @@ describe('SiteCanvas', () => {
     expect(left.querySelector('img')).toBeNull()
   })
 
+  // specs/005-website-blocks, slice 88b: the same markup as the Reader's Cards.
+  test('draws a card grid with its columns, boxes, images and linked cards', () => {
+    render(
+      <SiteCanvas
+        {...(props({
+          sections: [
+            {
+              id: 'c',
+              type: 'cards',
+              heading: 'Channels',
+              intro: 'Many places',
+              columns: '4',
+              boxed: true,
+              items: [
+                { imageAssetId: 'a1', title: 'WeChat', text: 'Official', link: '/a' },
+                { title: 'Plain' },
+                { imageAssetId: 'gone' },
+              ],
+            },
+            { id: 'd', type: 'cards', columns: '7', items: [] },
+          ],
+        }) as never)}
+      />,
+    )
+    const [grid, bare] = Array.from(canvas().querySelectorAll('.site-cards'))
+    expect(grid.className).toBe('site-cards columns-4 boxed')
+    expect(grid.querySelector('h2')).toHaveTextContent('Channels')
+    expect(grid.querySelector('.site-cards-intro')).toHaveTextContent('Many places')
+    const items = Array.from(grid.querySelectorAll('ul > li'))
+    expect(items).toHaveLength(3)
+    expect(items[0].querySelector('a.site-card')).toHaveAttribute('href', '#')
+    expect(items[0].querySelector('img')).toHaveAttribute('src', 'https://cdn.test/a1.png')
+    expect(items[0].querySelector('h3')).toHaveTextContent('WeChat')
+    expect(items[0].querySelector('p')).toHaveTextContent('Official')
+    expect(items[1].querySelector('a')).toBeNull()
+    expect(items[1].querySelector('div.site-card h3')).toHaveTextContent('Plain')
+    expect(items[2].querySelector('img')).toBeNull()
+    expect(bare.className).toBe('site-cards columns-3')
+    expect(bare.querySelector('h2')).toBeNull()
+  })
+
   test('falls back to the default font and colour, and draws no button without a link', () => {
     render(
       <SiteCanvas
@@ -541,8 +582,13 @@ describe('SiteCanvas layout', () => {
       '--site-secondary-text': '#212529',
       '--site-width': '1280px',
     })
-    expect(getThemeStyle({ secondaryColor: '#808080' })).toMatchObject({ '--site-secondary-text': '#ffffff' })
-    expect(getThemeStyle({ secondaryColor: '#8a8a8a' })).toMatchObject({ '--site-secondary-text': '#212529' })
+    // The first button's colour (slice 88b), with its text.
+    expect(getThemeStyle({ buttonColor: '#facc15' })).toStrictEqual({
+      '--site-button': '#facc15',
+      '--site-button-text': '#212529',
+    })
+    expect(getThemeStyle({ secondaryColor: '#909090' })).toMatchObject({ '--site-secondary-text': '#ffffff' })
+    expect(getThemeStyle({ secondaryColor: '#a0a0a0' })).toMatchObject({ '--site-secondary-text': '#212529' })
     expect(getThemeStyle({ secondaryColor: '#4b3f8f' })).toStrictEqual({
       '--site-secondary': '#4b3f8f',
       '--site-secondary-text': '#ffffff',

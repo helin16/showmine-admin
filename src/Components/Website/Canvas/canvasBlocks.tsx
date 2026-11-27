@@ -97,6 +97,49 @@ const Split = ({ section, images }: iBlock) => {
   )
 }
 
+// Card grid (reader sections/index.tsx Cards, spec 005 slice 88b). Canvas links go nowhere.
+const Cards = ({ section, images }: iBlock) => {
+  const columns = ['2', '3', '4'].includes(`${section.columns}`) ? `${section.columns}` : '3'
+  const items = (Array.isArray(section.items) ? section.items : []) as {
+    imageAssetId?: string
+    title?: string
+    text?: string
+    link?: string
+  }[]
+  return (
+    <section className={`site-cards columns-${columns}${section.boxed === true ? ' boxed' : ''}`}>
+      {section.heading ? <h2>{`${section.heading}`}</h2> : null}
+      {section.intro ? <p className={'site-cards-intro'}>{`${section.intro}`}</p> : null}
+      <ul>
+        {items.map((item, index) => {
+          const imageUrl = urlOf(images, item?.imageAssetId)
+          const card = (
+            <>
+              {imageUrl ? <img src={imageUrl} alt={''} /> : null}
+              <div>
+                {item?.title ? <h3>{`${item.title}`}</h3> : null}
+                {item?.text ? <p>{`${item.text}`}</p> : null}
+              </div>
+            </>
+          )
+          return (
+            // eslint-disable-next-line react/no-array-index-key
+            <li key={index}>
+              {item?.link ? (
+                <a className={'site-card'} href={'#'}>
+                  {card}
+                </a>
+              ) : (
+                <div className={'site-card'}>{card}</div>
+              )}
+            </li>
+          )
+        })}
+      </ul>
+    </section>
+  )
+}
+
 // Cleaned again only when its text changes, so typing in another block stays quick (SC-003).
 const Text = ({ section }: iBlock) => {
   const html = `${section.html || ''}`
@@ -174,21 +217,23 @@ const COLOR_VARS = {
   backgroundColor: '--site-bg',
   headingColor: '--site-heading',
   secondaryColor: '--site-secondary',
+  buttonColor: '--site-button',
 } as const
-// The text colour that reads best on a colour (reader Site.tsx getTextColor): dark on light colours, else white.
+// A button's text colour (reader Site.tsx getTextColor): white when its contrast is 3 or more, else dark.
 export const getTextColor = (hex: string) => {
   const [r, g, b] = [1, 3, 5].map((i) => {
     const c = parseInt(hex.slice(i, i + 2), 16) / 255
     return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
   })
   const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
-  return 1.05 / (luminance + 0.05) >= (luminance + 0.05) / 0.0681 ? '#ffffff' : '#212529'
+  return 1.05 / (luminance + 0.05) >= 3 ? '#ffffff' : '#212529'
 }
 export const getThemeStyle = (theme: IWebsiteTheme = {}) => {
   const style: { [name: string]: string } = {}
   ;(Object.keys(COLOR_VARS) as (keyof typeof COLOR_VARS)[]).forEach((key) => {
     if (COLOR.test(`${theme[key]}`)) style[COLOR_VARS[key]] = `${theme[key]}`
   })
+  if (style['--site-button']) style['--site-button-text'] = getTextColor(style['--site-button'])
   if (style['--site-secondary']) style['--site-secondary-text'] = getTextColor(style['--site-secondary'])
   if ([960, 1140, 1280].includes(Number(theme.contentWidth))) style['--site-width'] = `${theme.contentWidth}px`
   return Object.keys(style).length > 0 ? (style as React.CSSProperties) : undefined
@@ -266,6 +311,7 @@ export const Footer = ({ layout, images }: { layout?: IWebsiteLayout | null; ima
 export const BLOCKS: { [type: string]: (props: iBlock) => React.ReactElement | null } = {
   hero: Hero,
   split: Split,
+  cards: Cards,
   text: Text,
   image: Image,
   gallery: Gallery,

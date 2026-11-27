@@ -10,6 +10,8 @@ export type IWebsiteTheme = {
   backgroundColor?: string
   headingColor?: string
   secondaryColor?: string
+  // The first button's colour (specs/005, slice 88b); absent, the main colour.
+  buttonColor?: string
   contentWidth?: number
 }
 export const CONTENT_WIDTHS = [960, 1140, 1280]
