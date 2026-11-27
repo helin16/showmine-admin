@@ -423,6 +423,20 @@ export const ThemeEditor = ({ theme, errors, onChange }: iTheme) => (
             value={theme[key] || fallback || theme.primaryColor || '#1a73e8'}
             onChange={(e) => onChange({ ...theme, [key]: e.target.value })}
           />
+          {/* A button colour set can be dropped, so the first button follows the main colour again (spec 005). */}
+          {key === 'buttonColor' && theme.buttonColor ? (
+            <Button
+              type={'link'}
+              size={'small'}
+              onClick={() => {
+                const next = { ...theme }
+                delete next.buttonColor
+                onChange(next)
+              }}
+            >
+              {translate('website-theme-button-reset')}
+            </Button>
+          ) : null}
         </div>
         <Problem path={`theme.${key}`} errors={errors} />
       </div>

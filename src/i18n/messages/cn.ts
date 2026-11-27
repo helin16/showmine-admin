@@ -467,6 +467,7 @@ const LanguageCN = {
     'website-card-moved': '卡片已移到第 {number} 位。',
     'website-section-cards-required': '至少添加一张卡片。',
     'website-theme-buttonColor': '按钮颜色',
+    'website-theme-button-reset': '改回主色',
     'website-section-plain-text': '文字（保留换行）',
     'website-section-image-side': '图片位置',
     'website-section-image-left': '左边',

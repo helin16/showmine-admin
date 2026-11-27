@@ -474,6 +474,7 @@ const LanguageEN = {
     'website-card-moved': 'Card moved to position {number}.',
     'website-section-cards-required': 'Add at least one card.',
     'website-theme-buttonColor': 'Button colour',
+    'website-theme-button-reset': 'Use the main colour',
     'website-section-plain-text': 'Text (line breaks are kept)',
     'website-section-image-side': 'Image side',
     'website-section-image-left': 'Left',

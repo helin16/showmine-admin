@@ -320,6 +320,13 @@ describe('WebsiteLayoutPage', () => {
     type(screen.getByLabelText('Heading colour'), '#58468b')
     // With no button colour the picker shows the main colour (spec 005, slice 88b).
     expect(screen.getByLabelText('Button colour')).toHaveValue('#111111')
+    expect(screen.queryByRole('button', { name: 'Use the main colour' })).toBeNull()
+    type(screen.getByLabelText('Button colour'), '#00aa00')
+    // Dropped again, the button follows the main colour.
+    fireEvent.click(screen.getByRole('button', { name: 'Use the main colour' }))
+    expect(screen.getByLabelText('Button colour')).toHaveValue('#111111')
+    expect(screen.queryByRole('button', { name: 'Use the main colour' })).toBeNull()
+    expect((canvas().firstElementChild as HTMLElement).style.getPropertyValue('--site-button')).toBe('')
     type(screen.getByLabelText('Button colour'), '#3d82f4')
     // The second button's colour (spec 005), with the text the site picks for it.
     type(screen.getByLabelText('Second button colour'), '#facc15')
