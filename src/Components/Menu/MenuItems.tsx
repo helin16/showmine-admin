@@ -28,7 +28,9 @@ import {
   COMPANY_WEBSITE_TEMPLATES_URL,
   COMPANY_WEBSITE_SETTINGS_URL,
   COMPANY_WEBSITE_LAYOUT_URL,
+  COMPANY_WEBSITE_MESSAGES_URL,
 } from '../../UrlMap'
+import WebsiteMessagesMenuName from '../Website/WebsiteMessagesMenuName'
 
 export const MENU_KEY_DASHBOARD = 'dashboard'
 export const MENU_KEY_ARTICLES = 'articles'
@@ -46,6 +48,7 @@ export const MENU_KEY_WEBSITE_PUBLISH = 'website-publish'
 export const MENU_KEY_WEBSITE_TEMPLATES = 'website-templates'
 export const MENU_KEY_WEBSITE_SETTINGS = 'website-settings'
 export const MENU_KEY_WEBSITE_LAYOUT = 'website-layout'
+export const MENU_KEY_WEBSITE_MESSAGES = 'website-messages'
 export const MENU_ACCESS_LEVEL_COMPANY_ADMIN = 'access-company-admin'
 export const defaultSelectedKey = MENU_KEY_DASHBOARD
 export const MENU_ACCESS_LEVEL_SUPER_ADMIN = 'access-super-admin'
@@ -101,6 +104,12 @@ const MenuItems = [
             key: MENU_KEY_WEBSITE_LAYOUT,
             name: <FormattedMessage id='website-menu-layout' />,
             url: COMPANY_WEBSITE_LAYOUT_URL,
+            adminOnly: true,
+          },
+          {
+            key: MENU_KEY_WEBSITE_MESSAGES,
+            name: <WebsiteMessagesMenuName />,
+            url: COMPANY_WEBSITE_MESSAGES_URL,
             adminOnly: true,
           },
           {

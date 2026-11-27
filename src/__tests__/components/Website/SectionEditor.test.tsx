@@ -58,6 +58,11 @@ describe('newSection', () => {
     expect(a.id).not.toBe(b.id)
   })
 
+  test('a message form can be added, starting with an empty heading (spec 006)', () => {
+    expect(ADDABLE_SECTION_TYPES).toContain('form')
+    expect(newSection('form')).toMatchObject({ type: 'form', heading: '' })
+  })
+
   test('pricing starts with one empty plan, a map at medium height (spec 005)', () => {
     expect(ADDABLE_SECTION_TYPES).toEqual(expect.arrayContaining(['pricing', 'map']))
     expect(ADDABLE_SECTION_TYPES.indexOf('pricing')).toBe(3)
@@ -296,6 +301,31 @@ describe('images', () => {
   test('an image beside text shows its side as saved', () => {
     renderWithImages({ type: 'split', imageAssetId: 'a1', imageSide: 'right' })
     expect(screen.getByRole('radio', { name: 'Right' })).toBeChecked()
+  })
+
+  // specs/006-website-message-form
+  describe('message form', () => {
+    test('edits its words within their limits; the visitor fields are not editable', () => {
+      const onChange = renderEditor({ type: 'form', heading: 'Hi', buttonText: 'Go' })
+      expect(screen.getByText(/Visitors fill in first name, last name, email and message/)).toBeInTheDocument()
+      expect(screen.getByLabelText('Heading')).toHaveAttribute('maxlength', '120')
+      expect(screen.getByLabelText('Intro')).toHaveAttribute('maxlength', '500')
+      expect(screen.getByLabelText('Intro').tagName).toBe('TEXTAREA')
+      expect(screen.getByLabelText('Button text (optional, Send)')).toHaveAttribute('maxlength', '40')
+      expect(screen.getByLabelText('Thank-you note (optional)')).toHaveAttribute('maxlength', '300')
+      expect(screen.getByLabelText('Thank-you note (optional)').tagName).toBe('TEXTAREA')
+      fireEvent.change(screen.getByLabelText('Thank-you note (optional)'), { target: { value: 'Thanks!' } })
+      expect(onChange).toHaveBeenLastCalledWith({
+        id: 's1',
+        type: 'form',
+        heading: 'Hi',
+        buttonText: 'Go',
+        thanks: 'Thanks!',
+      })
+      fireEvent.change(screen.getByLabelText('Button text (optional, Send)'), { target: { value: '' } })
+      expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'form', heading: 'Hi' })
+      expect(checkSection({ id: 's', type: 'form' })).toStrictEqual({})
+    })
   })
 
   // specs/005-website-blocks, slice 88c

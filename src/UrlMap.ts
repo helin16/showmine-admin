@@ -21,6 +21,8 @@ export const COMPANY_WEBSITE_TEMPLATES_URL = `${COMPANY_WEBSITE_URL}/templates`
 export const COMPANY_WEBSITE_PAGES_URL = `${COMPANY_WEBSITE_URL}/pages`
 export const COMPANY_WEBSITE_SETTINGS_URL = `${COMPANY_WEBSITE_URL}/settings`
 export const COMPANY_WEBSITE_LAYOUT_URL = `${COMPANY_WEBSITE_URL}/layout`
+// The address the message emails link to (showmine-api Notifications.notifyWebsiteMessage).
+export const COMPANY_WEBSITE_MESSAGES_URL = `${COMPANY_WEBSITE_URL}/messages`
 export const COMPANY_WEBSITE_ANALYTICS_URL = `${COMPANY_WEBSITE_URL}/analytics`
 export const COMPANY_WEBSITE_PAGE_URL = `${COMPANY_WEBSITE_PAGES_URL}/:id`
 export const MY_PROFILE_URL = `${BACK_END_URL}profile`

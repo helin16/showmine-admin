@@ -206,6 +206,31 @@ const MapBlock = ({ section }: iBlock) =>
     </section>
   ) : null
 
+// Message form (reader MessageForm.tsx, specs/006): the same markup, its fields disabled; nothing is sent here.
+const FORM_FIELDS = [
+  ['firstName', 'First name 名'],
+  ['lastName', 'Last name 姓'],
+  ['email', 'Email 邮箱'],
+  ['message', 'Message 留言'],
+] as const
+const MessageForm = ({ section }: iBlock) => (
+  <section className={'site-form'}>
+    {section.heading ? <h2>{`${section.heading}`}</h2> : null}
+    {section.intro ? <p className={'site-cards-intro'}>{`${section.intro}`}</p> : null}
+    <form onSubmit={(e) => e.preventDefault()}>
+      {FORM_FIELDS.map(([name, label]) => (
+        <div key={name} className={`site-form-field ${name}`}>
+          <label>{label}</label>
+          {name === 'message' ? <textarea rows={5} disabled /> : <input type={'text'} disabled />}
+        </div>
+      ))}
+      <button className={'site-button'} type={'button'} disabled>
+        {`${section.buttonText || 'Send'}`}
+      </button>
+    </form>
+  </section>
+)
+
 // Cleaned again only when its text changes, so typing in another block stays quick (SC-003).
 const Text = ({ section }: iBlock) => {
   const html = `${section.html || ''}`
@@ -380,6 +405,7 @@ export const BLOCKS: { [type: string]: (props: iBlock) => React.ReactElement | n
   cards: Cards,
   pricing: Pricing,
   map: MapBlock,
+  form: MessageForm,
   text: Text,
   image: Image,
   gallery: Gallery,

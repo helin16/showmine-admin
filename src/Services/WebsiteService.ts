@@ -2,6 +2,7 @@ import AppService, { iConfigParams } from './AppService'
 import IWebsite, {
   IImageUse,
   IWebsitePage,
+  IWebsiteMessageList,
   IWebsitePageViews,
   IWebsiteSection,
   IWebsiteSeo,
@@ -36,6 +37,14 @@ const getReaderUrl = (path: string) => {
   const readerUrl = `${process.env.REACT_APP_FRONT_END_URL || ''}`.trim().replace(/\/$/, '')
   return readerUrl === '' ? null : `${readerUrl}${path}`
 }
+
+// Visitors' messages from the website's forms (specs/006), for the company's admins.
+const messagesEndPoint = `${endPoint}/messages`
+const getMessages = async (page = 1, pageSize = 20): Promise<IWebsiteMessageList> =>
+  AppService.get(messagesEndPoint, { page, pageSize }).then((resp) => resp.data)
+const markMessageRead = async (id: string) =>
+  AppService.put(`${messagesEndPoint}/${id}/read`, {}).then((resp) => resp.data)
+const deleteMessage = async (id: string) => AppService.delete(`${messagesEndPoint}/${id}`).then((resp) => resp.data)
 
 const pagesEndPoint = `${endPoint}/pages`
 
@@ -91,6 +100,9 @@ const getPageViews = async (from: string, to: string): Promise<IWebsitePageViews
   AppService.get(`${endPoint}/pageViews`, { from, to }).then((resp) => resp.data)
 
 const WebsiteService = {
+  getMessages,
+  markMessageRead,
+  deleteMessage,
   getPageViews,
   getImages,
   getImageUsage,

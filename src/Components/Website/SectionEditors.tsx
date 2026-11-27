@@ -21,6 +21,7 @@ export const ADDABLE_SECTION_TYPES = [
   'gallery',
   'contact',
   'map',
+  'form',
   'articles',
 ]
 export const MAX_GALLERY_IMAGES = 24
@@ -72,6 +73,8 @@ export const newSection = (type: string): IWebsiteSection => {
       return { id, type, plans: [{ name: '', price: '' }] }
     case 'map':
       return { id, type, height: 'medium' }
+    case 'form':
+      return { id, type, heading: '' }
     case 'text':
       return { id, type, html: '' }
     case 'contact':
@@ -555,6 +558,17 @@ const SectionEditor = ({ section, onChange, errors = {}, images = {}, onImagesPi
         </Space>
       )
     }
+    // Message form (specs/006-website-message-form): the visitor's fields are fixed; the block sets its words.
+    case 'form':
+      return (
+        <Space orientation={'vertical'} style={{ width: '100%' }}>
+          <div>{translate('website-form-help')}</div>
+          {field('heading', translate('website-section-heading'), text('heading', 120))}
+          {field('intro', translate('website-section-intro'), text('intro', 500, true))}
+          {field('buttonText', translate('website-form-button'), text('buttonText', 40))}
+          {field('thanks', translate('website-form-thanks'), text('thanks', 300, true))}
+        </Space>
+      )
     // A map on its own (spec 005, slice 88c).
     case 'map':
       return (

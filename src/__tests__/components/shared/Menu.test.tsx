@@ -1,7 +1,10 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
 import { IntlProvider } from 'react-intl'
-import { renderWithProviders } from '../../testUtils'
+import { Provider } from 'react-redux'
+import { vi } from 'vitest'
+import { makeTestStore, renderWithProviders } from '../../testUtils'
+import WebsiteService from '../../../Services/WebsiteService'
 import CompanyLogo from '../../../Components/Menu/CompanyLogo'
 import MenuItems, {
   defaultSelectedKey,
@@ -16,6 +19,7 @@ import MenuItems, {
   MENU_KEY_WEBSITE_PUBLISH,
   MENU_KEY_WEBSITE_SETTINGS,
   MENU_KEY_WEBSITE_LAYOUT,
+  MENU_KEY_WEBSITE_MESSAGES,
   MENU_KEY_WEBSITE_TEMPLATES,
 } from '../../../Components/Menu/MenuItems'
 import { messages } from '../../../i18n/messages'
@@ -23,6 +27,7 @@ import {
   BACK_END_URL,
   COMPANY_LIST_URL,
   COMPANY_USERS_URL,
+  COMPANY_WEBSITE_MESSAGES_URL,
   COMPANY_WEBSITE_PAGES_URL,
   COMPANY_WEBSITE_SETTINGS_URL,
   COMPANY_WEBSITE_LAYOUT_URL,
@@ -80,6 +85,7 @@ describe('MenuItems', () => {
       [MENU_KEY_WEBSITE_PAGES, COMPANY_WEBSITE_PAGES_URL, false],
       [MENU_KEY_WEBSITE_PUBLISH, COMPANY_WEBSITE_URL, true],
       [MENU_KEY_WEBSITE_LAYOUT, COMPANY_WEBSITE_LAYOUT_URL, true],
+      [MENU_KEY_WEBSITE_MESSAGES, COMPANY_WEBSITE_MESSAGES_URL, true],
       [MENU_KEY_WEBSITE_TEMPLATES, COMPANY_WEBSITE_TEMPLATES_URL, true],
       [MENU_KEY_WEBSITE_SETTINGS, COMPANY_WEBSITE_SETTINGS_URL, true],
     ])
@@ -103,10 +109,14 @@ describe('MenuItems', () => {
   test.each(Object.keys(messages))('every label has a %s translation', (locale) => {
     const onError = vi.fn()
     const labels = [...MenuItems, ...links].map((item: Item, index: number) => <p key={index}>{item.name}</p>)
+    // The Messages name reads the company (its unread count), so the labels need a store.
+    vi.spyOn(WebsiteService, 'getMessages').mockReturnValue(new Promise(() => {}))
     render(
-      <IntlProvider locale={locale} messages={messages[locale as keyof typeof messages]} onError={onError}>
-        {labels}
-      </IntlProvider>,
+      <Provider store={makeTestStore()}>
+        <IntlProvider locale={locale} messages={messages[locale as keyof typeof messages]} onError={onError}>
+          {labels}
+        </IntlProvider>
+      </Provider>,
     )
     expect(onError).not.toHaveBeenCalled()
   })

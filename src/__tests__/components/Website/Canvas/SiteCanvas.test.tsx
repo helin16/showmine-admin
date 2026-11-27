@@ -148,6 +148,40 @@ describe('SiteCanvas', () => {
     expect(left.querySelector('img')).toBeNull()
   })
 
+  // specs/006-website-message-form: the Reader's form markup, its fields disabled and nothing sent.
+  test('draws a message form with its words, the four fields disabled', () => {
+    render(
+      <SiteCanvas
+        {...(props({
+          sections: [
+            { id: 'f', type: 'form', heading: 'Drop us a note', intro: 'Any time', buttonText: 'Post it' },
+            { id: 'g', type: 'form' },
+          ],
+        }) as never)}
+      />,
+    )
+    const [form, plain] = Array.from(canvas().querySelectorAll('.site-form'))
+    expect(form.querySelector('h2')).toHaveTextContent('Drop us a note')
+    expect(form.querySelector('.site-cards-intro')).toHaveTextContent('Any time')
+    expect(Array.from(form.querySelectorAll('.site-form-field')).map((f) => f.className)).toStrictEqual([
+      'site-form-field firstName',
+      'site-form-field lastName',
+      'site-form-field email',
+      'site-form-field message',
+    ])
+    expect(Array.from(form.querySelectorAll('label')).map((l) => l.textContent)).toStrictEqual([
+      'First name 名',
+      'Last name 姓',
+      'Email 邮箱',
+      'Message 留言',
+    ])
+    form.querySelectorAll('input, textarea, button').forEach((el) => expect(el).toBeDisabled())
+    expect(form.querySelector('textarea')).not.toBeNull()
+    expect(form.querySelector('button.site-button')).toHaveTextContent('Post it')
+    expect(plain.querySelector('button')).toHaveTextContent('Send')
+    expect(plain.querySelector('h2')).toBeNull()
+  })
+
   // specs/005-website-blocks, slice 88c: the same markup as the Reader's Pricing and MapBlock.
   test('draws pricing plans and a map block', () => {
     render(

@@ -49,6 +49,7 @@ const ICONS: { [type: string]: React.ComponentType } = {
   cards: Icons.CreditCardOutlined,
   pricing: Icons.DollarOutlined,
   map: Icons.EnvironmentOutlined,
+  form: Icons.MailOutlined,
   text: Icons.FileTextOutlined,
   image: Icons.PictureOutlined,
   gallery: Icons.AppstoreOutlined,

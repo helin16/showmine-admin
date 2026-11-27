@@ -16,6 +16,7 @@ import {
   COMPANY_WEBSITE_PAGE_URL,
   COMPANY_WEBSITE_SETTINGS_URL,
   COMPANY_WEBSITE_LAYOUT_URL,
+  COMPANY_WEBSITE_MESSAGES_URL,
   COMPANY_WEBSITE_ANALYTICS_URL,
   COMPANY_CHANNEL_NEW_URL,
   COMPANY_CHANNELS_URL,
@@ -56,6 +57,7 @@ const WebsitePagesPage = lazy(() => import('./Pages/Website/WebsitePagesPage'))
 const WebsitePageEditPage = lazy(() => import('./Pages/Website/WebsitePageEditPage'))
 const WebsiteSettingsPage = lazy(() => import('./Pages/Website/WebsiteSettingsPage'))
 const WebsiteLayoutPage = lazy(() => import('./Pages/Website/WebsiteLayoutPage'))
+const WebsiteMessagesPage = lazy(() => import('./Pages/Website/WebsiteMessagesPage'))
 const CompanyUsersPage = lazy(() => import('./Pages/Company/CompanyUsersPage'))
 const CompanyListPage = lazy(() => import('./Pages/Company/CompanyListPage'))
 const CompanyChannelsPage = lazy(() => import('./Pages/Channel/ChannelsPage'))
@@ -199,6 +201,16 @@ const Router = () => {
                     <ProtectedRoute>
                       <CompanyAdminRoute>
                         <WebsiteSettingsPage />
+                      </CompanyAdminRoute>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path={COMPANY_WEBSITE_MESSAGES_URL}
+                  element={
+                    <ProtectedRoute>
+                      <CompanyAdminRoute>
+                        <WebsiteMessagesPage />
                       </CompanyAdminRoute>
                     </ProtectedRoute>
                   }

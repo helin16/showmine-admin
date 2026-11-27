@@ -137,3 +137,20 @@ export type IWebsitePageViews = {
   updatedAt: string | null
   days: { date: string; pageSlug: string; count: number }[]
 }
+
+// A visitor's message from a website's message form (specs/006-website-message-form).
+export type IWebsiteMessage = {
+  id: string
+  pageSlug: string
+  firstName: string
+  lastName: string
+  email: string
+  message: string
+  isRead: boolean
+  createdAt: string
+}
+export type IWebsiteMessageList = {
+  data: IWebsiteMessage[]
+  pagination: { currentPage: number; pageSize: number; total: number; totalPages: number }
+  unread: number
+}
