@@ -30,7 +30,8 @@ Index (companyId, createdAt). No createdById: a visitor is not a user. Deleting 
 - `POST /publicWebsite/:slug/message` (app token; per-address limit 5 / 15 min):
   `{ pageSlug, firstName, lastName, email, message, website }` (`website` is the hidden trap field).
   201 on success or trap; 400 with field errors; 404 when the site is not published or has no form; 429 over the limit.
-- `GET /website/messages?page=&pageSize=` (company admins): newest first, `{ data, pagination, unread }`.
+- `GET /website/messages?page=&pageSize=` (company admins): newest first, `{ data, pagination, unread }`; page size 20, at most 50.
+  A member who is not an admin gets 401, as on the other admin routes.
 - `PUT /website/messages/:id/read` (company admins): marks it read.
 - `DELETE /website/messages/:id` (company admins).
 
