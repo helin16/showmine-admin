@@ -88,6 +88,12 @@ export const newSection = (type: string): IWebsiteSection => {
   }
 }
 
+const HUBSPOT_PATTERNS: [string, RegExp][] = [
+  ['hubspotPortalId', /^[0-9]{1,12}$/],
+  ['hubspotFormId', /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i],
+  ['hubspotMessageField', /^[a-z0-9_]{1,100}$/],
+]
+
 const getProtocol = (value: string) => {
   try {
     return new URL(value).protocol
@@ -567,6 +573,14 @@ const SectionEditor = ({ section, onChange, errors = {}, images = {}, onImagesPi
           {field('intro', translate('website-section-intro'), text('intro', 500, true))}
           {field('buttonText', translate('website-form-button'), text('buttonText', 40))}
           {field('thanks', translate('website-form-thanks'), text('thanks', 300, true))}
+          {/* specs/007-website-hubspot-map: also sent on to a HubSpot form; our email can be switched off. */}
+          <div>{translate('website-form-hubspot-help')}</div>
+          {field('hubspotPortalId', translate('website-form-hubspot-portal'), text('hubspotPortalId', 12))}
+          {field('hubspotFormId', translate('website-form-hubspot-form'), text('hubspotFormId', 36))}
+          {field('hubspotMessageField', translate('website-form-hubspot-field'), text('hubspotMessageField', 100))}
+          <Checkbox checked={section.noEmail === true} onChange={(e) => set('noEmail', e.target.checked || undefined)}>
+            {translate('website-form-no-email')}
+          </Checkbox>
         </Space>
       )
     // A map on its own (spec 005, slice 88c).
@@ -574,6 +588,7 @@ const SectionEditor = ({ section, onChange, errors = {}, images = {}, onImagesPi
       return (
         <Space orientation={'vertical'} style={{ width: '100%' }}>
           {field('mapUrl', translate('website-section-map-url'), text('mapUrl', 2000))}
+          {field('chinaMapUrl', translate('website-map-china-url'), text('chinaMapUrl', 2000))}
           <div>
             <div id={fieldId('height')}>{translate('website-map-height')}</div>
             <Radio.Group
@@ -778,6 +793,24 @@ export const checkSection = (section: IWebsiteSection): { [field: string]: strin
   }
   if (section.type === 'map' && getProtocol(`${section.mapUrl ?? ''}`) !== 'https:') {
     errors.mapUrl = translate('website-section-bad-map-url')
+  }
+  if (
+    section.type === 'map' &&
+    typeof section.chinaMapUrl === 'string' &&
+    getProtocol(section.chinaMapUrl) !== 'https:'
+  ) {
+    errors.chinaMapUrl = translate('website-section-bad-map-url')
+  }
+  if (section.type === 'form') {
+    // The same rules as the API's (spec 007): the two ids both or neither.
+    HUBSPOT_PATTERNS.forEach(([name, pattern]) => {
+      const value = section[name]
+      if (typeof value === 'string' && !pattern.test(value)) errors[name] = translate(`website-form-bad-${name}`)
+    })
+    const hasPortal = typeof section.hubspotPortalId === 'string'
+    if (hasPortal !== (typeof section.hubspotFormId === 'string')) {
+      errors[hasPortal ? 'hubspotFormId' : 'hubspotPortalId'] = translate('website-section-required')
+    }
   }
   if (section.type === 'split' && typeof section.imageAssetId !== 'string') {
     errors.imageAssetId = translate('website-section-image-required')

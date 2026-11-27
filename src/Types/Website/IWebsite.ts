@@ -147,6 +147,9 @@ export type IWebsiteMessage = {
   email: string
   message: string
   isRead: boolean
+  // Forwarding to HubSpot (specs/007-website-hubspot-map): null when the form has none.
+  forwardStatus?: 'pending' | 'sent' | 'failed' | null
+  forwardError?: string | null
   createdAt: string
 }
 export type IWebsiteMessageList = {

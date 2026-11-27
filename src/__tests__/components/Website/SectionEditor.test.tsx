@@ -326,6 +326,73 @@ describe('images', () => {
       expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'form', heading: 'Hi' })
       expect(checkSection({ id: 's', type: 'form' })).toStrictEqual({})
     })
+
+    // specs/007-website-hubspot-map
+    const PORTAL = 'HubSpot portal ID'
+    const FORM = 'HubSpot form ID'
+    const FIELD = 'HubSpot field for the message (optional, message)'
+    const NO_EMAIL = 'Do not email new messages (they still show in Website > Messages)'
+    const GUID = '4fd8c4ec-a157-4e53-b588-52bcd1123e06'
+
+    test('edits the HubSpot settings within their limits, and the no-email switch', () => {
+      const onChange = renderEditor({ type: 'form', hubspotPortalId: '1' })
+      expect(screen.getByText(/each message is also sent to that HubSpot form/)).toBeInTheDocument()
+      expect(screen.getByLabelText(PORTAL)).toHaveAttribute('maxlength', '12')
+      expect(screen.getByLabelText(PORTAL)).toHaveValue('1')
+      expect(screen.getByLabelText(FORM)).toHaveAttribute('maxlength', '36')
+      expect(screen.getByLabelText(FIELD)).toHaveAttribute('maxlength', '100')
+      fireEvent.change(screen.getByLabelText(FORM), { target: { value: GUID } })
+      expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'form', hubspotPortalId: '1', hubspotFormId: GUID })
+      fireEvent.change(screen.getByLabelText(FIELD), { target: { value: 'comments' } })
+      expect(onChange).toHaveBeenLastCalledWith({
+        id: 's1',
+        type: 'form',
+        hubspotPortalId: '1',
+        hubspotMessageField: 'comments',
+      })
+      fireEvent.change(screen.getByLabelText(PORTAL), { target: { value: '' } })
+      expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'form' })
+      expect(screen.getByRole('checkbox', { name: NO_EMAIL })).not.toBeChecked()
+      fireEvent.click(screen.getByRole('checkbox', { name: NO_EMAIL }))
+      expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'form', hubspotPortalId: '1', noEmail: true })
+    })
+
+    test('no email is left out when switched back off', () => {
+      const onChange = renderEditor({ type: 'form', noEmail: true })
+      expect(screen.getByRole('checkbox', { name: NO_EMAIL })).toBeChecked()
+      fireEvent.click(screen.getByRole('checkbox', { name: NO_EMAIL }))
+      expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'form' })
+    })
+
+    test('checks the HubSpot settings before saving, as the API does', () => {
+      const check = (extra: object) => checkSection({ id: 's', type: 'form', ...extra })
+      expect(
+        check({ hubspotPortalId: '14545640', hubspotFormId: GUID.toUpperCase(), hubspotMessageField: 'comments' }),
+      ).toStrictEqual({})
+      expect(check({ hubspotPortalId: '14545640' })).toStrictEqual({ hubspotFormId: 'Required.' })
+      expect(check({ hubspotFormId: GUID })).toStrictEqual({ hubspotPortalId: 'Required.' })
+      expect(check({ hubspotPortalId: '1'.repeat(13), hubspotFormId: GUID })).toStrictEqual({
+        hubspotPortalId: 'Digits only, as in the HubSpot embed code.',
+      })
+      expect(check({ hubspotPortalId: '12a', hubspotFormId: `${GUID}x` })).toStrictEqual({
+        hubspotPortalId: 'Digits only, as in the HubSpot embed code.',
+        hubspotFormId: 'A form ID like 4fd8c4ec-a157-4e53-b588-52bcd1123e06.',
+      })
+      expect(check({ hubspotFormId: `x${GUID}`, hubspotPortalId: '1' })).toMatchObject({
+        hubspotFormId: 'A form ID like 4fd8c4ec-a157-4e53-b588-52bcd1123e06.',
+      })
+      expect(check({ hubspotMessageField: 'Comments' })).toStrictEqual({
+        hubspotMessageField: 'A HubSpot field name: small letters, digits and _.',
+      })
+      expect(check({ hubspotMessageField: 'a'.repeat(101) })).toMatchObject({ hubspotMessageField: expect.any(String) })
+      expect(check({ hubspotMessageField: 'message_2' })).toStrictEqual({})
+    })
+
+    test('shows a problem on a HubSpot field', () => {
+      renderEditor({ type: 'form', hubspotPortalId: 'x' }, { hubspotPortalId: 'Not in the expected form.' })
+      expect(screen.getByLabelText(PORTAL)).toHaveAttribute('aria-invalid', 'true')
+      expect(screen.getByRole('alert')).toHaveTextContent('Not in the expected form.')
+    })
   })
 
   // specs/005-website-blocks, slice 88c
@@ -552,6 +619,40 @@ describe('images', () => {
       })
       fireEvent.change(screen.getByLabelText('Map link (https)'), { target: { value: 'https://maps.test/b' } })
       expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'map', mapUrl: 'https://maps.test/b' })
+    })
+
+    // specs/007-website-hubspot-map
+    test('edits the optional China map link', () => {
+      const CHINA = 'Map link for China (optional, https, e.g. Amap): shown in WeChat and in China'
+      const onChange = renderEditor({ type: 'map', mapUrl: 'https://maps.test/a' })
+      expect(screen.getByLabelText(CHINA)).toHaveAttribute('maxlength', '2000')
+      fireEvent.change(screen.getByLabelText(CHINA), { target: { value: 'https://uri.amap.com/x' } })
+      expect(onChange).toHaveBeenLastCalledWith({
+        id: 's1',
+        type: 'map',
+        mapUrl: 'https://maps.test/a',
+        chinaMapUrl: 'https://uri.amap.com/x',
+      })
+    })
+
+    test('a cleared China map link is left out', () => {
+      const CHINA = 'Map link for China (optional, https, e.g. Amap): shown in WeChat and in China'
+      const onChange = renderEditor({
+        type: 'map',
+        mapUrl: 'https://maps.test/a',
+        chinaMapUrl: 'https://uri.amap.com/x',
+      })
+      expect(screen.getByLabelText(CHINA)).toHaveValue('https://uri.amap.com/x')
+      fireEvent.change(screen.getByLabelText(CHINA), { target: { value: '' } })
+      expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'map', mapUrl: 'https://maps.test/a' })
+    })
+
+    test('needs the China map link to be https too', () => {
+      const map = { id: 's', type: 'map', mapUrl: 'https://maps.test' }
+      expect(checkSection({ ...map, chinaMapUrl: 'http://amap.com' })).toStrictEqual({
+        chinaMapUrl: 'Use a link starting with https://.',
+      })
+      expect(checkSection({ ...map, chinaMapUrl: 'https://uri.amap.com/x' })).toStrictEqual({})
     })
 
     test('shows the saved height', () => {

@@ -31,6 +31,9 @@ const MessageText = styled.div`
   margin-top: 8px;
 `
 
+// Where the message is on its way to HubSpot (spec 007).
+const FORWARD_COLORS = { pending: 'default', sent: 'green', failed: 'red' }
+
 type iState = {
   loading: boolean
   messages: IWebsiteMessage[]
@@ -165,6 +168,11 @@ const WebsiteMessagesPage = () => {
             <strong>{name}</strong>{' '}
             <a href={`mailto:${encodeURIComponent(item.email).replace(/%40/g, '@')}`}>{item.email}</a>{' '}
             {item.isRead ? null : <Tag color={'blue'}>{translate('website-messages-unread')}</Tag>}
+            {item.forwardStatus ? (
+              <Tag color={FORWARD_COLORS[item.forwardStatus]}>
+                {translate(`website-messages-hubspot-${item.forwardStatus}`, { reason: `${item.forwardError ?? ''}` })}
+              </Tag>
+            ) : null}
           </div>
           <small>
             {moment(item.createdAt).format('YYYY-MM-DD HH:mm')} · /{item.pageSlug}

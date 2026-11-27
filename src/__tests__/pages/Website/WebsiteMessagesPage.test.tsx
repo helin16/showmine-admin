@@ -64,6 +64,35 @@ describe('WebsiteMessagesPage', () => {
     expect(screen.queryByText(/Hello from a/)).toBeNull()
   })
 
+  // specs/007-website-hubspot-map
+  test('shows the HubSpot status of each forwarded message, with the reason when it failed', async () => {
+    vi.mocked(WebsiteService.getMessages).mockResolvedValue(
+      page([
+        item('a', { forwardStatus: 'sent' }),
+        item('b', { forwardStatus: 'pending' }),
+        item('c', { forwardStatus: 'failed', forwardError: 'HubSpot 400: INVALID_EMAIL' }),
+        item('d', { forwardStatus: null }),
+      ]) as never,
+    )
+    renderPage()
+
+    expect(await screen.findByText('Ann Lee a')).toBeInTheDocument()
+    expect(within(row('Ann Lee a')).getByText('HubSpot: sent')).toBeInTheDocument()
+    expect(within(row('Ann Lee b')).getByText('HubSpot: waiting')).toBeInTheDocument()
+    expect(within(row('Ann Lee c')).getByText('HubSpot: failed (HubSpot 400: INVALID_EMAIL)')).toBeInTheDocument()
+    expect(within(row('Ann Lee d')).queryByText(/HubSpot/)).toBeNull()
+    expect(
+      within(row('Ann Lee a'))
+        .queryByText(/HubSpot/)
+        ?.closest('.ant-tag'),
+    ).toHaveClass('ant-tag-green')
+    expect(
+      within(row('Ann Lee c'))
+        .getByText(/HubSpot: failed/)
+        .closest('.ant-tag'),
+    ).toHaveClass('ant-tag-red')
+  })
+
   test('opening an unread message shows it, marks it read and lowers the count', async () => {
     vi.mocked(WebsiteService.getMessages).mockResolvedValue(page([item('a')]) as never)
     vi.mocked(WebsiteService.markMessageRead).mockResolvedValue({} as never)
