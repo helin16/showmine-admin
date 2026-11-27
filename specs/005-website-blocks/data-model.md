@@ -55,12 +55,18 @@ A card's image is drawn as a 48 px icon beside its title and text. Columns: 1 be
 | intro | text 500 | |
 | plans | list 1–4 | `{ name text 40 required, price text 20 required, period text 20, features lines ≤10 × 100, buttonText text 40, buttonUrl link, highlight bool }` |
 
+Plans sit side by side as many as fit at 220 px or more (one on a phone); buttons line up at the bottom; a highlighted
+plan has a border in the button colour. Features are typed one per line; empty lines are kept in the draft and not
+shown. A plan's button shows with both its text and a usable link, as the first button.
+
 ## Map `map` (new, slice 88c)
 
 | Field | Kind | Notes |
 |---|---|---|
 | mapUrl | httpsUrl, required | an embed address, as the Contact block's map |
 | height | oneOf `small`, `medium`, `large` | 240, 360, 480 px; default `medium` |
+
+The map frame is sandboxed as the Contact block's. A required `httpsUrl` is a new option of that field kind.
 
 ## Theme
 

@@ -30,9 +30,9 @@ description: "Task list for more website blocks"
 
 ## Slice 88c: Pricing plans; Map (US4, US5)
 
-- [ ] T010 api: `lines` kind; `pricing` and `map` types, with tests
-- [ ] T011 reader: `Pricing` and `Map` components and rules, with tests
-- [ ] T012 admin: editors, canvas and palette, with tests
+- [x] T010 api: `lines` kind; `pricing` and `map` types, with tests
+- [x] T011 reader: `Pricing` and `Map` components and rules, with tests
+- [x] T012 admin: editors, canvas and palette, with tests
 
 ## After each slice
 
