@@ -81,6 +81,8 @@ describe('WebsiteMessagesPage', () => {
     expect(within(row('Ann Lee b')).getByText('HubSpot: waiting')).toBeInTheDocument()
     expect(within(row('Ann Lee c')).getByText('HubSpot: failed (HubSpot 400: INVALID_EMAIL)')).toBeInTheDocument()
     expect(within(row('Ann Lee d')).queryByText(/HubSpot/)).toBeNull()
+    // Only the unread mark: no HubSpot tag without forwarding.
+    expect(row('Ann Lee d').querySelectorAll('.ant-tag')).toHaveLength(1)
     expect(
       within(row('Ann Lee a'))
         .queryByText(/HubSpot/)
