@@ -382,10 +382,14 @@ describe('images', () => {
         hubspotFormId: 'A form ID like 4fd8c4ec-a157-4e53-b588-52bcd1123e06.',
       })
       expect(check({ hubspotMessageField: 'Comments' })).toStrictEqual({
-        hubspotMessageField: 'A HubSpot field name: small letters, digits and _.',
+        hubspotMessageField: 'A HubSpot field name: small letters, digits and _; not email, firstname or lastname.',
       })
       expect(check({ hubspotMessageField: 'a'.repeat(101) })).toMatchObject({ hubspotMessageField: expect.any(String) })
       expect(check({ hubspotMessageField: 'message_2' })).toStrictEqual({})
+      for (const name of ['email', 'firstname', 'lastname']) {
+        expect(check({ hubspotMessageField: name })).toMatchObject({ hubspotMessageField: expect.any(String) })
+      }
+      expect(check({ hubspotMessageField: 'emails' })).toStrictEqual({})
     })
 
     test('shows a problem on a HubSpot field', () => {

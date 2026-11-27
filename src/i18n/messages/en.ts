@@ -474,7 +474,8 @@ const LanguageEN = {
     'website-form-no-email': 'Do not email new messages (they still show in Website > Messages)',
     'website-form-bad-hubspotPortalId': 'Digits only, as in the HubSpot embed code.',
     'website-form-bad-hubspotFormId': 'A form ID like 4fd8c4ec-a157-4e53-b588-52bcd1123e06.',
-    'website-form-bad-hubspotMessageField': 'A HubSpot field name: small letters, digits and _.',
+    'website-form-bad-hubspotMessageField':
+      'A HubSpot field name: small letters, digits and _; not email, firstname or lastname.',
     'website-messages-hubspot-pending': 'HubSpot: waiting',
     'website-messages-hubspot-sent': 'HubSpot: sent',
     'website-messages-hubspot-failed': 'HubSpot: failed ({reason})',

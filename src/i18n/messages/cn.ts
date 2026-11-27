@@ -467,7 +467,7 @@ const LanguageCN = {
     'website-form-no-email': '新留言不发邮件（仍在 网站 > 留言 里）',
     'website-form-bad-hubspotPortalId': '只能是数字，见 HubSpot 嵌入代码。',
     'website-form-bad-hubspotFormId': '表单 ID 格式如 4fd8c4ec-a157-4e53-b588-52bcd1123e06。',
-    'website-form-bad-hubspotMessageField': 'HubSpot 字段名：小写字母、数字和 _。',
+    'website-form-bad-hubspotMessageField': 'HubSpot 字段名：小写字母、数字和 _，不能是 email、firstname 或 lastname。',
     'website-messages-hubspot-pending': 'HubSpot：等待中',
     'website-messages-hubspot-sent': 'HubSpot：已提交',
     'website-messages-hubspot-failed': 'HubSpot：失败（{reason}）',

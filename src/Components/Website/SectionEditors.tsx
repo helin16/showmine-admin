@@ -91,7 +91,8 @@ export const newSection = (type: string): IWebsiteSection => {
 const HUBSPOT_PATTERNS: [string, RegExp][] = [
   ['hubspotPortalId', /^[0-9]{1,12}$/],
   ['hubspotFormId', /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i],
-  ['hubspotMessageField', /^[a-z0-9_]{1,100}$/],
+  // Not a field the visitor fills, which it would overwrite.
+  ['hubspotMessageField', /^(?!(?:email|firstname|lastname)$)[a-z0-9_]{1,100}$/],
 ]
 
 const getProtocol = (value: string) => {
