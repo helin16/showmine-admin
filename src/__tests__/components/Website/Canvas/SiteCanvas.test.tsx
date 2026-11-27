@@ -148,6 +148,49 @@ describe('SiteCanvas', () => {
     expect(left.querySelector('img')).toBeNull()
   })
 
+  // specs/005-website-blocks, slice 88c: the same markup as the Reader's Pricing and MapBlock.
+  test('draws pricing plans and a map block', () => {
+    render(
+      <SiteCanvas
+        {...(props({
+          sections: [
+            {
+              id: 'p',
+              type: 'pricing',
+              heading: 'Plans',
+              plans: [
+                {
+                  name: 'Free',
+                  price: '$0',
+                  period: 'monthly',
+                  features: ['1 user', ' ', 'x'],
+                  buttonText: 'Go',
+                  buttonUrl: '/a',
+                },
+                { name: 'Pro', price: '$9', highlight: true, buttonText: 'Go' },
+              ],
+            },
+            { id: 'm', type: 'map', mapUrl: 'https://maps.test/x', height: 'small' },
+            { id: 'n', type: 'map', mapUrl: 'http://maps.test/y' },
+            { id: 'o', type: 'map', mapUrl: 'https://maps.test/z', height: 'huge' },
+          ],
+        }) as never)}
+      />,
+    )
+    const block = canvas().querySelector('.site-pricing') as HTMLElement
+    expect(block.querySelector('h2')).toHaveTextContent('Plans')
+    const plans = Array.from(block.querySelectorAll(':scope > ul > li'))
+    expect(plans.map((p) => p.className)).toStrictEqual(['site-plan', 'site-plan highlight'])
+    expect(plans[0].querySelector('.site-price')?.textContent).toBe('$0 monthly')
+    expect(Array.from(plans[0].querySelectorAll('ul li')).map((li) => li.textContent)).toStrictEqual(['1 user', 'x'])
+    expect(plans[0].querySelector('a.site-button')).toHaveAttribute('href', '#')
+    expect(plans[1].querySelector('a')).toBeNull()
+    const maps = Array.from(canvas().querySelectorAll('.site-map-block'))
+    expect(maps.map((m) => m.className)).toStrictEqual(['site-map-block small', 'site-map-block medium'])
+    expect(maps[0].querySelector('iframe')).toHaveAttribute('src', 'https://maps.test/x')
+    expect(maps[0].querySelector('iframe')).toHaveAttribute('sandbox', 'allow-scripts allow-same-origin')
+  })
+
   // specs/005-website-blocks, slice 88b: the same markup as the Reader's Cards.
   test('draws a card grid with its columns, boxes, images and linked cards', () => {
     render(

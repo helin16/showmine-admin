@@ -47,6 +47,8 @@ const ICONS: { [type: string]: React.ComponentType } = {
   hero: Icons.FileImageOutlined,
   split: Icons.PicLeftOutlined,
   cards: Icons.CreditCardOutlined,
+  pricing: Icons.DollarOutlined,
+  map: Icons.EnvironmentOutlined,
   text: Icons.FileTextOutlined,
   image: Icons.PictureOutlined,
   gallery: Icons.AppstoreOutlined,

@@ -58,6 +58,13 @@ describe('newSection', () => {
     expect(a.id).not.toBe(b.id)
   })
 
+  test('pricing starts with one empty plan, a map at medium height (spec 005)', () => {
+    expect(ADDABLE_SECTION_TYPES).toEqual(expect.arrayContaining(['pricing', 'map']))
+    expect(ADDABLE_SECTION_TYPES.indexOf('pricing')).toBe(3)
+    expect(newSection('pricing')).toMatchObject({ type: 'pricing', plans: [{ name: '', price: '' }] })
+    expect(newSection('map')).toMatchObject({ type: 'map', height: 'medium' })
+  })
+
   test('a card grid starts with three columns and one empty card (spec 005)', () => {
     expect(ADDABLE_SECTION_TYPES.indexOf('cards')).toBe(2)
     expect(newSection('cards')).toMatchObject({ type: 'cards', columns: '3', items: [{}] })
@@ -289,6 +296,211 @@ describe('images', () => {
   test('an image beside text shows its side as saved', () => {
     renderWithImages({ type: 'split', imageAssetId: 'a1', imageSide: 'right' })
     expect(screen.getByRole('radio', { name: 'Right' })).toBeChecked()
+  })
+
+  // specs/005-website-blocks, slice 88c
+  describe('pricing plans', () => {
+    const pricing = (plans: object[], extra = {}) => ({ type: 'pricing', plans, ...extra })
+    const plan = (number: number) => within(screen.getByRole('group', { name: `Plan ${number}` }))
+
+    test('edits a plan: name, price, period, features one per line, button and highlight', () => {
+      const onChange = renderEditor(pricing([{ name: 'Free', price: '$0' }]))
+      expect(plan(1).getByLabelText('Name')).toHaveAttribute('maxlength', '40')
+      expect(plan(1).getByLabelText('Price, such as $49')).toHaveAttribute('maxlength', '20')
+      expect(plan(1).getByLabelText('Period, such as monthly (optional)')).toHaveAttribute('maxlength', '20')
+      fireEvent.change(plan(1).getByLabelText('Period, such as monthly (optional)'), { target: { value: 'monthly' } })
+      expect(onChange).toHaveBeenLastCalledWith({
+        id: 's1',
+        ...pricing([{ name: 'Free', price: '$0', period: 'monthly' }]),
+      })
+      fireEvent.change(plan(1).getByLabelText('Features, one per line (up to 10)'), {
+        target: { value: '1 user\n2G storage' },
+      })
+      expect(onChange).toHaveBeenLastCalledWith({
+        id: 's1',
+        ...pricing([{ name: 'Free', price: '$0', features: ['1 user', '2G storage'] }]),
+      })
+      fireEvent.click(plan(1).getByRole('checkbox', { name: 'Make this plan stand out' }))
+      expect(onChange).toHaveBeenLastCalledWith({
+        id: 's1',
+        ...pricing([{ name: 'Free', price: '$0', highlight: true }]),
+      })
+      fireEvent.change(plan(1).getByLabelText('Button text'), { target: { value: 'Start' } })
+      expect(onChange).toHaveBeenLastCalledWith({
+        id: 's1',
+        ...pricing([{ name: 'Free', price: '$0', buttonText: 'Start' }]),
+      })
+    })
+
+    test('shows saved features one per line; empty fields, no features and no highlight are left out', () => {
+      const saved = {
+        name: 'Free',
+        price: '$0',
+        period: 'monthly',
+        features: ['a', 'b'],
+        highlight: true,
+        buttonUrl: '/x',
+      }
+      const onChange = renderEditor(pricing([saved]))
+      expect(plan(1).getByLabelText('Features, one per line (up to 10)')).toHaveValue('a\nb')
+      expect(plan(1).getByRole('checkbox', { name: 'Make this plan stand out' })).toBeChecked()
+      fireEvent.change(plan(1).getByLabelText('Features, one per line (up to 10)'), { target: { value: '' } })
+      const { features, ...withoutFeatures } = saved
+      expect(features).toHaveLength(2)
+      expect(onChange).toHaveBeenLastCalledWith({ id: 's1', ...pricing([withoutFeatures]) })
+      fireEvent.click(plan(1).getByRole('checkbox', { name: 'Make this plan stand out' }))
+      const { highlight, ...plain } = saved
+      expect(highlight).toBe(true)
+      expect(onChange).toHaveBeenLastCalledWith({ id: 's1', ...pricing([plain]) })
+      fireEvent.change(plan(1).getByLabelText(/Button link/), { target: { value: '' } })
+      const { buttonUrl, ...noLink } = saved
+      expect(buttonUrl).toBe('/x')
+      expect(onChange).toHaveBeenLastCalledWith({ id: 's1', ...pricing([noLink]) })
+      fireEvent.change(plan(1).getByLabelText('Name'), { target: { value: '' } })
+      expect(onChange).toHaveBeenLastCalledWith({ id: 's1', ...pricing([{ ...saved, name: '' }]) })
+    })
+
+    test('adds, moves and removes plans, up to 4', () => {
+      const onChange = renderEditor(
+        pricing([
+          { name: 'A', price: '1' },
+          { name: 'B', price: '2' },
+        ]),
+      )
+      expect(screen.getByText('2 of 4 plans')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Move Plan 1 up' })).toBeDisabled()
+      expect(screen.getByRole('button', { name: 'Move Plan 2 down' })).toBeDisabled()
+      fireEvent.click(screen.getByRole('button', { name: 'Move Plan 1 down' }))
+      expect(onChange).toHaveBeenLastCalledWith({
+        id: 's1',
+        ...pricing([
+          { name: 'B', price: '2' },
+          { name: 'A', price: '1' },
+        ]),
+      })
+      expect(screen.getByText('Plan moved to position 2.')).toBeInTheDocument()
+      fireEvent.click(screen.getByRole('button', { name: 'Move Plan 2 up' }))
+      expect(onChange).toHaveBeenLastCalledWith({
+        id: 's1',
+        ...pricing([
+          { name: 'B', price: '2' },
+          { name: 'A', price: '1' },
+        ]),
+      })
+      fireEvent.click(screen.getByRole('button', { name: 'Remove Plan 1' }))
+      expect(onChange).toHaveBeenLastCalledWith({ id: 's1', ...pricing([{ name: 'B', price: '2' }]) })
+      fireEvent.click(screen.getByRole('button', { name: 'Add a plan' }))
+      expect(onChange).toHaveBeenLastCalledWith({
+        id: 's1',
+        ...pricing([
+          { name: 'A', price: '1' },
+          { name: 'B', price: '2' },
+          { name: '', price: '' },
+        ]),
+      })
+    })
+
+    test('a change to one plan leaves the others; removing a later plan keeps the first', () => {
+      const onChange = renderEditor(
+        pricing([
+          { name: 'A', price: '1' },
+          { name: 'B', price: '2' },
+          { name: 'C', price: '3' },
+        ]),
+      )
+      fireEvent.change(plan(2).getByLabelText('Price, such as $49'), { target: { value: '$9' } })
+      expect(onChange).toHaveBeenLastCalledWith({
+        id: 's1',
+        ...pricing([
+          { name: 'A', price: '1' },
+          { name: 'B', price: '$9' },
+          { name: 'C', price: '3' },
+        ]),
+      })
+      fireEvent.click(screen.getByRole('button', { name: 'Remove Plan 2' }))
+      expect(onChange).toHaveBeenLastCalledWith({
+        id: 's1',
+        ...pricing([
+          { name: 'A', price: '1' },
+          { name: 'C', price: '3' },
+        ]),
+      })
+    })
+
+    test('with 4 plans no more can be added', () => {
+      renderEditor(pricing(Array.from({ length: 4 }, () => ({ name: 'a', price: '1' }))))
+      expect(screen.getByRole('button', { name: 'Add a plan' })).toBeDisabled()
+    })
+
+    test('problems show on the plan field, its features and the list', () => {
+      renderEditor(
+        pricing([
+          { name: 'A', price: '1' },
+          { name: 'B', price: '' },
+        ]),
+        {
+          'plans[1].price': 'Required.',
+          'plans[1].features[3]': 'Text of at most 100 characters.',
+          plans: 'A list of 1 to 4.',
+        },
+      )
+      expect(plan(2).getByLabelText('Price, such as $49')).toHaveAttribute('aria-invalid', 'true')
+      expect(plan(2).getByText('Required.')).toBeInTheDocument()
+      expect(plan(2).getByText('Text of at most 100 characters.')).toBeInTheDocument()
+      expect(plan(2).getByLabelText('Features, one per line (up to 10)')).toHaveAttribute('aria-invalid', 'true')
+      expect(plan(1).queryByRole('alert')).toBeNull()
+      expect(screen.getByText('A list of 1 to 4.')).toBeInTheDocument()
+    })
+
+    test('needs a plan with a name and price, at most 10 features and good links, before saving', () => {
+      expect(checkSection({ id: 's', type: 'pricing', plans: [] })).toStrictEqual({ plans: 'Add at least one plan.' })
+      expect(checkSection({ id: 's', type: 'pricing' })).toStrictEqual({ plans: 'Add at least one plan.' })
+      expect(
+        checkSection({
+          id: 's',
+          type: 'pricing',
+          plans: [
+            { name: 'ok', price: '1', features: Array(10).fill('x') },
+            { name: ' ', price: '', features: Array(11).fill('x'), buttonUrl: 'nope' },
+          ],
+        }),
+      ).toStrictEqual({
+        'plans[1].name': 'Required.',
+        'plans[1].price': 'Required.',
+        'plans[1].features': 'At most 10 lines.',
+        'plans[1].buttonUrl': 'Use a web, email or phone link, or /page-name.',
+      })
+    })
+  })
+
+  describe('map', () => {
+    test('edits the map address and height; medium unless saved', () => {
+      const onChange = renderEditor({ type: 'map', mapUrl: 'https://maps.test/a' })
+      expect(screen.getByRole('radiogroup', { name: 'Height' })).toBeInTheDocument()
+      expect(screen.getByRole('radio', { name: 'Medium' })).toBeChecked()
+      fireEvent.click(screen.getByRole('radio', { name: 'Large' }))
+      expect(onChange).toHaveBeenLastCalledWith({
+        id: 's1',
+        type: 'map',
+        mapUrl: 'https://maps.test/a',
+        height: 'large',
+      })
+      fireEvent.change(screen.getByLabelText('Map link (https)'), { target: { value: 'https://maps.test/b' } })
+      expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'map', mapUrl: 'https://maps.test/b' })
+    })
+
+    test('shows the saved height', () => {
+      renderEditor({ type: 'map', mapUrl: 'https://maps.test/a', height: 'small' })
+      expect(screen.getByRole('radio', { name: 'Small' })).toBeChecked()
+    })
+
+    test('needs an https address before saving', () => {
+      expect(checkSection({ id: 's', type: 'map' })).toStrictEqual({ mapUrl: 'Use a link starting with https://.' })
+      expect(checkSection({ id: 's', type: 'map', mapUrl: 'http://maps.test' })).toStrictEqual({
+        mapUrl: 'Use a link starting with https://.',
+      })
+      expect(checkSection({ id: 's', type: 'map', mapUrl: 'https://maps.test' })).toStrictEqual({})
+    })
   })
 
   // specs/005-website-blocks, slice 88b

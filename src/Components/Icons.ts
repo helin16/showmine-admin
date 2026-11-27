@@ -67,6 +67,8 @@ import {
   BgColorsOutlined,
   PicLeftOutlined,
   CreditCardOutlined,
+  DollarOutlined,
+  EnvironmentOutlined,
 } from '@ant-design/icons'
 
 const Icons = {
@@ -138,6 +140,8 @@ const Icons = {
   BgColorsOutlined,
   PicLeftOutlined,
   CreditCardOutlined,
+  EnvironmentOutlined,
+  DollarOutlined,
 }
 
 export default Icons

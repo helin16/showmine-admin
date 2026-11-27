@@ -11,14 +11,39 @@ import { IWebsiteSection } from '../../Types/Website/IWebsite'
 // One editor per section type (specs/001-website-builder, data-model "Section", US2 T035, US5 T062). Limits match the
 // API's. Images are chosen from the company's website images with the media picker.
 
-export const ADDABLE_SECTION_TYPES = ['hero', 'split', 'cards', 'text', 'image', 'gallery', 'contact', 'articles']
+export const ADDABLE_SECTION_TYPES = [
+  'hero',
+  'split',
+  'cards',
+  'pricing',
+  'text',
+  'image',
+  'gallery',
+  'contact',
+  'map',
+  'articles',
+]
 export const MAX_GALLERY_IMAGES = 24
 export const MAX_CARDS = 12
+export const MAX_PLANS = 4
+export const MAX_FEATURES = 10
 
 type iGalleryImage = { assetId: string; alt?: string }
 // A card of a card grid (specs/005-website-blocks, slice 88b).
 type iCard = { imageAssetId?: string; title?: string; text?: string; link?: string }
 const getCards = (section: IWebsiteSection) => (Array.isArray(section.items) ? (section.items as iCard[]) : [])
+// A plan of a pricing block (spec 005, slice 88c).
+type iPlan = {
+  name?: string
+  price?: string
+  period?: string
+  features?: string[]
+  buttonText?: string
+  buttonUrl?: string
+  highlight?: boolean
+}
+const getPlans = (section: IWebsiteSection) => (Array.isArray(section.plans) ? (section.plans as iPlan[]) : [])
+const MAP_HEIGHTS = ['small', 'medium', 'large']
 
 // Every image id a page's sections use.
 export const getImageIds = (sections: IWebsiteSection[]) =>
@@ -42,6 +67,10 @@ export const newSection = (type: string): IWebsiteSection => {
       return { id, type, heading: '', imageSide: 'left' }
     case 'cards':
       return { id, type, columns: '3', items: [{}] }
+    case 'pricing':
+      return { id, type, plans: [{ name: '', price: '' }] }
+    case 'map':
+      return { id, type, height: 'medium' }
     case 'text':
       return { id, type, html: '' }
     case 'contact':
@@ -394,6 +423,152 @@ const SectionEditor = ({ section, onChange, errors = {}, images = {}, onImagesPi
         </Space>
       )
     }
+    // Pricing plans (specs/005-website-blocks, slice 88c). Features are typed one per line.
+    case 'pricing': {
+      const plans = getPlans(section)
+      const setPlans = (next: iPlan[]) => onChange({ ...section, plans: next })
+      const setPlan = (index: number, changes: Partial<iPlan>) =>
+        setPlans(
+          plans.map((plan, i) => {
+            if (i !== index) return plan
+            const next: iPlan = { ...plan, ...changes }
+            // An empty optional field is left out, as the API refuses an empty link; name and price stay.
+            ;(['period', 'buttonText', 'buttonUrl'] as const).forEach((name) => {
+              if (next[name] === '') delete next[name]
+            })
+            if (next.features?.length === 0) delete next.features
+            if (next.highlight === false) delete next.highlight
+            return next
+          }),
+        )
+      const movePlan = (index: number, by: number) => {
+        const next = [...plans]
+        const [plan] = next.splice(index, 1)
+        next.splice(index + by, 0, plan)
+        setPlans(next)
+        setAnnouncement(translate('website-plan-moved', { number: index + by + 1 }))
+      }
+      const planText = (
+        index: number,
+        name: 'name' | 'price' | 'period' | 'buttonText' | 'buttonUrl',
+        label: string,
+        max: number,
+      ) => {
+        const id = fieldId(`plans-${index}-${name}`)
+        const error = errors[`plans[${index}].${name}`]
+        return (
+          <Field id={id} label={label} error={error}>
+            <Input
+              id={id}
+              value={`${plans[index][name] ?? ''}`}
+              maxLength={max}
+              status={error ? 'error' : undefined}
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? `${id}-error` : undefined}
+              onChange={(e) => setPlan(index, { [name]: e.target.value })}
+            />
+          </Field>
+        )
+      }
+      return (
+        <Space orientation={'vertical'} style={{ width: '100%' }}>
+          {field('heading', translate('website-section-heading'), text('heading', 120))}
+          {field('intro', translate('website-section-intro'), text('intro', 500, true))}
+          {plans.map((plan, index) => {
+            const name = translate('website-plan-number', { number: index + 1 })
+            const featuresId = fieldId(`plans-${index}-features`)
+            const featuresError =
+              errors[`plans[${index}].features`] ||
+              Object.entries(errors).find(([path]) => path.startsWith(`plans[${index}].features[`))?.[1]
+            return (
+              // eslint-disable-next-line react/no-array-index-key
+              <div key={index} role={'group'} aria-label={name} className={'website-card-editor'}>
+                <strong>{name}</strong>
+                {planText(index, 'name', translate('website-plan-name'), 40)}
+                {planText(index, 'price', translate('website-plan-price'), 20)}
+                {planText(index, 'period', translate('website-plan-period'), 20)}
+                <Field id={featuresId} label={translate('website-plan-features')} error={featuresError}>
+                  <Input.TextArea
+                    id={featuresId}
+                    value={(plan.features || []).join('\n')}
+                    autoSize={{ minRows: 3 }}
+                    status={featuresError ? 'error' : undefined}
+                    aria-invalid={featuresError ? true : undefined}
+                    aria-describedby={featuresError ? `${featuresId}-error` : undefined}
+                    onChange={(e) =>
+                      setPlan(index, { features: e.target.value === '' ? [] : e.target.value.split('\n') })
+                    }
+                  />
+                </Field>
+                {planText(index, 'buttonText', translate('website-section-button-text'), 40)}
+                {planText(index, 'buttonUrl', translate('website-section-button-url'), 2000)}
+                <Checkbox
+                  checked={plan.highlight === true}
+                  onChange={(e) => setPlan(index, { highlight: e.target.checked })}
+                >
+                  {translate('website-plan-highlight')}
+                </Checkbox>
+                <Space>
+                  <Button
+                    aria-label={translate('website-move-up', { name })}
+                    disabled={index === 0}
+                    onClick={() => movePlan(index, -1)}
+                  >
+                    ↑
+                  </Button>
+                  <Button
+                    aria-label={translate('website-move-down', { name })}
+                    disabled={index === plans.length - 1}
+                    onClick={() => movePlan(index, 1)}
+                  >
+                    ↓
+                  </Button>
+                  <Button
+                    aria-label={translate('website-remove-named', { name })}
+                    onClick={() => setPlans(plans.filter((_, i) => i !== index))}
+                  >
+                    {translate('website-remove')}
+                  </Button>
+                </Space>
+              </div>
+            )
+          })}
+          <Button disabled={plans.length >= MAX_PLANS} onClick={() => setPlans([...plans, { name: '', price: '' }])}>
+            {translate('website-plan-add')}
+          </Button>
+          <small>{translate('website-plan-count', { count: plans.length, max: MAX_PLANS })}</small>
+          <div aria-live={'polite'} style={{ position: 'absolute', left: -10000 }}>
+            {announcement}
+          </div>
+          {errors.plans ? (
+            <div role={'alert'} className={'ant-form-item-explain-error'}>
+              {errors.plans}
+            </div>
+          ) : null}
+        </Space>
+      )
+    }
+    // A map on its own (spec 005, slice 88c).
+    case 'map':
+      return (
+        <Space orientation={'vertical'} style={{ width: '100%' }}>
+          {field('mapUrl', translate('website-section-map-url'), text('mapUrl', 2000))}
+          <div>
+            <div id={fieldId('height')}>{translate('website-map-height')}</div>
+            <Radio.Group
+              aria-labelledby={fieldId('height')}
+              value={MAP_HEIGHTS.includes(`${section.height}`) ? section.height : 'medium'}
+              onChange={(e) => set('height', e.target.value)}
+            >
+              {MAP_HEIGHTS.map((height) => (
+                <Radio key={height} value={height}>
+                  {translate(`website-map-height-${height}`)}
+                </Radio>
+              ))}
+            </Radio.Group>
+          </div>
+        </Space>
+      )
     case 'text':
       return field(
         'html',
@@ -562,6 +737,23 @@ export const checkSection = (section: IWebsiteSection): { [field: string]: strin
         errors[`items[${index}].link`] = translate('website-section-bad-link')
       }
     })
+  }
+  if (section.type === 'pricing') {
+    const plans = getPlans(section)
+    if (plans.length === 0) errors.plans = translate('website-section-plans-required')
+    plans.forEach((plan, index) => {
+      if (!`${plan?.name ?? ''}`.trim()) errors[`plans[${index}].name`] = translate('website-section-required')
+      if (!`${plan?.price ?? ''}`.trim()) errors[`plans[${index}].price`] = translate('website-section-required')
+      if ((plan?.features || []).length > MAX_FEATURES) {
+        errors[`plans[${index}].features`] = translate('website-plan-features-max', { max: MAX_FEATURES })
+      }
+      if (typeof plan?.buttonUrl === 'string' && !isLink(plan.buttonUrl)) {
+        errors[`plans[${index}].buttonUrl`] = translate('website-section-bad-link')
+      }
+    })
+  }
+  if (section.type === 'map' && getProtocol(`${section.mapUrl ?? ''}`) !== 'https:') {
+    errors.mapUrl = translate('website-section-bad-map-url')
   }
   if (section.type === 'split' && typeof section.imageAssetId !== 'string') {
     errors.imageAssetId = translate('website-section-image-required')

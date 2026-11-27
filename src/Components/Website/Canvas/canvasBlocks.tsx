@@ -140,6 +140,72 @@ const Cards = ({ section, images }: iBlock) => {
   )
 }
 
+// Pricing plans (reader sections/index.tsx Pricing, spec 005 slice 88c). Canvas links go nowhere.
+const Pricing = ({ section }: iBlock) => {
+  const plans = (Array.isArray(section.plans) ? section.plans : []) as {
+    name?: string
+    price?: string
+    period?: string
+    features?: unknown
+    buttonText?: string
+    buttonUrl?: string
+    highlight?: boolean
+  }[]
+  return (
+    <section className={'site-pricing'}>
+      {section.heading ? <h2>{`${section.heading}`}</h2> : null}
+      {section.intro ? <p className={'site-cards-intro'}>{`${section.intro}`}</p> : null}
+      <ul>
+        {plans.map((plan, index) => {
+          const features = Array.isArray(plan?.features)
+            ? (plan.features as unknown[]).filter((line): line is string => typeof line === 'string' && !!line.trim())
+            : []
+          return (
+            // eslint-disable-next-line react/no-array-index-key
+            <li key={index} className={`site-plan${plan?.highlight === true ? ' highlight' : ''}`}>
+              {plan?.name ? <h3>{`${plan.name}`}</h3> : null}
+              <p className={'site-price'}>
+                <strong>{`${plan?.price ?? ''}`}</strong>
+                {plan?.period ? <span> {`${plan.period}`}</span> : null}
+              </p>
+              {features.length > 0 ? (
+                <ul>
+                  {features.map((line, i) => (
+                    // eslint-disable-next-line react/no-array-index-key
+                    <li key={i}>{line}</li>
+                  ))}
+                </ul>
+              ) : null}
+              {plan?.buttonUrl && plan?.buttonText ? (
+                <a className={'site-button'} href={'#'}>
+                  {`${plan.buttonText}`}
+                </a>
+              ) : null}
+            </li>
+          )
+        })}
+      </ul>
+    </section>
+  )
+}
+
+// A map on its own (reader sections/index.tsx MapBlock, spec 005 slice 88c).
+const MapBlock = ({ section }: iBlock) =>
+  /^https:\/\//.test(`${section.mapUrl || ''}`) ? (
+    <section
+      className={`site-map-block ${['small', 'medium', 'large'].includes(`${section.height}`) ? section.height : 'medium'}`}
+    >
+      <iframe
+        className={'site-map'}
+        src={`${section.mapUrl}`}
+        title={'Map'}
+        loading={'lazy'}
+        sandbox={'allow-scripts allow-same-origin'}
+        referrerPolicy={'no-referrer'}
+      />
+    </section>
+  ) : null
+
 // Cleaned again only when its text changes, so typing in another block stays quick (SC-003).
 const Text = ({ section }: iBlock) => {
   const html = `${section.html || ''}`
@@ -312,6 +378,8 @@ export const BLOCKS: { [type: string]: (props: iBlock) => React.ReactElement | n
   hero: Hero,
   split: Split,
   cards: Cards,
+  pricing: Pricing,
+  map: MapBlock,
   text: Text,
   image: Image,
   gallery: Gallery,
