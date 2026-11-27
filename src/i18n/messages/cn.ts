@@ -455,7 +455,8 @@ const LanguageCN = {
     'website-section-type-split': '图文并排',
     'website-section-type-cards': '卡片网格',
     'website-section-type-form': '留言表单',
-    'website-form-help': '访客填写名、姓、邮箱和留言。留言会发到公司邮箱，并显示在 网站 > 留言。',
+    'website-form-help':
+      '访客填写名、姓、邮箱和留言。留言会发到公司邮箱（没填公司邮箱时发给公司管理员），并显示在 网站 > 留言。',
     'website-form-button': '按钮文字（可选，默认 Send）',
     'website-form-thanks': '感谢语（可选）',
     'website-messages': '留言',

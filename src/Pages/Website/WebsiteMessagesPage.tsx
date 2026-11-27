@@ -19,9 +19,11 @@ import WebsiteService from '../../Services/WebsiteService'
 import Utils from '../../Services/Utils'
 import translate from '../../i18n/translate'
 import { IWebsiteMessage } from '../../Types/Website/IWebsite'
+import { UNREAD_EVENT } from '../../Components/Website/WebsiteMessagesMenuName'
 
 // Visitors' messages from the website's message forms (specs/006-website-message-form). Admins only (the route): they
-// hold visitors' personal data. Opening one marks it read.
+// hold visitors' personal data. Opening one marks it read. An address is encoded in its mailto link (all but the @),
+// so nothing in it can add recipients or text.
 const PAGE_SIZE = 20
 
 const MessageText = styled.div`
@@ -86,16 +88,23 @@ const WebsiteMessagesPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [company?.id, isOn])
 
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent(UNREAD_EVENT, { detail: state.unread }))
+  }, [state.unread])
+
   const open = (item: IWebsiteMessage) => {
+    const companyId = company?.id
     setState((s) => ({ ...s, openIds: [...s.openIds, item.id] }))
     if (item.isRead) return
     WebsiteService.markMessageRead(item.id)
       .then(() =>
-        setState((s) => ({
-          ...s,
-          unread: Math.max(0, s.unread - 1),
-          messages: s.messages.map((m) => (m.id === item.id ? { ...m, isRead: true } : m)),
-        })),
+        companyIdRef.current !== companyId
+          ? undefined
+          : setState((s) => ({
+              ...s,
+              unread: Math.max(0, s.unread - 1),
+              messages: s.messages.map((m) => (m.id === item.id ? { ...m, isRead: true } : m)),
+            })),
       )
       .catch((err) => message.error(translate('website-messages-read-failed', { message: Utils.getErrorMessage(err) })))
   }
@@ -103,9 +112,11 @@ const WebsiteMessagesPage = () => {
   const remove = () => {
     const item = state.deleting
     if (!item) return
+    const companyId = company?.id
     setState((s) => ({ ...s, isDeleting: true }))
     WebsiteService.deleteMessage(item.id)
       .then(() => {
+        if (companyIdRef.current !== companyId) return
         setState((s) => ({
           ...s,
           isDeleting: false,
@@ -151,7 +162,8 @@ const WebsiteMessagesPage = () => {
       >
         <div>
           <div>
-            <strong>{name}</strong> <a href={`mailto:${item.email}`}>{item.email}</a>{' '}
+            <strong>{name}</strong>{' '}
+            <a href={`mailto:${encodeURIComponent(item.email).replace(/%40/g, '@')}`}>{item.email}</a>{' '}
             {item.isRead ? null : <Tag color={'blue'}>{translate('website-messages-unread')}</Tag>}
           </div>
           <small>

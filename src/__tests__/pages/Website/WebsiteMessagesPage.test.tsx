@@ -77,6 +77,31 @@ describe('WebsiteMessagesPage', () => {
     expect(screen.queryByRole('button', { name: 'Open the message from Ann Lee a' })).toBeNull()
   })
 
+  test('an address is encoded in its link, so it cannot add recipients or text', async () => {
+    vi.mocked(WebsiteService.getMessages).mockResolvedValue(
+      page([item('a', { email: 'a@b.co?cc=boss@x.co' })]) as never,
+    )
+    renderPage()
+    await screen.findByText('Ann Lee a')
+    expect(screen.getByRole('link', { name: 'a@b.co?cc=boss@x.co' })).toHaveAttribute(
+      'href',
+      'mailto:a@b.co%3Fcc%3Dboss@x.co',
+    )
+  })
+
+  test('tells the menu badge the unread count as it changes', async () => {
+    const counts: number[] = []
+    const listen = (event: Event) => counts.push((event as CustomEvent).detail)
+    window.addEventListener('website-messages-unread', listen)
+    vi.mocked(WebsiteService.getMessages).mockResolvedValue(page([item('a')], { unread: 1 }) as never)
+    vi.mocked(WebsiteService.markMessageRead).mockResolvedValue({} as never)
+    renderPage()
+    fireEvent.click(await screen.findByRole('button', { name: 'Open the message from Ann Lee a' }))
+    await waitFor(() => expect(counts.at(-1)).toBe(0))
+    expect(counts).toContain(1)
+    window.removeEventListener('website-messages-unread', listen)
+  })
+
   test('opening a read message does not mark it again', async () => {
     vi.mocked(WebsiteService.getMessages).mockResolvedValue(page([item('a', { isRead: true })], { unread: 0 }) as never)
     renderPage()

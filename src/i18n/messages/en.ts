@@ -463,7 +463,7 @@ const LanguageEN = {
     'website-section-type-cards': 'Card grid',
     'website-section-type-form': 'Message form',
     'website-form-help':
-      'Visitors fill in first name, last name, email and message. Messages go to the company email and to Website > Messages.',
+      'Visitors fill in first name, last name, email and message. Messages go to the company email (to the company admins when none is set) and to Website > Messages.',
     'website-form-button': 'Button text (optional, Send)',
     'website-form-thanks': 'Thank-you note (optional)',
     'website-messages': 'Messages',
