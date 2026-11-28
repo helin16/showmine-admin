@@ -10,6 +10,7 @@ import {
   IWebsiteTheme,
   ROW_OPTIONS,
 } from '../../../Types/Website/IWebsite'
+import { isLink } from '../SectionEditors'
 import translate from '../../../i18n/translate'
 
 // The blocks as the Reader draws them (specs/004-website-visual-editor, research R2): markup and class names copied
@@ -328,7 +329,7 @@ const Tile = ({ section, images }: iBlock) => {
       </div>
     </>
   )
-  return section.link ? (
+  return typeof section.link === 'string' && isLink(section.link) ? (
     <a className={'site-tile'} href={'#'}>
       {body}
     </a>

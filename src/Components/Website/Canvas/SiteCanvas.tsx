@@ -123,12 +123,9 @@ const Canvas = styled.div`
       12px/20px system-ui,
       sans-serif;
   }
-  /* A top-level row runs edge to edge as the Reader's (its rule names .site-page > .site-flex, but the canvas wraps
-     each block in an item). */
-  .site-page > .canvas-item > .site-flex {
-    width: 100cqw;
-    margin-inline: calc(50% - 50cqw);
-    box-sizing: border-box;
+  /* A row has no block margins in the Reader, so its item has none either: bands meet edge to edge. */
+  .canvas-item.is-row {
+    margin: 0;
   }
   /* A block inside a row is picked by clicking it. */
   .canvas-child {
@@ -425,7 +422,7 @@ const SiteCanvas = ({
                       {index === row[1] ? null : getFixed(index)}
                       <div
                         data-testid={`canvas-item-${section.id}`}
-                        className={`canvas-item${isSelected ? ' is-selected' : ''}${hasProblem ? ' has-problem' : ''}${isHiddenHere(section) ? ' canvas-hidden-here' : ''}`}
+                        className={`canvas-item${isSelected ? ' is-selected' : ''}${hasProblem ? ' has-problem' : ''}${isHiddenHere(section) ? ' canvas-hidden-here' : ''}${section.type === 'row' ? ' is-row' : ''}`}
                         onClick={(e) => {
                           e.stopPropagation()
                           onSelect(section.id)

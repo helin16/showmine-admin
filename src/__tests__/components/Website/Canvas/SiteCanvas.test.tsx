@@ -999,4 +999,17 @@ describe('SiteCanvas rows (spec 010)', () => {
     expect(item('mine')).toHaveClass('canvas-hidden-here')
     expect(item('other')).not.toHaveClass('canvas-hidden-here')
   })
+
+  test('a tile is a link only with a usable link; a top-level row item has the is-row class', () => {
+    draw([
+      { id: 't1', type: 'tile', title: 'A', link: 'nonsense' },
+      { id: 't2', type: 'tile', title: 'B', link: '/about' },
+      { id: 'r', type: 'row', blocks: [t('a')] },
+    ])
+    const [a, b] = Array.from(canvas().querySelectorAll('.site-tile')) as HTMLElement[]
+    expect(a.tagName).toBe('SECTION')
+    expect(b.tagName).toBe('A')
+    expect(item('r')).toHaveClass('is-row')
+    expect(item('r').firstElementChild?.nextElementSibling).toHaveClass('site-flex')
+  })
 })

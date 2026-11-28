@@ -1117,4 +1117,44 @@ describe('row, buttons and tile (spec 010)', () => {
     renderEditor({ type: 'text' })
     expect(screen.queryByRole('group', { name: 'Show on' })).toBeNull()
   })
+
+  test('wrap: ticking it again removes the key, never keeps the default', () => {
+    const onChange = vi.fn()
+    const Wrapper = () => {
+      const [row, setRow] = React.useState<object>({ id: 'r', type: 'row', blocks: [child('b1')] })
+      return (
+        <SectionEditor
+          section={row as never}
+          onChange={(next) => {
+            onChange(next)
+            setRow(next)
+          }}
+        />
+      )
+    }
+    renderWithProviders(<Wrapper />)
+    const box = () => screen.getByRole('checkbox', { name: 'Blocks wrap onto the next line' })
+    fireEvent.click(box())
+    expect(onChange).toHaveBeenLastCalledWith(expect.objectContaining({ wrap: false }))
+    fireEvent.click(box())
+    expect(onChange.mock.calls.at(-1)?.[0]).not.toHaveProperty('wrap')
+    expect(box()).toBeChecked()
+  })
+
+  test('a row has no side by side choice and none is kept; nested rows have no content width or padding', () => {
+    const onChange = renderEditor({ type: 'row', blocks: [child('b1')], sideBySide: true })
+    expect(screen.queryByRole('checkbox', { name: 'Side by side with the next block' })).toBeNull()
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Blocks wrap onto the next line' }))
+    expect(onChange.mock.calls.at(-1)?.[0]).not.toHaveProperty('sideBySide')
+    expect(screen.getByRole('radiogroup', { name: 'Content width' })).toBeInTheDocument()
+    expect(screen.getByRole('radiogroup', { name: 'Space above and below' })).toBeInTheDocument()
+  })
+
+  test('a row inside a row hides content width and padding but keeps the layout options and width', () => {
+    renderWithProviders(<SectionEditor section={{ id: 'r', type: 'row', blocks: [] }} onChange={vi.fn()} parents={1} />)
+    expect(screen.queryByRole('radiogroup', { name: 'Content width' })).toBeNull()
+    expect(screen.queryByRole('radiogroup', { name: 'Space above and below' })).toBeNull()
+    expect(screen.getByRole('radiogroup', { name: 'Direction' })).toBeInTheDocument()
+    expect(screen.getByRole('radiogroup', { name: 'Width' })).toBeInTheDocument()
+  })
 })

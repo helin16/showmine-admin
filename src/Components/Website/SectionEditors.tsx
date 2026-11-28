@@ -704,7 +704,8 @@ const TypeEditor = ({
       const hasBackground = typeof section.background === 'string'
       return (
         <Space orientation={'vertical'} style={{ width: '100%' }}>
-          {choice('width', translate('website-row-content-width'))}
+          {/* The Reader ignores width and padding on a row inside a row. */}
+          {parents === 0 ? choice('width', translate('website-row-content-width')) : null}
           <div className={'website-section-field'}>
             <label htmlFor={fieldId('background')}>{translate('website-row-background')}</label>
             <div>
@@ -726,7 +727,7 @@ const TypeEditor = ({
               </div>
             ) : null}
           </div>
-          {choice('padding', translate('website-row-padding'))}
+          {parents === 0 ? choice('padding', translate('website-row-padding')) : null}
           {choice('direction', translate('website-row-direction'))}
           <Checkbox
             checked={section.wrap !== false}
@@ -956,12 +957,18 @@ const TypeEditor = ({
 // Every block's editor, then the choices shared by all blocks: a pair in one row (spec 009, on the page only), the
 // width of a block inside a row (spec 010) and the pages a shared block shows on (SMN-95).
 const SectionEditor = (props: iSectionEditor) => {
-  const { section, onChange, parents = 0, pages, errors = {} } = props
+  const { section, parents = 0, pages, errors = {} } = props
+  // The API refuses side by side on a row, and on any block inside one: not kept.
+  const onChange = (next: IWebsiteSection) => {
+    const rest = { ...next }
+    if (section.type === 'row' || parents > 0) delete rest.sideBySide
+    props.onChange(rest)
+  }
   const hidden = Array.isArray(section.hiddenPageIds) ? (section.hiddenPageIds as string[]) : []
   return (
     <Space orientation={'vertical'} style={{ width: '100%' }}>
-      <TypeEditor {...props} />
-      {parents === 0 ? (
+      <TypeEditor {...props} onChange={onChange} />
+      {parents === 0 && section.type !== 'row' ? (
         <Checkbox
           checked={section.sideBySide === true}
           onChange={(e) => {
@@ -972,7 +979,7 @@ const SectionEditor = (props: iSectionEditor) => {
         >
           {translate('website-section-side-by-side')}
         </Checkbox>
-      ) : (
+      ) : parents > 0 ? (
         <div>
           <div id={`${section.id}-basis`}>{translate('website-block-basis')}</div>
           <Radio.Group
@@ -997,7 +1004,7 @@ const SectionEditor = (props: iSectionEditor) => {
             </div>
           ) : null}
         </div>
-      )}
+      ) : null}
       {pages && parents === 0 ? (
         <div role={'group'} aria-label={translate('website-shared-show-on')}>
           <div>{translate('website-shared-show-on')}</div>
