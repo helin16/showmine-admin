@@ -842,3 +842,54 @@ describe('checks before saving', () => {
     expect(checkSection({ id: 's', type: 'split', imageAssetId: 'a1' })).toStrictEqual({})
   })
 })
+
+// specs/009-website-pages-match
+describe('page layout choices (spec 009)', () => {
+  const click = (name: string | RegExp) => fireEvent.click(screen.getByRole('checkbox', { name }))
+
+  test.each(['hero', 'text', 'map', 'articles'])('%s has the side by side choice, removed when off', (type) => {
+    const onChange = renderEditor({ type })
+    click('Side by side with the next block')
+    expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type, sideBySide: true })
+  })
+
+  test('side by side is left out when switched back off', () => {
+    const onChange = renderEditor({ type: 'text', sideBySide: true })
+    click('Side by side with the next block')
+    expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'text' })
+  })
+
+  test('hero: full width and dark text', () => {
+    const onChange = renderEditor({ type: 'hero', fullWidth: true, darkText: true })
+    click('Full width')
+    expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'hero', darkText: true })
+    click('Dark text on the picture')
+    expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'hero', fullWidth: true })
+  })
+
+  test('map: full width, picture alt text and a picture to choose', () => {
+    const onChange = renderEditor({ type: 'map', mapUrl: 'https://maps.test/a' })
+    click('Full width')
+    expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'map', mapUrl: 'https://maps.test/a', fullWidth: true })
+    fireEvent.change(screen.getByLabelText('Map picture description (alt text)'), { target: { value: 'Shop' } })
+    expect(onChange).toHaveBeenLastCalledWith({
+      id: 's1',
+      type: 'map',
+      mapUrl: 'https://maps.test/a',
+      imageAlt: 'Shop',
+    })
+    expect(screen.getByRole('group', { name: /Map picture for China/ })).toBeInTheDocument()
+  })
+
+  test('articles: featured layout is saved, grid removes it', () => {
+    const onChange = renderEditor({ type: 'articles' })
+    fireEvent.click(screen.getByRole('radio', { name: 'Featured' }))
+    expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'articles', layout: 'featured' })
+  })
+
+  test('articles: grid removes the layout', () => {
+    const onChange = renderEditor({ type: 'articles', layout: 'featured' })
+    fireEvent.click(screen.getByRole('radio', { name: 'Grid' }))
+    expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'articles' })
+  })
+})

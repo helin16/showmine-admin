@@ -763,3 +763,52 @@ describe('SiteCanvas layout', () => {
     expect(onSelect).toHaveBeenCalledWith(undefined)
   })
 })
+
+// specs/009-website-pages-match
+describe('SiteCanvas pages (spec 009)', () => {
+  const draw = (list: IWebsiteSection[]) => render(<SiteCanvas {...(props({ sections: list }) as never)} />)
+  const item = (id: string) => screen.getByTestId(`canvas-item-${id}`)
+
+  test('pairs side by side blocks in one row; three in a row make a pair and a lone block', () => {
+    draw([
+      { id: 'a', type: 'text', html: '<p>a</p>', sideBySide: true },
+      { id: 'b', type: 'text', html: '<p>b</p>', sideBySide: true },
+      { id: 'c', type: 'text', html: '<p>c</p>', sideBySide: true },
+      { id: 'd', type: 'text', html: '<p>d</p>' },
+    ])
+    const rows = canvas().querySelectorAll('.site-row')
+    expect(rows).toHaveLength(1)
+    expect(rows[0]).toContainElement(item('a'))
+    expect(rows[0]).toContainElement(item('b'))
+    expect(rows[0]).not.toContainElement(item('c'))
+    expect(item('c').parentElement).toHaveClass('site-page')
+  })
+
+  test('a lone side by side block is not wrapped', () => {
+    draw([{ id: 'a', type: 'text', html: '<p>a</p>', sideBySide: true }])
+    expect(canvas().querySelector('.site-row')).toBeNull()
+  })
+
+  test('hero and map take site-full, hero dark-text; articles featured', () => {
+    draw([
+      { id: 'h', type: 'hero', heading: 'Hi', fullWidth: true, darkText: true },
+      { id: 'm', type: 'map', mapUrl: 'https://maps.test/x', fullWidth: true },
+      { id: 'r', type: 'articles', layout: 'featured' },
+    ])
+    expect(canvas().querySelector('.site-hero')).toHaveClass('site-full', 'dark-text')
+    expect(canvas().querySelector('.site-map-block')).toHaveClass('site-full')
+    expect(canvas().querySelector('.site-articles')).toHaveClass('featured')
+  })
+
+  test('without the fields nothing changes', () => {
+    draw([
+      { id: 'h', type: 'hero', heading: 'Hi' },
+      { id: 'm', type: 'map', mapUrl: 'https://maps.test/x' },
+      { id: 'r', type: 'articles' },
+    ])
+    expect(canvas().querySelector('.site-hero')).not.toHaveClass('site-full', 'dark-text')
+    expect(canvas().querySelector('.site-map-block')).not.toHaveClass('site-full')
+    expect(canvas().querySelector('.site-articles')).not.toHaveClass('featured')
+    expect(canvas().querySelector('.site-row')).toBeNull()
+  })
+})

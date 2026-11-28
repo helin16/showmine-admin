@@ -144,7 +144,7 @@ export const Thumbnail = ({ id, images }: { id: string; images: { [assetId: stri
   return <img src={image.url} alt={image.fileName} style={{ maxWidth: 160, maxHeight: 100 }} />
 }
 
-const SectionEditor = ({ section, onChange, errors = {}, images = {}, onImagesPicked }: iSectionEditor) => {
+const TypeEditor = ({ section, onChange, errors = {}, images = {}, onImagesPicked }: iSectionEditor) => {
   // Which image the picker is choosing: a single field, or more for the gallery.
   // The image being picked: a field, the gallery, or the card at an index.
   const [picking, setPicking] = useState<'imageAssetId' | 'assetId' | 'images' | number>()
@@ -217,6 +217,12 @@ const SectionEditor = ({ section, onChange, errors = {}, images = {}, onImagesPi
     onChange(next)
   }
   const fieldId = (field: string) => `${section.id}-${field}`
+  // A yes/no choice; off removes the key, as noEmail does.
+  const flag = (name: string, label: string) => (
+    <Checkbox checked={section[name] === true} onChange={(e) => set(name, e.target.checked || undefined)}>
+      {translate(label)}
+    </Checkbox>
+  )
   const text = (field: string, max: number, multiLine = false) => {
     const props = {
       id: fieldId(field),
@@ -258,6 +264,8 @@ const SectionEditor = ({ section, onChange, errors = {}, images = {}, onImagesPi
           {picker}
           {field('subheading', translate('website-section-subheading'), text('subheading', 300, true))}
           {buttonFields}
+          {flag('fullWidth', 'website-section-full-width')}
+          {flag('darkText', 'website-section-dark-text')}
         </Space>
       )
     // Image beside text (specs/005-website-blocks, slice 88a).
@@ -590,6 +598,10 @@ const SectionEditor = ({ section, onChange, errors = {}, images = {}, onImagesPi
         <Space orientation={'vertical'} style={{ width: '100%' }}>
           {field('mapUrl', translate('website-section-map-url'), text('mapUrl', 2000))}
           {field('chinaMapUrl', translate('website-map-china-url'), text('chinaMapUrl', 2000))}
+          {imageField('imageAssetId', translate('website-map-picture'), true)}
+          {picker}
+          {field('imageAlt', translate('website-map-picture-alt'), text('imageAlt', 200))}
+          {flag('fullWidth', 'website-section-full-width')}
           <div>
             <div id={fieldId('height')}>{translate('website-map-height')}</div>
             <Radio.Group
@@ -650,6 +662,17 @@ const SectionEditor = ({ section, onChange, errors = {}, images = {}, onImagesPi
             />,
           )}
           {field('tagName', translate('website-section-tag'), text('tagName', 50))}
+          <div>
+            <div id={fieldId('layout')}>{translate('website-articles-layout')}</div>
+            <Radio.Group
+              aria-labelledby={fieldId('layout')}
+              value={section.layout === 'featured' ? 'featured' : 'grid'}
+              onChange={(e) => set('layout', e.target.value === 'featured' ? 'featured' : undefined)}
+            >
+              <Radio value={'grid'}>{translate('website-articles-layout-grid')}</Radio>
+              <Radio value={'featured'}>{translate('website-articles-layout-featured')}</Radio>
+            </Radio.Group>
+          </div>
         </Space>
       )
     case 'image':
@@ -749,6 +772,26 @@ const SectionEditor = ({ section, onChange, errors = {}, images = {}, onImagesPi
     default:
       return <div>{translate('website-section-unknown')}</div>
   }
+}
+
+// Every block's editor, then the choice shared by all blocks (spec 009): a pair in one row.
+const SectionEditor = (props: iSectionEditor) => {
+  const { section, onChange } = props
+  return (
+    <Space orientation={'vertical'} style={{ width: '100%' }}>
+      <TypeEditor {...props} />
+      <Checkbox
+        checked={section.sideBySide === true}
+        onChange={(e) => {
+          const next = { ...section, sideBySide: e.target.checked || undefined }
+          if (!e.target.checked) delete next.sideBySide
+          onChange(next)
+        }}
+      >
+        {translate('website-section-side-by-side')}
+      </Checkbox>
+    </Space>
+  )
 }
 
 // The checks the browser can make before saving; the API checks everything again.

@@ -72,7 +72,7 @@ const Hero = ({ section, images }: iBlock) => {
   const imageUrl = urlOf(images, section.imageAssetId)
   return (
     <section
-      className={`site-hero${imageUrl ? ' with-image' : ''}`}
+      className={`site-hero${imageUrl ? ' with-image' : ''}${section.fullWidth === true ? ' site-full' : ''}${section.darkText === true ? ' dark-text' : ''}`}
       style={imageUrl ? { backgroundImage: `url("${encodeURI(imageUrl)}")` } : undefined}
     >
       {section.heading ? <h1>{`${section.heading}`}</h1> : null}
@@ -193,7 +193,7 @@ const Pricing = ({ section }: iBlock) => {
 const MapBlock = ({ section }: iBlock) =>
   /^https:\/\//.test(`${section.mapUrl || ''}`) ? (
     <section
-      className={`site-map-block ${['small', 'medium', 'large'].includes(`${section.height}`) ? section.height : 'medium'}`}
+      className={`site-map-block ${['small', 'medium', 'large'].includes(`${section.height}`) ? section.height : 'medium'}${section.fullWidth === true ? ' site-full' : ''}`}
     >
       <iframe
         className={'site-map'}
@@ -296,7 +296,7 @@ const Contact = ({ section, company }: iBlock) => {
 
 // The Reader lists the latest articles when the page is shown; the canvas says where they go.
 const Articles = ({ section }: iBlock) => (
-  <section className={'site-articles'}>
+  <section className={`site-articles${section.layout === 'featured' ? ' featured' : ''}`}>
     <p>{translate('website-canvas-articles', { count: Number(section.count) || 3 })}</p>
   </section>
 )

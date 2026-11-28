@@ -9,6 +9,7 @@ import IWebsite, { IWebsiteSection } from '../../../Types/Website/IWebsite'
 import WebsiteService from '../../../Services/WebsiteService'
 import translate from '../../../i18n/translate'
 import { BLOCKS, Footer, getThemeStyle, iImages } from './canvasBlocks'
+import getRows from './getRows'
 
 // The page as the website shows it (specs/004-website-visual-editor, US2): the Reader's /website.css, the theme, the
 // menu and the blocks, at three widths. Laid out as the MConnect form designer (mgg-ui DesignTab, SMN-85): a bar with
@@ -381,72 +382,83 @@ const SiteCanvas = ({
               </ul>
             </nav>
             <div className={'site-page'}>
-              {sections.map((section, index) => {
-                const Block = BLOCKS[section.type]
-                const name = nameOf(section, index)
-                const isSelected = section.id === selectedId
-                const hasProblem = problemIds.includes(section.id)
-                return (
-                  <React.Fragment key={section.id}>
-                    {getFixed(index)}
-                    <div
-                      data-testid={`canvas-item-${section.id}`}
-                      className={`canvas-item${isSelected ? ' is-selected' : ''}${hasProblem ? ' has-problem' : ''}`}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onSelect(section.id)
-                      }}
-                    >
-                      {hasProblem ? (
-                        <span className={'canvas-problem ant-form-item-explain-error'}>
-                          {translate('website-canvas-has-problems')}
-                        </span>
-                      ) : null}
-                      {/* The keyboard way in: the tools show while one of them has focus. */}
-                      <div className={'canvas-tools'} onClick={(e) => e.stopPropagation()}>
-                        <Button
-                          type={'primary'}
-                          size={'small'}
-                          aria-label={translate('website-canvas-edit', { name })}
-                          aria-pressed={isSelected}
-                          icon={<Icons.EditOutlined aria-hidden />}
-                          onClick={() => onSelect(section.id)}
-                        />
-                        <Button
-                          type={'primary'}
-                          size={'small'}
-                          aria-label={translate('website-move-up', { name })}
-                          disabled={!canMove(index, -1)}
-                          icon={<Icons.UpOutlined aria-hidden />}
-                          onClick={() => onMove(index, -1)}
-                        />
-                        <Button
-                          type={'primary'}
-                          size={'small'}
-                          aria-label={translate('website-move-down', { name })}
-                          disabled={!canMove(index, 1)}
-                          icon={<Icons.DownOutlined aria-hidden />}
-                          onClick={() => onMove(index, 1)}
-                        />
-                        <PopConfirm
-                          title={translate('website-section-remove-confirm')}
-                          okText={translate('website-remove')}
-                          cancelText={translate('cancel')}
-                          okButtonProps={{ danger: true }}
-                          onConfirm={() => onRemove(index)}
-                        >
+              {getRows(sections).map((row) => {
+                const items = row.map((index) => {
+                  const section = sections[index]
+                  const Block = BLOCKS[section.type]
+                  const name = nameOf(section, index)
+                  const isSelected = section.id === selectedId
+                  const hasProblem = problemIds.includes(section.id)
+                  return (
+                    <React.Fragment key={section.id}>
+                      {index === row[1] ? null : getFixed(index)}
+                      <div
+                        data-testid={`canvas-item-${section.id}`}
+                        className={`canvas-item${isSelected ? ' is-selected' : ''}${hasProblem ? ' has-problem' : ''}`}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onSelect(section.id)
+                        }}
+                      >
+                        {hasProblem ? (
+                          <span className={'canvas-problem ant-form-item-explain-error'}>
+                            {translate('website-canvas-has-problems')}
+                          </span>
+                        ) : null}
+                        {/* The keyboard way in: the tools show while one of them has focus. */}
+                        <div className={'canvas-tools'} onClick={(e) => e.stopPropagation()}>
                           <Button
                             type={'primary'}
-                            danger
                             size={'small'}
-                            aria-label={translate('website-remove-named', { name })}
-                            icon={<Icons.DeleteOutlined aria-hidden />}
+                            aria-label={translate('website-canvas-edit', { name })}
+                            aria-pressed={isSelected}
+                            icon={<Icons.EditOutlined aria-hidden />}
+                            onClick={() => onSelect(section.id)}
                           />
-                        </PopConfirm>
+                          <Button
+                            type={'primary'}
+                            size={'small'}
+                            aria-label={translate('website-move-up', { name })}
+                            disabled={!canMove(index, -1)}
+                            icon={<Icons.UpOutlined aria-hidden />}
+                            onClick={() => onMove(index, -1)}
+                          />
+                          <Button
+                            type={'primary'}
+                            size={'small'}
+                            aria-label={translate('website-move-down', { name })}
+                            disabled={!canMove(index, 1)}
+                            icon={<Icons.DownOutlined aria-hidden />}
+                            onClick={() => onMove(index, 1)}
+                          />
+                          <PopConfirm
+                            title={translate('website-section-remove-confirm')}
+                            okText={translate('website-remove')}
+                            cancelText={translate('cancel')}
+                            okButtonProps={{ danger: true }}
+                            onConfirm={() => onRemove(index)}
+                          >
+                            <Button
+                              type={'primary'}
+                              danger
+                              size={'small'}
+                              aria-label={translate('website-remove-named', { name })}
+                              icon={<Icons.DeleteOutlined aria-hidden />}
+                            />
+                          </PopConfirm>
+                        </div>
+                        {Block ? <Block section={section} images={images} company={company} /> : null}
                       </div>
-                      {Block ? <Block section={section} images={images} company={company} /> : null}
-                    </div>
+                    </React.Fragment>
+                  )
+                })
+                return row.length === 2 ? (
+                  <React.Fragment key={sections[row[0]].id}>
+                    {getFixed(row[1])}
+                    <div className={'site-row'}>{items}</div>
                   </React.Fragment>
+                ) : (
+                  items[0]
                 )
               })}
               {getFixed(sections.length)}
