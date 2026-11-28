@@ -271,13 +271,14 @@ describe('SiteCanvas', () => {
     render(
       <SiteCanvas
         {...(props({
-          website: { id: 'w', theme: { primaryColor: 'red', fontPair: 'odd' } },
+          website: { id: 'w', theme: { primaryColor: 'red', fontPair: 'odd', style: 'plain' } },
           sections: [{ id: 'h', type: 'hero', heading: 'Hi', buttonText: 'Go' }],
         }) as never)}
       />,
     )
     const site = canvas().firstElementChild as HTMLElement
     expect(site).toHaveClass('site-font-modern')
+    expect(site).not.toHaveClass('site-style-airy')
     expect(site.style.getPropertyValue('--site-primary')).toBe('')
     expect(site.querySelector('.site-hero')).not.toHaveClass('with-image')
     expect(within(site).queryByText('Go')).not.toBeInTheDocument()
