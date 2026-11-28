@@ -13,9 +13,12 @@ export type IWebsiteTheme = {
   // The first button's colour (specs/005, slice 88b); absent, the main colour.
   buttonColor?: string
   contentWidth?: number
+  // plain (absent) or airy, the look of showmine.com.au (SMN-93).
+  style?: string
 }
 export const CONTENT_WIDTHS = [960, 1140, 1280]
 export const FONT_PAIRS = ['modern', 'classic', 'friendly']
+export const THEME_STYLES = ['plain', 'airy']
 
 // The site layout as the API checks it (specs/004 data-model). Plain text only.
 export type IWebsiteFooterItem =

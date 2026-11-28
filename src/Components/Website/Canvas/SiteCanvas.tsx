@@ -19,7 +19,11 @@ import { BLOCKS, Footer, getThemeStyle, iImages } from './canvasBlocks'
 const styles: { [url: string]: Promise<string> } = {}
 export const loadSiteStyles = (url: string) => {
   styles[url] =
-    styles[url] || fetch(url).then((resp) => (resp.ok ? resp.text() : Promise.reject(new Error(`${resp.status}`))))
+    styles[url] ||
+    fetch(url)
+      .then((resp) => (resp.ok ? resp.text() : Promise.reject(new Error(`${resp.status}`))))
+      // Files the styles name from the site's root (the airy style's font, SMN-93) come from the Reader, not the admin.
+      .then((text) => text.replace(/url\(\//g, `url(${new URL(url).origin}/`))
   // A failure is tried again next time.
   styles[url].catch(() => delete styles[url])
   return styles[url]
@@ -237,7 +241,7 @@ const SiteCanvas = ({
     }
   }, [stylesUrl])
 
-  const { fontPair } = website?.theme || {}
+  const { fontPair, style } = website?.theme || {}
   const header = website?.layout?.header || {}
   const hidden = header.hiddenPageIds || []
   // As the Reader: with no logo shown, the name always is, so the home link is never empty.
@@ -318,7 +322,9 @@ const SiteCanvas = ({
           onClickCapture={(e) => (e.target as HTMLElement).closest('a') && e.preventDefault()}
         >
           <div
-            className={`site site-font-${FONT_PAIRS.includes(`${fontPair}`) ? fontPair : 'modern'}`}
+            className={`site site-font-${FONT_PAIRS.includes(`${fontPair}`) ? fontPair : 'modern'}${
+              style === 'airy' ? ' site-style-airy' : ''
+            }`}
             style={getThemeStyle(website?.theme || {})}
           >
             {/* As the Reader's Nav: below 1024 px of canvas width /website.css folds the links behind the button. */}

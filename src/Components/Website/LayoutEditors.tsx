@@ -9,6 +9,7 @@ import {
   CONTACT_ICONS,
   CONTENT_WIDTHS,
   FONT_PAIRS,
+  THEME_STYLES,
   FOOTER_ITEM_TYPES,
   IWebsiteFooterColumn,
   IWebsiteFooterItem,
@@ -467,6 +468,17 @@ export const ThemeEditor = ({ theme, errors, onChange }: iTheme) => (
         ))}
       </Radio.Group>
       <Problem path={'theme.contentWidth'} errors={errors} />
+    </div>
+    <div role={'radiogroup'} aria-label={translate('website-theme-style')}>
+      <div>{translate('website-theme-style')}</div>
+      <Radio.Group value={theme.style || 'plain'} onChange={(e) => onChange({ ...theme, style: e.target.value })}>
+        {THEME_STYLES.map((style) => (
+          <Radio key={style} value={style}>
+            {translate(`website-theme-style-${style}`)}
+          </Radio>
+        ))}
+      </Radio.Group>
+      <Problem path={'theme.style'} errors={errors} />
     </div>
   </Space>
 )

@@ -332,11 +332,13 @@ describe('WebsiteLayoutPage', () => {
     type(screen.getByLabelText('Second button colour'), '#facc15')
     fireEvent.click(screen.getByRole('radio', { name: '1140 px' }))
     fireEvent.click(screen.getByRole('radio', { name: 'Friendly' }))
+    expect(canvas().firstElementChild).not.toHaveClass('site-style-airy')
+    fireEvent.click(screen.getByRole('radio', { name: 'Airy (as showmine.com.au)' }))
 
     const site = canvas().firstElementChild as HTMLElement
     expect(site.style.getPropertyValue('--site-heading')).toBe('#58468b')
     expect(site.style.getPropertyValue('--site-width')).toBe('1140px')
-    expect(site).toHaveClass('site-font-friendly')
+    expect(site).toHaveClass('site-font-friendly', 'site-style-airy')
     expect(site.style.getPropertyValue('--site-button')).toBe('#3d82f4')
     expect(site.style.getPropertyValue('--site-button-text')).toBe('#ffffff')
     expect(site.style.getPropertyValue('--site-secondary')).toBe('#facc15')
@@ -350,6 +352,7 @@ describe('WebsiteLayoutPage', () => {
       buttonColor: '#3d82f4',
       secondaryColor: '#facc15',
       contentWidth: 1140,
+      style: 'airy',
     })
   })
 

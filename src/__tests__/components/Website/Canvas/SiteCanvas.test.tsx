@@ -69,6 +69,7 @@ describe('SiteCanvas', () => {
     render(<SiteCanvas {...(props() as never)} />)
     const site = canvas().firstElementChild as HTMLElement
     expect(site).toHaveClass('site', 'site-font-classic')
+    expect(site).not.toHaveClass('site-style-airy')
     expect(site.style.getPropertyValue('--site-primary')).toBe('#ff0000')
     expect(within(site).getByRole('navigation')).toHaveClass('site-nav')
     expect(within(site).getByText('About').closest('a')).toHaveAttribute('aria-current', 'page')
@@ -391,6 +392,20 @@ describe('SiteCanvas', () => {
       const again = render(<SiteCanvas {...(props() as never)} />)
       await waitFor(() => expect(again.container.querySelector('style')).toHaveTextContent('.site-hero{color:red}'))
       expect(fetchMock).toHaveBeenCalledTimes(1)
+    })
+
+    test('files named from the root come from the Reader (SMN-93)', async () => {
+      vi.mocked(WebsiteService.getReaderUrl).mockImplementation((path: string) => `https://fonts.test${path}`)
+      fetchMock.mockResolvedValue({
+        ok: true,
+        text: () => Promise.resolve('@font-face{src:url(/fonts/a.woff2)}.x{background:url(data:x)}'),
+      })
+      const { container } = render(<SiteCanvas {...(props() as never)} />)
+      await waitFor(() =>
+        expect(container.querySelector('style')?.textContent).toBe(
+          '@font-face{src:url(https://fonts.test/fonts/a.woff2)}.x{background:url(data:x)}',
+        ),
+      )
     })
 
     test('a failed read says so, and is tried again next time', async () => {
