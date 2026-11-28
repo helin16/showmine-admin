@@ -19,6 +19,15 @@ import SeoFields from '../../Components/Website/SeoFields'
 import SiteCanvas from '../../Components/Website/Canvas/SiteCanvas'
 import SidePanel from '../../Components/Website/SidePanel'
 import { getLayoutImageIds } from '../../Components/Website/LayoutEditors'
+import {
+  countBlocks,
+  findPath,
+  getAtPath,
+  getFirstProblemId,
+  getPathName,
+  getProblemIds,
+  replaceBlock,
+} from '../../Components/Website/sectionTree'
 import BlockPalette from '../../Components/Website/Canvas/BlockPalette'
 import styled from 'styled-components'
 import Dropdown from '../../Components/Form/Dropdown'
@@ -233,8 +242,8 @@ const WebsitePageEditPage = () => {
 
   // A problem in a block selects the first such block, so its field is seen.
   const selectProblem = (errors: { [path: string]: string }, sections: IWebsiteSection[]) => {
-    const index = sections.findIndex((_, i) => Object.keys(errors).some((path) => path.startsWith(`sections[${i}].`)))
-    if (index >= 0) select(sections[index].id)
+    const id = getFirstProblemId(sections, errors, (i) => `sections[${i}]`)
+    if (id) select(id)
   }
 
   // Added at the end, and selected. (The blocks to add show only while no block is selected, as in the MConnect form
@@ -351,17 +360,20 @@ const WebsitePageEditPage = () => {
       images: { ...s.images, ...Object.fromEntries(assets.map((asset) => [`${asset.id}`, asset])) },
     }))
 
-  const sectionErrors = (index: number) =>
-    Object.fromEntries(
+  // The problems of the block at this path (a block inside a row: sections[2].blocks[0]), by field name.
+  const sectionErrors = (path: number[]) => {
+    const prefix = `${getPathName((i) => `sections[${i}]`, path)}.`
+    return Object.fromEntries(
       Object.entries(state.errors)
-        .filter(([path]) => path.startsWith(`sections[${index}].`))
-        .map(([path, problem]) => [path.slice(`sections[${index}].`.length), problem]),
+        .filter(([key]) => key.startsWith(prefix))
+        .map(([key, problem]) => [key.slice(prefix.length), problem]),
     )
+  }
 
   // Problems about the sections as a whole, or a section's type or id, which have no field of their own.
   const getPageProblems = () =>
     Object.entries(state.errors)
-      .filter(([path]) => path === 'sections' || /^sections\[\d+\]\.(type|id)$/.test(path))
+      .filter(([path]) => path === 'sections' || /^sections\[\d+\](\.blocks\[\d+\])*\.(type|id)$/.test(path))
       .map(([path, problem]) =>
         path === 'sections'
           ? problem
@@ -371,9 +383,11 @@ const WebsitePageEditPage = () => {
   // The right panel, as the MConnect form designer: the selected block's fields with Back, or the open tab (the blocks
   // to add, or the page settings); the tab rail on the far right.
   const getPanel = (sections: IWebsiteSection[]) => {
-    const index = sections.findIndex((section) => section.id === state.selectedId)
-    const section = sections[index]
-    const isFull = sections.length >= MAX_SECTIONS
+    // A block inside a row is found by its id too: its path runs through the rows holding it.
+    const path = findPath(sections, state.selectedId)
+    const section = path ? getAtPath(sections, path) : undefined
+    const parent = path && path.length > 1 ? getAtPath(sections, path.slice(0, -1)) : undefined
+    const isFull = countBlocks(sections) >= MAX_SECTIONS
     const tabs = [
       { key: 'blocks', label: translate('website-panel-blocks'), Icon: Icons.BuildOutlined },
       { key: 'settings', label: translate('website-panel-settings'), Icon: Icons.SettingOutlined },
@@ -389,17 +403,22 @@ const WebsitePageEditPage = () => {
       >
         {section ? (
           <>
-            <Button type={'link'} size={'small'} style={{ paddingLeft: 0 }} onClick={() => select(undefined)}>
-              <Icons.ArrowLeftOutlined aria-hidden /> {translate('website-panel-back')}
+            {/* Back goes to the row holding the block, or off the block from the page. */}
+            <Button type={'link'} size={'small'} style={{ paddingLeft: 0 }} onClick={() => select(parent?.id)}>
+              <Icons.ArrowLeftOutlined aria-hidden />{' '}
+              {translate(parent ? 'website-panel-back-row' : 'website-panel-back')}
             </Button>
-            <BoxTitleDiv>{`${index + 1}. ${translate(`website-section-type-${section.type}`)}`}</BoxTitleDiv>
+            <BoxTitleDiv>{`${path![path!.length - 1] + 1}. ${translate(`website-section-type-${section.type}`)}`}</BoxTitleDiv>
             <SectionEditor
               key={section.id}
               section={section}
-              errors={sectionErrors(index)}
+              errors={sectionErrors(path!)}
               images={state.images}
               onImagesPicked={addImages}
-              onChange={(changed) => setSections(sections.map((s) => (s.id === section.id ? changed : s)))}
+              parents={path!.length - 1}
+              onSelect={select}
+              canAdd={!isFull}
+              onChange={(changed) => setSections(replaceBlock(sections, changed))}
             />
           </>
         ) : null}
@@ -410,7 +429,7 @@ const WebsitePageEditPage = () => {
               {translate('website-blocks-hint')}{' '}
               {isFull
                 ? translate('website-sections-full', { max: MAX_SECTIONS })
-                : translate('website-section-count', { count: sections.length, max: MAX_SECTIONS })}
+                : translate('website-section-count', { count: countBlocks(sections), max: MAX_SECTIONS })}
             </small>
           </>
         ) : null}
@@ -660,9 +679,7 @@ const WebsitePageEditPage = () => {
               ]}
               images={state.images}
               selectedId={state.selectedId}
-              problemIds={draft.sections
-                .filter((_, i) => Object.keys(state.errors).some((path) => path.startsWith(`sections[${i}].`)))
-                .map((section) => section.id)}
+              problemIds={getProblemIds(draft.sections, state.errors, (i) => `sections[${i}]`)}
               onSelect={select}
               onPreview={preview}
               canPreview={!state.saving && !state.isStale}

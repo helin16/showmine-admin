@@ -893,3 +893,228 @@ describe('page layout choices (spec 009)', () => {
     expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'articles' })
   })
 })
+
+// specs/010-website-rows (SMN-96)
+describe('row, buttons and tile (spec 010)', () => {
+  const radio = (group: string, name: string) =>
+    within(screen.getByRole('radiogroup', { name: group })).getByRole('radio', { name })
+  const child = (id: string, type = 'text') => ({ id, type })
+
+  test('the palette offers Row, Buttons and Tile and each makes its own block', () => {
+    expect(ADDABLE_SECTION_TYPES).toStrictEqual(expect.arrayContaining(['row', 'buttons', 'tile']))
+    expect(newSection('row')).toMatchObject({ type: 'row', blocks: [] })
+    expect(newSection('buttons').type).toBe('buttons')
+    expect(newSection('tile').type).toBe('tile')
+  })
+
+  test('a row shows its defaults and sets each option; a default is left out', () => {
+    const onChange = renderEditor({ type: 'row', blocks: [child('b1')] })
+    expect(radio('Content width', 'Boxed (page width)')).toBeChecked()
+    expect(radio('Space above and below', 'Medium')).toBeChecked()
+    expect(radio('Direction', 'Side by side')).toBeChecked()
+    expect(radio('Spread along the row (justify)', 'Start')).toBeChecked()
+    expect(radio('Line up across the row (align)', 'Stretch')).toBeChecked()
+    expect(radio('Space between blocks', 'Medium')).toBeChecked()
+    expect(screen.getByRole('checkbox', { name: 'Blocks wrap onto the next line' })).toBeChecked()
+
+    fireEvent.click(radio('Content width', 'Full'))
+    expect(onChange).toHaveBeenLastCalledWith(expect.objectContaining({ width: 'full' }))
+    fireEvent.click(radio('Space above and below', 'Large'))
+    expect(onChange).toHaveBeenLastCalledWith(expect.objectContaining({ padding: 'large' }))
+    fireEvent.click(radio('Direction', 'Stacked'))
+    expect(onChange).toHaveBeenLastCalledWith(expect.objectContaining({ direction: 'column' }))
+    fireEvent.click(radio('Spread along the row (justify)', 'Space between'))
+    expect(onChange).toHaveBeenLastCalledWith(expect.objectContaining({ justify: 'space-between' }))
+    fireEvent.click(radio('Line up across the row (align)', 'Centre'))
+    expect(onChange).toHaveBeenLastCalledWith(expect.objectContaining({ align: 'center' }))
+    fireEvent.click(radio('Space between blocks', 'None'))
+    expect(onChange).toHaveBeenLastCalledWith(expect.objectContaining({ gap: 'none' }))
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Blocks wrap onto the next line' }))
+    expect(onChange).toHaveBeenLastCalledWith(expect.objectContaining({ wrap: false }))
+    // Back to the default: the key goes.
+    fireEvent.click(radio('Space between blocks', 'Medium'))
+    expect(onChange.mock.calls.at(-1)?.[0]).not.toHaveProperty('gap')
+  })
+
+  test('a row has a background colour that can be taken off again', () => {
+    const onChange = renderEditor({ type: 'row', blocks: [child('b1')], background: '#112233' })
+    fireEvent.change(screen.getByLabelText('Background colour'), { target: { value: '#445566' } })
+    expect(onChange).toHaveBeenLastCalledWith(expect.objectContaining({ background: '#445566' }))
+    fireEvent.click(screen.getByRole('button', { name: 'No background' }))
+    expect(onChange.mock.calls.at(-1)?.[0]).not.toHaveProperty('background')
+  })
+
+  test('the row lists its blocks and edits, moves and removes them as the page does', async () => {
+    const onChange = vi.fn()
+    const onSelect = vi.fn()
+    const blocks = [child('b1'), child('b2', 'tile')]
+    renderWithProviders(
+      <SectionEditor section={{ id: 'r', type: 'row', blocks }} onChange={onChange} onSelect={onSelect} />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Edit 2. Tile' }))
+    expect(onSelect).toHaveBeenCalledWith('b2')
+    expect(screen.getByRole('button', { name: 'Move 1. Text up' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Move 2. Tile down' })).toBeDisabled()
+    fireEvent.click(screen.getByRole('button', { name: 'Move 1. Text down' }))
+    expect(onChange).toHaveBeenLastCalledWith({ id: 'r', type: 'row', blocks: [blocks[1], blocks[0]] })
+    fireEvent.click(screen.getByRole('button', { name: 'Remove 1. Text' }))
+    fireEvent.click(within(await screen.findByRole('tooltip')).getByRole('button', { name: 'Remove' }))
+    expect(onChange).toHaveBeenLastCalledWith({ id: 'r', type: 'row', blocks: [blocks[1]] })
+  })
+
+  test('adding a block appends it with its own id and opens it', () => {
+    const onChange = vi.fn()
+    const onSelect = vi.fn()
+    renderWithProviders(
+      <SectionEditor
+        section={{ id: 'r', type: 'row', blocks: [child('b1')] }}
+        onChange={onChange}
+        onSelect={onSelect}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Add Tile' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Add Tile' }))
+    const [first, second] = onChange.mock.calls.map(([row]) => row.blocks.at(-1))
+    expect(first.type).toBe('tile')
+    expect(first.id).not.toBe(second.id)
+    expect(first.id).not.toBe('b1')
+    expect(onSelect).toHaveBeenNthCalledWith(1, first.id)
+  })
+
+  test('a row inside a row is offered on the page, a row inside that is not', () => {
+    const { unmount } = renderWithProviders(
+      <SectionEditor section={{ id: 'r', type: 'row', blocks: [] }} onChange={vi.fn()} parents={0} />,
+    )
+    expect(screen.getByRole('button', { name: 'Add Row' })).toBeEnabled()
+    unmount()
+    renderWithProviders(<SectionEditor section={{ id: 'r', type: 'row', blocks: [] }} onChange={vi.fn()} parents={1} />)
+    expect(screen.queryByRole('button', { name: 'Add Row' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'Add Tile' })).toBeEnabled()
+  })
+
+  test('adding stops at 12 blocks in a row, or when the page is full', () => {
+    const twelve = Array.from({ length: 12 }, (_, i) => child(`b${i}`))
+    const { unmount } = renderWithProviders(
+      <SectionEditor section={{ id: 'r', type: 'row', blocks: twelve }} onChange={vi.fn()} />,
+    )
+    expect(screen.getByRole('button', { name: 'Add Tile' })).toBeDisabled()
+    unmount()
+    renderWithProviders(
+      <SectionEditor section={{ id: 'r', type: 'row', blocks: [] }} onChange={vi.fn()} canAdd={false} />,
+    )
+    expect(screen.getByRole('button', { name: 'Add Tile' })).toBeDisabled()
+  })
+
+  test('the width choice shows only for a block inside a row; auto leaves the key out', () => {
+    const { unmount } = renderWithProviders(
+      <SectionEditor section={{ id: 's1', type: 'text' } as never} onChange={vi.fn()} />,
+    )
+    expect(screen.queryByText('Width')).toBeNull()
+    expect(screen.getByRole('checkbox', { name: 'Side by side with the next block' })).toBeInTheDocument()
+    unmount()
+    const onChange = vi.fn()
+    renderWithProviders(<SectionEditor section={{ id: 's1', type: 'text' } as never} onChange={onChange} parents={1} />)
+    expect(screen.getByRole('radiogroup', { name: 'Width' })).toBeInTheDocument()
+    // Side by side is the page's pairing: not inside a row.
+    expect(screen.queryByRole('checkbox', { name: 'Side by side with the next block' })).toBeNull()
+    expect(radio('Width', 'Auto')).toBeChecked()
+    fireEvent.click(radio('Width', '1/3'))
+    expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'text', basis: '1/3' })
+    fireEvent.click(radio('Width', 'Full'))
+    expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'text', basis: 'full' })
+  })
+
+  test('auto takes the basis off', () => {
+    const onChange = vi.fn()
+    renderWithProviders(
+      <SectionEditor section={{ id: 's1', type: 'text', basis: '1/2' } as never} onChange={onChange} parents={1} />,
+    )
+    expect(radio('Width', '1/2')).toBeChecked()
+    fireEvent.click(radio('Width', 'Auto'))
+    expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'text' })
+  })
+
+  test('buttons reuse the band button fields', () => {
+    const onChange = renderEditor({ type: 'buttons' })
+    fireEvent.change(screen.getByLabelText('Button text'), { target: { value: 'Join' } })
+    expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'buttons', buttonText: 'Join' })
+    expect(screen.getByLabelText('Small note under the buttons')).toBeInTheDocument()
+    expect(screen.getByLabelText('Second button text')).toBeInTheDocument()
+  })
+
+  test('a tile has an icon from the media picker, alt text, title, text and link', () => {
+    pickResult = [{ id: 'img-9', url: 'https://cdn.test/9.png', fileName: 'nine.png' }]
+    const onChange = renderEditor({ type: 'tile' })
+    fireEvent.click(screen.getByRole('button', { name: 'Choose image' }))
+    fireEvent.click(screen.getByRole('button', { name: 'pick (one)' }))
+    expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'tile', imageAssetId: 'img-9' })
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Fast' } })
+    expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'tile', title: 'Fast' })
+    fireEvent.change(screen.getByLabelText('Text'), { target: { value: 'Quick' } })
+    expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'tile', text: 'Quick' })
+    fireEvent.change(screen.getByLabelText(/^Link/), { target: { value: '/about' } })
+    expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'tile', link: '/about' })
+    expect(screen.getByLabelText('Description for screen readers')).toHaveAttribute('maxlength', '200')
+    expect(screen.getByLabelText('Title')).toHaveAttribute('maxlength', '80')
+    expect(screen.getByLabelText('Text')).toHaveAttribute('maxlength', '200')
+  })
+
+  test('checks reach the blocks inside a row, by the API path', () => {
+    expect(checkSection({ id: 'r', type: 'row', blocks: [] })).toStrictEqual({
+      blocks: 'Add at least one block to the row.',
+    })
+    const errors = checkSection({
+      id: 'r',
+      type: 'row',
+      blocks: [
+        { id: 't', type: 'tile', link: 'nope' },
+        { id: 'r2', type: 'row', blocks: [{ id: 'i', type: 'image' }] },
+        { id: 'b', type: 'buttons', buttonUrl: 'nope' },
+      ],
+    })
+    expect(Object.keys(errors).sort()).toStrictEqual([
+      'blocks[0].link',
+      'blocks[1].blocks[0].assetId',
+      'blocks[2].buttonUrl',
+    ])
+  })
+
+  test('image ids come from tiles inside rows too', () => {
+    expect(
+      getImageIds([{ id: 'r', type: 'row', blocks: [{ id: 't', type: 'tile', imageAssetId: 'i1' }] }]),
+    ).toStrictEqual(['i1'])
+  })
+
+  test('a shared block lists the pages to show on, all ticked, and unticking adds the page id', () => {
+    const onChange = vi.fn()
+    const pages = [
+      { id: 'p1', title: 'Home' },
+      { id: 'p2', title: 'Contact' },
+    ]
+    renderWithProviders(
+      <SectionEditor section={{ id: 's1', type: 'text' } as never} onChange={onChange} pages={pages} />,
+    )
+    const group = screen.getByRole('group', { name: 'Show on' })
+    expect(within(group).getByRole('checkbox', { name: 'Home' })).toBeChecked()
+    expect(within(group).getByRole('checkbox', { name: 'Contact' })).toBeChecked()
+    fireEvent.click(within(group).getByRole('checkbox', { name: 'Contact' }))
+    expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'text', hiddenPageIds: ['p2'] })
+  })
+
+  test('ticking the last hidden page removes the field; none is offered without pages', () => {
+    const onChange = vi.fn()
+    const { unmount } = renderWithProviders(
+      <SectionEditor
+        section={{ id: 's1', type: 'text', hiddenPageIds: ['p2'] } as never}
+        onChange={onChange}
+        pages={[{ id: 'p2', title: 'Contact' }]}
+      />,
+    )
+    expect(screen.getByRole('checkbox', { name: 'Contact' })).not.toBeChecked()
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Contact' }))
+    expect(onChange).toHaveBeenLastCalledWith({ id: 's1', type: 'text' })
+    unmount()
+    renderEditor({ type: 'text' })
+    expect(screen.queryByRole('group', { name: 'Show on' })).toBeNull()
+  })
+})

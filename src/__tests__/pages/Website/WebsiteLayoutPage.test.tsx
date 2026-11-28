@@ -588,3 +588,73 @@ describe('WebsiteLayoutPage', () => {
     })
   })
 })
+
+// specs/010-website-rows (SMN-95, SMN-96): shared blocks that skip pages, and shared rows
+describe('WebsiteLayoutPage shared blocks (spec 010)', () => {
+  const sentLayout = () => vi.mocked(WebsiteService.update).mock.calls[0][0].layout
+  const band = { id: 'b', type: 'hero', heading: 'Signup Today' }
+
+  test('a shared block has Show on checkboxes per page in the menu order, all ticked; unticking saves the page id', async () => {
+    vi.mocked(WebsiteService.update).mockResolvedValue(website() as never)
+    await loaded({ layout: { sharedBelow: [band] } })
+    tab('Blocks')
+    fireEvent.click(screen.getByRole('button', { name: 'Edit 1. Hero' }))
+    const group = screen.getByRole('group', { name: 'Show on' })
+    expect(
+      within(group)
+        .getAllByRole('checkbox')
+        .map((c) => c.closest('label')?.textContent),
+    ).toStrictEqual(['Home', 'About'])
+    expect(
+      within(group)
+        .getAllByRole('checkbox')
+        .every((c) => (c as HTMLInputElement).checked),
+    ).toBe(true)
+    fireEvent.click(within(group).getByRole('checkbox', { name: 'About' }))
+    fireEvent.click(saveBtn())
+    await waitFor(() => expect(WebsiteService.update).toHaveBeenCalled())
+    expect(sentLayout().sharedBelow).toStrictEqual([{ ...band, hiddenPageIds: ['p2'] }])
+  })
+
+  test('the canvas keeps a block hidden on the sample page, faded, so it can still be edited', async () => {
+    await loaded({ layout: { sharedBelow: [{ ...band, hiddenPageIds: ['p1'] }] } })
+    expect(canvas().querySelector('.canvas-item.canvas-hidden-here')).not.toBeNull()
+  })
+
+  test('a problem with hiddenPageIds shows at the checkboxes', async () => {
+    vi.mocked(WebsiteService.update).mockRejectedValue(
+      httpError(400, { errors: [{ path: 'layout.sharedBelow[0].hiddenPageIds', message: 'A list of page ids.' }] }),
+    )
+    await loaded({ layout: { sharedBelow: [{ ...band, hiddenPageIds: ['p2'] }] } })
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Show the website name' }))
+    fireEvent.click(saveBtn())
+    expect(await screen.findByText('A list of page ids.')).toBeInTheDocument()
+  })
+
+  test('a shared row: blocks inside it are added and edited as on a page, without Show on', async () => {
+    vi.mocked(WebsiteService.update).mockResolvedValue(website() as never)
+    await loaded()
+    tab('Blocks')
+    fireEvent.click(screen.getByRole('button', { name: 'Add Row' }))
+    expect(screen.getByRole('group', { name: 'Show on' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Add Tile' }))
+    expect(screen.getByRole('radiogroup', { name: 'Width' })).toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: 'Show on' })).toBeNull()
+    fireEvent.click(screen.getByRole('radio', { name: '1/2' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Back to the row' }))
+    expect(screen.getByRole('group', { name: 'Show on' })).toBeInTheDocument()
+    fireEvent.click(saveBtn())
+    await waitFor(() => expect(WebsiteService.update).toHaveBeenCalled())
+    expect(sentLayout().sharedBelow).toStrictEqual([
+      { id: expect.any(String), type: 'row', blocks: [{ id: expect.any(String), type: 'tile', basis: '1/2' }] },
+    ])
+  })
+
+  test('image ids inside a shared row are loaded', async () => {
+    vi.mocked(WebsiteService.getImages).mockResolvedValue({ data: [] } as never)
+    await loaded({
+      layout: { sharedBelow: [{ id: 'r', type: 'row', blocks: [{ id: 't', type: 'tile', imageAssetId: 'img-7' }] }] },
+    })
+    expect(WebsiteService.getImages).toHaveBeenCalledWith(1, ['img-7'])
+  })
+})

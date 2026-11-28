@@ -55,14 +55,18 @@ const ICONS: { [type: string]: React.ComponentType } = {
   gallery: Icons.AppstoreOutlined,
   contact: Icons.ContactsOutlined,
   articles: Icons.ReadOutlined,
+  row: Icons.ColumnWidthOutlined,
+  buttons: Icons.LinkOutlined,
+  tile: Icons.IdcardOutlined,
 }
 
-type iBlockPalette = { isFull: boolean; onAdd: (type: string) => void }
+// `types`: the blocks offered; a row inside a row leaves Row out (rows go two deep at most).
+type iBlockPalette = { isFull: boolean; onAdd: (type: string) => void; types?: string[] }
 
 // Click a tile to add it after the selected block; dragging comes in slice 3.
-const BlockPalette = ({ isFull, onAdd }: iBlockPalette) => (
+const BlockPalette = ({ isFull, onAdd, types = ADDABLE_SECTION_TYPES }: iBlockPalette) => (
   <Grid role={'group'} aria-label={translate('website-section-add')}>
-    {ADDABLE_SECTION_TYPES.map((type) => {
+    {types.map((type) => {
       const Icon = ICONS[type]
       const name = translate(`website-section-type-${type}`)
       return (

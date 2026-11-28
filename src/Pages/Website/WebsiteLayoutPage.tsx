@@ -15,6 +15,15 @@ import PublishBar from '../../Components/Website/PublishBar'
 import SiteCanvas, { iCanvasPart } from '../../Components/Website/Canvas/SiteCanvas'
 import SectionEditor, { getImageIds, newSection } from '../../Components/Website/SectionEditors'
 import BlockPalette from '../../Components/Website/Canvas/BlockPalette'
+import {
+  countBlocks,
+  findPath,
+  getAtPath,
+  getFirstProblemId,
+  getPathName,
+  getProblemIds,
+  replaceBlock,
+} from '../../Components/Website/sectionTree'
 import SidePanel from '../../Components/Website/SidePanel'
 import { Radio } from 'antd'
 import Icons from '../../Components/Icons'
@@ -193,9 +202,7 @@ const WebsiteLayoutPage = () => {
   // A problem in a shared block selects that block, so its field is seen.
   const showProblems = (errors: { [path: string]: string }, layout: IWebsiteLayout) => {
     const { shared, split } = getShared(layout)
-    const withProblem = shared.find((_, i) =>
-      Object.keys(errors).some((path) => path.startsWith(`${pathOf(i, split)}.`)),
-    )
+    const withProblem = shared.find((s) => s.id === getFirstProblemId(shared, errors, (i) => pathOf(i, split)))
     const [first] = Object.keys(errors)
     const firstTab = first ? tabOf(first) : tab
     // Only when the Blocks tab opens, so the canvas does not mark a block while another tab shows.
@@ -327,16 +334,20 @@ const WebsiteLayoutPage = () => {
     // Problems about the shared blocks as a whole, or a block's type or id, which have no field of their own.
     const general = Object.entries(state.errors).filter(
       ([path]) =>
-        /^layout\.shared(Above|Below)?$/.test(path) || /^layout\.shared(Above|Below)\[\d+\]\.(type|id)$/.test(path),
+        /^layout\.shared(Above|Below)?$/.test(path) ||
+        /^layout\.shared(Above|Below)\[\d+\](\.blocks\[\d+\])*\.(type|id)$/.test(path),
     )
     const generalAlert =
       general.length > 0 ? (
         <Alert type={'error'} style={{ marginBottom: 8 }} message={general.map(([, problem]) => problem).join(' ')} />
       ) : null
-    const index = shared.findIndex((section) => section.id === state.selectedId)
-    const section = shared[index]
-    if (section) {
-      const prefix = `${pathOf(index, split)}.`
+    // A block inside a shared row is found by its id too.
+    const path = findPath(shared, state.selectedId)
+    const section = path ? getAtPath(shared, path) : undefined
+    if (path && section) {
+      const index = path[0]
+      const parent = path.length > 1 ? getAtPath(shared, path.slice(0, -1)) : undefined
+      const prefix = `${getPathName((i) => pathOf(i, split), path)}.`
       const errors = Object.fromEntries(
         Object.entries(state.errors)
           .filter(([path]) => path.startsWith(prefix))
@@ -344,8 +355,9 @@ const WebsiteLayoutPage = () => {
       )
       return (
         <>
-          <Button type={'link'} size={'small'} style={{ paddingLeft: 0 }} onClick={() => select(undefined)}>
-            <Icons.ArrowLeftOutlined aria-hidden /> {translate('website-panel-back')}
+          <Button type={'link'} size={'small'} style={{ paddingLeft: 0 }} onClick={() => select(parent?.id)}>
+            <Icons.ArrowLeftOutlined aria-hidden />{' '}
+            {translate(parent ? 'website-panel-back-row' : 'website-panel-back')}
           </Button>
           {generalAlert}
           <BoxTitleDiv>
@@ -359,17 +371,17 @@ const WebsiteLayoutPage = () => {
             errors={errors}
             images={state.images}
             onImagesPicked={addImages}
-            onChange={(changed) =>
-              setShared(
-                shared.map((s) => (s.id === section.id ? changed : s)),
-                split,
-              )
-            }
+            parents={path.length - 1}
+            onSelect={select}
+            canAdd={countBlocks(shared) < LAYOUT_LIMITS.shared}
+            // SMN-95: the pages a shared block shows on.
+            pages={state.pages.map((page) => ({ id: `${page.id}`, title: page.title }))}
+            onChange={(changed) => setShared(replaceBlock(shared, changed), split)}
           />
         </>
       )
     }
-    const isFull = shared.length >= LAYOUT_LIMITS.shared
+    const isFull = countBlocks(shared) >= LAYOUT_LIMITS.shared
     return (
       <>
         <p style={{ color: '#6c757d' }}>{translate('website-layout-blocks-hint')}</p>
@@ -390,7 +402,7 @@ const WebsiteLayoutPage = () => {
         <small style={{ display: 'block', marginTop: 8, color: '#6c757d' }}>
           {isFull
             ? translate('website-layout-blocks-full', { max: LAYOUT_LIMITS.shared })
-            : translate('website-layout-blocks-count', { count: shared.length, max: LAYOUT_LIMITS.shared })}
+            : translate('website-layout-blocks-count', { count: countBlocks(shared), max: LAYOUT_LIMITS.shared })}
         </small>
       </>
     )
@@ -438,9 +450,7 @@ const WebsiteLayoutPage = () => {
               ]}
               images={state.images}
               selectedId={state.selectedId}
-              problemIds={shared
-                .filter((_, i) => Object.keys(state.errors).some((path) => path.startsWith(`${pathOf(i, split)}.`)))
-                .map((section) => section.id)}
+              problemIds={getProblemIds(shared, state.errors, (i) => pathOf(i, split))}
               selectedPart={tab === 'header' || tab === 'footer' ? tab : undefined}
               onSelectPart={(part: iCanvasPart) => {
                 setTab(part)

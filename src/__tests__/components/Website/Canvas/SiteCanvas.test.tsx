@@ -812,3 +812,191 @@ describe('SiteCanvas pages (spec 009)', () => {
     expect(canvas().querySelector('.site-row')).toBeNull()
   })
 })
+
+// specs/010-website-rows (SMN-96, SMN-95)
+describe('SiteCanvas rows (spec 010)', () => {
+  const draw = (list: IWebsiteSection[], extra = {}) =>
+    render(<SiteCanvas {...(props({ sections: list, ...extra }) as never)} />)
+  const item = (id: string) => screen.getByTestId(`canvas-item-${id}`)
+  const t = (id: string, extra = {}): IWebsiteSection => ({ id, type: 'text', html: `<p>${id}</p>`, ...extra })
+
+  test('a row has the Reader markup with its defaults', () => {
+    draw([{ id: 'r', type: 'row', blocks: [t('a'), t('b', { basis: '1/3' }), t('c', { basis: 'auto' })] }])
+    const row = canvas().querySelector('.site-page .site-flex') as HTMLElement
+    expect(row.tagName).toBe('SECTION')
+    expect(row.className).toBe('site-flex site-flex-boxed site-pad-medium')
+    expect(row.getAttribute('style')).toBeNull()
+    const inner = row.firstElementChild as HTMLElement
+    expect(inner.tagName).toBe('DIV')
+    expect(inner.className).toBe('site-flex-inner site-dir-row site-justify-start site-align-stretch site-gap-medium')
+    const items = Array.from(inner.children) as HTMLElement[]
+    expect(items.map((i) => i.tagName)).toStrictEqual(['DIV', 'DIV', 'DIV'])
+    expect(items.map((i) => i.classList.contains('site-flex-item'))).toStrictEqual([true, true, true])
+    // auto and absent: no basis class; 1/3 has a dash.
+    expect(items.map((i) => Array.from(i.classList).filter((c) => c.startsWith('site-basis')))).toStrictEqual([
+      [],
+      ['site-basis-1-3'],
+      [],
+    ])
+    expect(items[0].querySelector('section.site-text')).not.toBeNull()
+  })
+
+  test('every option sets its class and the background its variable', () => {
+    draw([
+      {
+        id: 'r',
+        type: 'row',
+        width: 'full',
+        background: '#aabbcc',
+        padding: 'large',
+        direction: 'column',
+        wrap: false,
+        justify: 'space-between',
+        align: 'center',
+        gap: 'small',
+        blocks: [t('a', { basis: 'full' }), t('b', { basis: '2/5' }), t('c', { basis: '3/4' })],
+      },
+    ])
+    const row = canvas().querySelector('.site-flex') as HTMLElement
+    expect(row.className).toBe('site-flex site-flex-full site-pad-large')
+    expect(row.style.getPropertyValue('--flex-bg')).toBe('#aabbcc')
+    expect(row.firstElementChild?.className).toBe(
+      'site-flex-inner site-dir-column site-justify-space-between site-align-center site-gap-small site-nowrap',
+    )
+    expect(row.querySelector('.site-basis-full')).not.toBeNull()
+    expect(row.querySelector('.site-basis-2-5')).not.toBeNull()
+    expect(row.querySelector('.site-basis-3-4')).not.toBeNull()
+  })
+
+  test('values outside the lists fall back to the defaults, and a bad colour is ignored', () => {
+    draw([
+      {
+        id: 'r',
+        type: 'row',
+        width: 'x',
+        padding: 'y',
+        justify: 'z',
+        background: 'red',
+        blocks: [t('a', { basis: '9/9' })],
+      },
+    ])
+    const row = canvas().querySelector('.site-flex') as HTMLElement
+    expect(row.className).toBe('site-flex site-flex-boxed site-pad-medium')
+    expect(row.getAttribute('style')).toBeNull()
+    expect(row.querySelector('.site-flex-item')?.className).toBe('site-flex-item canvas-child')
+  })
+
+  test('a row inside a row is drawn the same way, recursively', () => {
+    draw([
+      {
+        id: 'r',
+        type: 'row',
+        blocks: [
+          {
+            id: 'r2',
+            type: 'row',
+            direction: 'column',
+            blocks: [t('a'), { id: 'bt', type: 'buttons', buttonText: 'Go', buttonUrl: '/x' }],
+          },
+        ],
+      },
+    ])
+    const inner = canvas().querySelector('.site-flex .site-flex-item .site-flex') as HTMLElement
+    expect(inner).not.toBeNull()
+    expect(inner.querySelector('.site-dir-column')).not.toBeNull()
+    expect(inner.querySelectorAll('.site-flex-item')).toHaveLength(2)
+  })
+
+  test('a block inside a row is selected by clicking it, by its id; the outline follows the selection', () => {
+    const onSelect = vi.fn()
+    draw([{ id: 'r', type: 'row', blocks: [t('a'), { id: 'r2', type: 'row', blocks: [t('b')] }] }], {
+      onSelect,
+      selectedId: 'b',
+      problemIds: ['a'],
+    })
+    expect(item('b')).toHaveClass('site-flex-item', 'canvas-child', 'is-selected')
+    expect(item('a')).toHaveClass('has-problem')
+    fireEvent.click(item('a'))
+    expect(onSelect).toHaveBeenLastCalledWith('a')
+    // The click stops there: it does not also select the row.
+    expect(onSelect).toHaveBeenCalledTimes(1)
+    fireEvent.click(item('b'))
+    expect(onSelect).toHaveBeenLastCalledWith('b')
+    expect(onSelect).toHaveBeenCalledTimes(2)
+    fireEvent.click(item('r'))
+    expect(onSelect).toHaveBeenLastCalledWith('r')
+  })
+
+  test('a row is moved and removed as one block, with the page tools', () => {
+    const onMove = vi.fn()
+    const onRemove = vi.fn()
+    draw([t('a'), { id: 'r', type: 'row', blocks: [t('b')] }], { onMove, onRemove })
+    fireEvent.click(screen.getByRole('button', { name: 'Move 2. Row up' }))
+    expect(onMove).toHaveBeenCalledWith(1, -1)
+    // Only the page's list has tools: the blocks inside the row are managed in the panel.
+    expect(screen.getAllByRole('button', { name: /^Edit / })).toHaveLength(2)
+  })
+
+  test('buttons block: the band buttons in a site-buttons-block section', () => {
+    draw([
+      {
+        id: 'bt',
+        type: 'buttons',
+        buttonText: 'Join',
+        buttonUrl: '/x',
+        button2Text: 'More',
+        button2Url: '/y',
+        note: 'Free',
+      },
+    ])
+    const block = canvas().querySelector('section.site-buttons-block') as HTMLElement
+    const buttons = block.querySelector('.site-buttons') as HTMLElement
+    expect(Array.from(buttons.querySelectorAll('a')).map((a) => a.className)).toStrictEqual([
+      'site-button',
+      'site-button second',
+    ])
+    expect(buttons.querySelector('p.site-note')?.textContent).toBe('Free')
+  })
+
+  test('tile block: a section with icon, title and text; a link makes it an a', () => {
+    draw([
+      { id: 't1', type: 'tile', imageAssetId: 'a1', imageAlt: 'Icon', title: 'Fast', text: 'Quick' },
+      { id: 't2', type: 'tile', title: 'Linked', link: '/about' },
+    ])
+    const [plain, linked] = Array.from(canvas().querySelectorAll('.site-tile')) as HTMLElement[]
+    expect(plain.tagName).toBe('SECTION')
+    expect(plain.querySelector('img.site-tile-icon')).toHaveAttribute('src', 'https://cdn.test/a1.png')
+    expect(plain.querySelector('img.site-tile-icon')).toHaveAttribute('alt', 'Icon')
+    expect(plain.querySelector('.site-tile-body > h3.site-tile-title')?.textContent).toBe('Fast')
+    expect(plain.querySelector('.site-tile-body > p.site-tile-text')?.textContent).toBe('Quick')
+    expect(linked.tagName).toBe('A')
+    expect(linked.querySelector('img')).toBeNull()
+  })
+
+  test('a shared block hidden on the page drawn is left out; others stay (SMN-95)', () => {
+    draw([t('own')], {
+      currentIndex: 1,
+      fixedBlocks: [
+        {
+          at: 0,
+          sections: [t('gone', { hiddenPageIds: ['p2'] }), t('kept', { hiddenPageIds: ['p1'] }), t('all')],
+          note: 'Shared',
+        },
+        { at: 1, sections: [t('below', { hiddenPageIds: ['p2'] })], note: 'Shared' },
+      ],
+    })
+    const text = canvas().textContent
+    expect(text).not.toContain('gone')
+    expect(text).not.toContain('below')
+    expect(text).toContain('kept')
+    expect(text).toContain('all')
+    // A group left with nothing shows no note either.
+    expect(screen.getAllByText('Shared')).toHaveLength(1)
+  })
+
+  test('an editable shared block hidden on the sample page stays selectable, faded (Layout page)', () => {
+    draw([t('mine', { hiddenPageIds: ['p1'] }), t('other')], { currentIndex: 0 })
+    expect(item('mine')).toHaveClass('canvas-hidden-here')
+    expect(item('other')).not.toHaveClass('canvas-hidden-here')
+  })
+})

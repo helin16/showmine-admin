@@ -2,7 +2,14 @@ import React, { useMemo } from 'react'
 import DOMPurify from 'dompurify'
 import IAsset from '../../../Types/Asset/IAsset'
 import ICompany from '../../../Types/Company/ICompany'
-import { IWebsiteFooterItem, IWebsiteLayout, IWebsiteSection, IWebsiteTheme } from '../../../Types/Website/IWebsite'
+import {
+  BASES,
+  IWebsiteFooterItem,
+  IWebsiteLayout,
+  IWebsiteSection,
+  IWebsiteTheme,
+  ROW_OPTIONS,
+} from '../../../Types/Website/IWebsite'
 import translate from '../../../i18n/translate'
 
 // The blocks as the Reader draws them (specs/004-website-visual-editor, research R2): markup and class names copied
@@ -10,7 +17,15 @@ import translate from '../../../i18n/translate'
 // ponytail: two copies of the markup; tests in both repositories pin the class names. A shared package if they drift.
 
 export type iImages = { [assetId: string]: IAsset | null }
-type iBlock = { section: IWebsiteSection; images: iImages; company?: ICompany }
+type iBlock = {
+  section: IWebsiteSection
+  images: iImages
+  company?: ICompany
+  // The page editor's selection, for the blocks inside a row (they are picked on the canvas like page blocks).
+  selectedId?: string
+  onSelect?: (id: string) => void
+  problemIds?: string[]
+}
 
 // The hosts the API keeps frames from (showmine-api HtmlSanitizer).
 const FRAME_HOSTS = ['player.bilibili.com', 'v.qq.com', 'www.youtube.com']
@@ -294,6 +309,85 @@ const Contact = ({ section, company }: iBlock) => {
   )
 }
 
+// Buttons on their own (reader sections/index.tsx ButtonsBlock, SMN-96).
+const ButtonsBlock = (props: iBlock) => (
+  <section className={'site-buttons-block'}>
+    <Buttons {...props} />
+  </section>
+)
+
+// A small card (reader sections/index.tsx Tile, SMN-96); a link makes the whole card a link. Canvas links go nowhere.
+const Tile = ({ section, images }: iBlock) => {
+  const imageUrl = urlOf(images, section.imageAssetId)
+  const body = (
+    <>
+      {imageUrl ? <img className={'site-tile-icon'} src={imageUrl} alt={`${section.imageAlt || ''}`} /> : null}
+      <div className={'site-tile-body'}>
+        {section.title ? <h3 className={'site-tile-title'}>{`${section.title}`}</h3> : null}
+        {section.text ? <p className={'site-tile-text'}>{`${section.text}`}</p> : null}
+      </div>
+    </>
+  )
+  return section.link ? (
+    <a className={'site-tile'} href={'#'}>
+      {body}
+    </a>
+  ) : (
+    <section className={'site-tile'}>{body}</section>
+  )
+}
+
+// A row (reader sections/index.tsx Row, SMN-96): its blocks drawn through the same map, so a row can hold a row.
+// Values outside the lists fall back to the defaults, as the Reader's. A block inside is picked by clicking it.
+const pick = (value: unknown, allowed: readonly string[], fallback: string) =>
+  allowed.includes(`${value}`) ? `${value}` : fallback
+const Row = (props: iBlock) => {
+  const { section, selectedId, onSelect, problemIds = [] } = props
+  const blocks = Array.isArray(section.blocks) ? (section.blocks as IWebsiteSection[]) : []
+  const { width, padding, direction, justify, align, gap } = ROW_OPTIONS
+  const hasBackground = /^#[0-9a-fA-F]{6}$/.test(`${section.background}`)
+  return (
+    <section
+      className={`site-flex site-flex-${pick(section.width, width.values, width.fallback)} site-pad-${pick(section.padding, padding.values, padding.fallback)}`}
+      style={hasBackground ? ({ '--flex-bg': `${section.background}` } as React.CSSProperties) : undefined}
+    >
+      <div
+        className={`site-flex-inner site-dir-${pick(section.direction, direction.values, direction.fallback)} site-justify-${pick(section.justify, justify.values, justify.fallback)} site-align-${pick(section.align, align.values, align.fallback)} site-gap-${pick(section.gap, gap.values, gap.fallback)}${section.wrap === false ? ' site-nowrap' : ''}`}
+      >
+        {blocks.map((block) => {
+          const Block = BLOCKS[block.type]
+          if (!Block) return null
+          const basis =
+            BASES.includes(`${block.basis}`) && block.basis !== 'auto'
+              ? ` site-basis-${`${block.basis}`.replace('/', '-')}`
+              : ''
+          // The canvas's own classes and click, on the item the Reader has; none where nothing is selectable.
+          const canvasClasses = onSelect
+            ? ` canvas-child${block.id === selectedId ? ' is-selected' : ''}${problemIds.includes(block.id) ? ' has-problem' : ''}`
+            : ''
+          return (
+            <div
+              key={block.id}
+              data-testid={onSelect ? `canvas-item-${block.id}` : undefined}
+              className={`site-flex-item${basis}${canvasClasses}`}
+              onClick={
+                onSelect
+                  ? (e) => {
+                      e.stopPropagation()
+                      onSelect(block.id)
+                    }
+                  : undefined
+              }
+            >
+              <Block {...props} section={block} />
+            </div>
+          )
+        })}
+      </div>
+    </section>
+  )
+}
+
 // The Reader lists the latest articles when the page is shown; the canvas says where they go.
 const Articles = ({ section }: iBlock) => (
   <section className={`site-articles${section.layout === 'featured' ? ' featured' : ''}`}>
@@ -411,4 +505,7 @@ export const BLOCKS: { [type: string]: (props: iBlock) => React.ReactElement | n
   gallery: Gallery,
   contact: Contact,
   articles: Articles,
+  row: Row,
+  buttons: ButtonsBlock,
+  tile: Tile,
 }

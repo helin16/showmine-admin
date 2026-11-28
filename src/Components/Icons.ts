@@ -69,9 +69,13 @@ import {
   CreditCardOutlined,
   DollarOutlined,
   EnvironmentOutlined,
+  ColumnWidthOutlined,
+  IdcardOutlined,
 } from '@ant-design/icons'
 
 const Icons = {
+  ColumnWidthOutlined,
+  IdcardOutlined,
   UserOutlined,
   LockOutlined,
   LoginOutlined,

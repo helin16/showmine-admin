@@ -123,6 +123,32 @@ const Canvas = styled.div`
       12px/20px system-ui,
       sans-serif;
   }
+  /* A top-level row runs edge to edge as the Reader's (its rule names .site-page > .site-flex, but the canvas wraps
+     each block in an item). */
+  .site-page > .canvas-item > .site-flex {
+    width: 100cqw;
+    margin-inline: calc(50% - 50cqw);
+    box-sizing: border-box;
+  }
+  /* A block inside a row is picked by clicking it. */
+  .canvas-child {
+    cursor: pointer;
+    outline: 1px dashed transparent;
+    outline-offset: -2px;
+    &:hover {
+      outline-color: #91caff;
+    }
+    &.is-selected {
+      outline: 2px solid #1677ff;
+    }
+    &.has-problem {
+      outline: 2px solid #ff4d4f;
+    }
+  }
+  /* A shared block hidden on the page drawn (the Layout page keeps it to edit, faded). */
+  .canvas-hidden-here {
+    opacity: 0.4;
+  }
   .canvas-item {
     position: relative;
     margin: 24px 0;
@@ -252,13 +278,18 @@ const SiteCanvas = ({
     onSelectPart ? `canvas-part${selectedPart === part ? ' is-selected' : ''}` : ''
   const nameOf = (section: IWebsiteSection, index: number) =>
     `${index + 1}. ${translate(`website-section-type-${section.type}`)}`
+  // SMN-95: a shared block hidden on the page drawn is left out, as the Reader does.
+  const pageId = pages[currentIndex]?.id
+  const isHiddenHere = (section: IWebsiteSection) =>
+    !!pageId && Array.isArray(section.hiddenPageIds) && section.hiddenPageIds.includes(pageId)
   const getFixed = (at: number) =>
     fixedBlocks
-      .filter((group) => group.at === at && group.sections.length > 0)
+      .map((group) => ({ ...group, shown: group.sections.filter((section) => !isHiddenHere(section)) }))
+      .filter((group) => group.at === at && group.shown.length > 0)
       .map((group, groupIndex) => (
         <div key={`fixed-${at}-${groupIndex}`} className={'canvas-sample'}>
           {group.note ? <span className={'canvas-sample-note'}>{group.note}</span> : null}
-          {group.sections.map((section) => {
+          {group.shown.map((section) => {
             const Block = BLOCKS[section.type]
             return Block ? <Block key={section.id} section={section} images={images} company={company} /> : null
           })}
@@ -394,7 +425,7 @@ const SiteCanvas = ({
                       {index === row[1] ? null : getFixed(index)}
                       <div
                         data-testid={`canvas-item-${section.id}`}
-                        className={`canvas-item${isSelected ? ' is-selected' : ''}${hasProblem ? ' has-problem' : ''}`}
+                        className={`canvas-item${isSelected ? ' is-selected' : ''}${hasProblem ? ' has-problem' : ''}${isHiddenHere(section) ? ' canvas-hidden-here' : ''}`}
                         onClick={(e) => {
                           e.stopPropagation()
                           onSelect(section.id)
@@ -447,7 +478,16 @@ const SiteCanvas = ({
                             />
                           </PopConfirm>
                         </div>
-                        {Block ? <Block section={section} images={images} company={company} /> : null}
+                        {Block ? (
+                          <Block
+                            section={section}
+                            images={images}
+                            company={company}
+                            selectedId={selectedId}
+                            onSelect={onSelect}
+                            problemIds={problemIds}
+                          />
+                        ) : null}
                       </div>
                     </React.Fragment>
                   )

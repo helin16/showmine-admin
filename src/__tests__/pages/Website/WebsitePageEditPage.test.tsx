@@ -765,3 +765,157 @@ describe('WebsitePageEditPage', () => {
     })
   })
 })
+
+// specs/010-website-rows (SMN-96, SMN-95): rows in the page editor
+type iSent = { id: string; type: string; blocks: { id: string; type: string }[] }
+describe('WebsitePageEditPage rows (spec 010)', () => {
+  const sentSections = () =>
+    (vi.mocked(WebsiteService.updatePage).mock.calls.at(-1) as unknown as [string, { sections: iSent[] }])[1].sections
+  const addRowWithTile = async () => {
+    await loaded()
+    vi.mocked(WebsiteService.updatePage).mockResolvedValue(page() as never)
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Add Row' }))
+    // The new row is selected; add a tile in it, which opens.
+    fireEvent.click(screen.getByRole('button', { name: 'Add Tile' }))
+  }
+
+  test('adds a row and a block inside it; the block opens with a way back to the row', async () => {
+    await addRowWithTile()
+    expect(screen.getByText('1. Tile')).toBeInTheDocument()
+    expect(screen.getByRole('radiogroup', { name: 'Width' })).toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Fast' } })
+    // The canvas draws the tile inside the row.
+    const canvas = screen.getByTestId('site-canvas')
+    expect(canvas.querySelector('.site-flex .site-flex-item .site-tile .site-tile-title')?.textContent).toBe('Fast')
+    fireEvent.click(screen.getByRole('button', { name: 'Back to the row' }))
+    expect(screen.getByRole('button', { name: 'Edit 1. Tile' })).toBeInTheDocument()
+    expect(screen.getByRole('radiogroup', { name: 'Content width' })).toBeInTheDocument()
+    // Back from the row returns to the blocks.
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }))
+    expect(screen.getByRole('button', { name: 'Add Row' })).toBeInTheDocument()
+    // Block counts include nested ones: hero, text, row, tile.
+    expect(screen.getByText(/4 of 30 blocks/)).toBeInTheDocument()
+  })
+
+  test('a block inside a row is picked on the canvas and saved nested with its own id', async () => {
+    await addRowWithTile()
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Fast' } })
+    fireEvent.click(screen.getByRole('radio', { name: '1/3' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Back to the row' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }))
+    const tile = screen
+      .getByTestId('site-canvas')
+      .querySelector('.site-tile')
+      ?.closest('.site-flex-item') as HTMLElement
+    expect(tile).toHaveClass('site-basis-1-3')
+    fireEvent.click(tile)
+    expect(screen.getByText('1. Tile')).toBeInTheDocument()
+    expect(screen.getByLabelText('Title')).toHaveValue('Fast')
+    fireEvent.click(saveBtn())
+    const [, , row] = sentSections()
+    expect(row).toStrictEqual({
+      id: expect.any(String),
+      type: 'row',
+      blocks: [{ id: expect.any(String), type: 'tile', title: 'Fast', basis: '1/3' }],
+    })
+    expect(row.blocks[0].id).not.toBe(row.id)
+  })
+
+  test('moves and removes blocks inside the row from the row editor', async () => {
+    await addRowWithTile()
+    fireEvent.click(screen.getByRole('button', { name: 'Back to the row' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Add Buttons' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Back to the row' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Move 2. Buttons up' }))
+    expect(screen.getByRole('button', { name: 'Edit 1. Buttons' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Remove 2. Tile' }))
+    fireEvent.click(within(await screen.findByRole('tooltip')).getByRole('button', { name: 'Remove' }))
+    expect(screen.queryByRole('button', { name: 'Edit 2. Tile' })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }))
+    fireEvent.click(saveBtn())
+    const row = sentSections()[2]
+    expect(row.blocks.map((b) => b.type)).toStrictEqual(['buttons'])
+  })
+
+  test('a row inside a row can be added; inside that, Row is not offered', async () => {
+    await loaded()
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Add Row' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Add Row' }))
+    // Now in the inner row.
+    expect(screen.getByText('1. Row')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Add Row' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'Add Tile' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Back to the row' }))
+    expect(screen.getByRole('button', { name: 'Add Row' })).toBeInTheDocument()
+  })
+
+  test('an empty row is refused before saving, and the row is opened to say so', async () => {
+    await loaded()
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Add Row' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }))
+    fireEvent.click(saveBtn())
+    expect(WebsiteService.updatePage).not.toHaveBeenCalled()
+    expect(await screen.findByText('Add at least one block to the row.')).toBeInTheDocument()
+  })
+
+  test('a problem the API finds in a block inside a row opens that block and shows it there', async () => {
+    vi.mocked(WebsiteService.getPages).mockResolvedValue([
+      page({ sections: [{ id: 'r', type: 'row', blocks: [{ id: 't', type: 'tile', title: 'x' }] }] }),
+    ] as never)
+    vi.mocked(WebsiteService.get).mockResolvedValue(website as never)
+    vi.mocked(WebsiteService.updatePage).mockRejectedValue(
+      httpError(400, { errors: [{ path: 'sections[0].blocks[0].title', message: 'Text of at most 80 characters.' }] }),
+    )
+    renderPage()
+    await screen.findByRole('button', { name: 'Edit 1. Row' })
+    fireEvent.click(screen.getByRole('button', { name: 'Edit 1. Row' }))
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Blocks wrap onto the next line' }))
+    fireEvent.click(saveBtn())
+    expect(await screen.findByText('Text of at most 80 characters.')).toBeInTheDocument()
+    expect(screen.getByText('1. Tile')).toBeInTheDocument()
+  })
+
+  test('loads the images of blocks inside rows', async () => {
+    vi.mocked(WebsiteService.getPages).mockResolvedValue([
+      page({ sections: [{ id: 'r', type: 'row', blocks: [{ id: 't', type: 'tile', imageAssetId: 'img-1' }] }] }),
+    ] as never)
+    vi.mocked(WebsiteService.get).mockResolvedValue(website as never)
+    vi.mocked(WebsiteService.getImages).mockResolvedValue({
+      data: [{ id: 'img-1', url: 'https://cdn.test/1.png', fileName: '1.png' }],
+    } as never)
+    renderPage()
+    await screen.findByRole('button', { name: 'Edit 1. Row' })
+    expect(WebsiteService.getImages).toHaveBeenCalledWith(1, ['img-1'])
+    const icon = await waitFor(() => {
+      const img = screen.getByTestId('site-canvas').querySelector('img.site-tile-icon')
+      expect(img).not.toBeNull()
+      return img
+    })
+    expect(icon).toHaveAttribute('src', 'https://cdn.test/1.png')
+  })
+
+  test('a shared block hidden on this page is left out of the canvas; others show (SMN-95)', async () => {
+    vi.mocked(WebsiteService.getPages).mockResolvedValue([page()] as never)
+    vi.mocked(WebsiteService.get).mockResolvedValue({
+      ...website,
+      layout: {
+        sharedAbove: [{ id: 'a', type: 'hero', heading: 'Top', hiddenPageIds: ['p-1'] }],
+        sharedBelow: [
+          { id: 'b', type: 'hero', heading: 'Band', hiddenPageIds: ['p-other'] },
+          { id: 'c', type: 'hero', heading: 'Everywhere' },
+        ],
+      },
+    } as never)
+    renderPage()
+    const canvas = await screen.findByTestId('site-canvas')
+    await within(canvas).findByRole('heading', { name: 'Hello' })
+    expect(
+      within(canvas)
+        .getAllByRole('heading', { level: 1 })
+        .map((h) => h.textContent),
+    ).toStrictEqual(['Hello', 'Band', 'Everywhere'])
+  })
+})

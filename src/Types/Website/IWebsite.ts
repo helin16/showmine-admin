@@ -112,6 +112,20 @@ export type IWebsiteTemplate = {
 // A section of a page (data-model "Section"): an id made by the client, its type and that type's fields.
 export type IWebsiteSection = { id: string; type: string; [field: string]: unknown }
 
+// Row blocks (spec 010, contract SMN-96): the choices the API accepts; the first of each is not always the default.
+export const ROW_OPTIONS = {
+  width: { values: ['boxed', 'full'], fallback: 'boxed' },
+  padding: { values: ['none', 'small', 'medium', 'large'], fallback: 'medium' },
+  direction: { values: ['row', 'column'], fallback: 'row' },
+  justify: { values: ['start', 'center', 'end', 'space-between', 'space-around'], fallback: 'start' },
+  align: { values: ['start', 'center', 'end', 'stretch'], fallback: 'stretch' },
+  gap: { values: ['none', 'small', 'medium', 'large'], fallback: 'medium' },
+} as const
+// A block inside a row may take a share of the row's width; auto (or absent) takes none.
+export const BASES = ['auto', '1/4', '1/3', '2/5', '1/2', '3/5', '2/3', '3/4', 'full']
+// The API's limit on the blocks of one row; the page's limit counts nested blocks too.
+export const MAX_ROW_BLOCKS = 12
+
 // A page of the draft, as GET /website/pages and POST /website/initialise give it.
 export type IWebsitePage = IBaseModel & {
   slug: string

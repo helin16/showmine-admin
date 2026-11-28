@@ -5,8 +5,11 @@ import RichTextEditor from '../Form/RichTextEditor'
 import MediaPicker from './MediaPicker'
 import IAsset from '../../Types/Asset/IAsset'
 import Space from '../Form/Space'
+import PopConfirm from '../Form/Popconfirm'
+import BlockPalette from './Canvas/BlockPalette'
+import { flattenBlocks, getBlocks } from './sectionTree'
 import translate from '../../i18n/translate'
-import { IWebsiteSection } from '../../Types/Website/IWebsite'
+import { BASES, IWebsiteSection, MAX_ROW_BLOCKS, ROW_OPTIONS } from '../../Types/Website/IWebsite'
 
 // One editor per section type (specs/001-website-builder, data-model "Section", US2 T035, US5 T062). Limits match the
 // API's. Images are chosen from the company's website images with the media picker.
@@ -23,6 +26,9 @@ export const ADDABLE_SECTION_TYPES = [
   'map',
   'form',
   'articles',
+  'row',
+  'buttons',
+  'tile',
 ]
 export const MAX_GALLERY_IMAGES = 24
 export const MAX_CARDS = 12
@@ -47,11 +53,11 @@ type iPlan = {
 const getPlans = (section: IWebsiteSection) => (Array.isArray(section.plans) ? (section.plans as iPlan[]) : [])
 const MAP_HEIGHTS = ['small', 'medium', 'large']
 
-// Every image id a page's sections use.
+// Every image id a page's sections use, those of blocks inside rows too.
 export const getImageIds = (sections: IWebsiteSection[]) =>
   Array.from(
     new Set(
-      sections.flatMap((section) => [
+      flattenBlocks(sections).flatMap((section) => [
         ...(typeof section.imageAssetId === 'string' ? [section.imageAssetId] : []),
         ...(typeof section.assetId === 'string' ? [section.assetId] : []),
         ...(Array.isArray(section.images) ? (section.images as iGalleryImage[]).map((image) => image.assetId) : []),
@@ -83,6 +89,11 @@ export const newSection = (type: string): IWebsiteSection => {
       return { id, type }
     case 'gallery':
       return { id, type, images: [] }
+    case 'row':
+      return { id, type, blocks: [] }
+    case 'buttons':
+    case 'tile':
+      return { id, type }
     default:
       return { id, type: 'articles', count: 3 }
   }
@@ -134,6 +145,13 @@ type iSectionEditor = {
   images?: { [assetId: string]: IAsset | null }
   // Images just picked, so the page can show them.
   onImagesPicked?: (assets: IAsset[]) => void
+  // Nested editing (spec 010): how many rows hold this block (0 on the page), for the row's blocks to open one.
+  parents?: number
+  onSelect?: (id: string) => void
+  // False when the page (or the shared list) has no room for another block.
+  canAdd?: boolean
+  // The shared block's pages to choose from (the Layout page): the "Show on" checkboxes.
+  pages?: { id: string; title: string }[]
 }
 
 // An image of a section: its thumbnail, or a note that it is missing.
@@ -144,7 +162,16 @@ export const Thumbnail = ({ id, images }: { id: string; images: { [assetId: stri
   return <img src={image.url} alt={image.fileName} style={{ maxWidth: 160, maxHeight: 100 }} />
 }
 
-const TypeEditor = ({ section, onChange, errors = {}, images = {}, onImagesPicked }: iSectionEditor) => {
+const TypeEditor = ({
+  section,
+  onChange,
+  errors = {},
+  images = {},
+  onImagesPicked,
+  parents = 0,
+  onSelect,
+  canAdd,
+}: iSectionEditor) => {
   // Which image the picker is choosing: a single field, or more for the gallery.
   // The image being picked: a field, the gallery, or the card at an index.
   const [picking, setPicking] = useState<'imageAssetId' | 'assetId' | 'images' | number>()
@@ -618,6 +645,158 @@ const TypeEditor = ({ section, onChange, errors = {}, images = {}, onImagesPicke
           </div>
         </Space>
       )
+    // Buttons on their own (spec 010): the band's buttons as a block.
+    case 'buttons':
+      return (
+        <Space orientation={'vertical'} style={{ width: '100%' }}>
+          {buttonFields}
+        </Space>
+      )
+    // A small card (spec 010): icon, title, a line of text, an optional link.
+    case 'tile':
+      return (
+        <Space orientation={'vertical'} style={{ width: '100%' }}>
+          {imageField('imageAssetId', translate('website-tile-icon'), true)}
+          {picker}
+          {field('imageAlt', translate('website-section-alt'), text('imageAlt', 200))}
+          {field('title', translate('website-tile-title'), text('title', 80))}
+          {field('text', translate('website-tile-text'), text('text', 200, true))}
+          {field('link', translate('website-tile-link'), text('link', 2000))}
+        </Space>
+      )
+    // A row (spec 010): its options, and its blocks listed as the page lists its own.
+    case 'row': {
+      const blocks = getBlocks(section)
+      const setBlocks = (next: IWebsiteSection[]) => onChange({ ...section, blocks: next })
+      const choice = (name: keyof typeof ROW_OPTIONS, label: string) => {
+        const { values, fallback } = ROW_OPTIONS[name]
+        return (
+          <div key={name}>
+            <div id={fieldId(name)}>{label}</div>
+            <Radio.Group
+              name={fieldId(name)}
+              aria-labelledby={fieldId(name)}
+              value={values.includes(`${section[name]}` as never) ? section[name] : fallback}
+              // The default is left out, as the other blocks leave out theirs.
+              onChange={(e) => set(name, e.target.value === fallback ? undefined : e.target.value)}
+            >
+              {values.map((value) => (
+                <Radio key={value} value={value}>
+                  {translate(`website-opt-${value}`)}
+                </Radio>
+              ))}
+            </Radio.Group>
+          </div>
+        )
+      }
+      const move = (index: number, by: number) => {
+        const next = [...blocks]
+        const [block] = next.splice(index, 1)
+        next.splice(index + by, 0, block)
+        setBlocks(next)
+      }
+      const add = (type: string) => {
+        const block = newSection(type)
+        setBlocks([...blocks, block])
+        onSelect?.(block.id)
+      }
+      const isFull = canAdd === false || blocks.length >= MAX_ROW_BLOCKS
+      const hasBackground = typeof section.background === 'string'
+      return (
+        <Space orientation={'vertical'} style={{ width: '100%' }}>
+          {choice('width', translate('website-row-content-width'))}
+          <div className={'website-section-field'}>
+            <label htmlFor={fieldId('background')}>{translate('website-row-background')}</label>
+            <div>
+              <input
+                id={fieldId('background')}
+                type={'color'}
+                value={hasBackground ? `${section.background}` : '#ffffff'}
+                onChange={(e) => set('background', e.target.value)}
+              />
+              {hasBackground ? (
+                <Button type={'link'} size={'small'} onClick={() => set('background', undefined)}>
+                  {translate('website-row-background-none')}
+                </Button>
+              ) : null}
+            </div>
+            {errors.background ? (
+              <div role={'alert'} className={'ant-form-item-explain-error'}>
+                {errors.background}
+              </div>
+            ) : null}
+          </div>
+          {choice('padding', translate('website-row-padding'))}
+          {choice('direction', translate('website-row-direction'))}
+          <Checkbox
+            checked={section.wrap !== false}
+            onChange={(e) => set('wrap', e.target.checked ? undefined : false)}
+          >
+            {translate('website-row-wrap')}
+          </Checkbox>
+          {choice('justify', translate('website-row-justify'))}
+          {choice('align', translate('website-row-align'))}
+          {choice('gap', translate('website-row-gap'))}
+          <div role={'group'} aria-label={translate('website-row-blocks')}>
+            <strong>{translate('website-row-blocks')}</strong>
+            {blocks.length === 0 ? <div>{translate('website-row-empty')}</div> : null}
+            {blocks.map((block, index) => {
+              const name = `${index + 1}. ${translate(`website-section-type-${block.type}`)}`
+              return (
+                <Space key={block.id} wrap>
+                  <span>{name}</span>
+                  <Button aria-label={translate('website-canvas-edit', { name })} onClick={() => onSelect?.(block.id)}>
+                    {translate('website-edit')}
+                  </Button>
+                  <Button
+                    aria-label={translate('website-move-up', { name })}
+                    disabled={index === 0}
+                    onClick={() => move(index, -1)}
+                  >
+                    ↑
+                  </Button>
+                  <Button
+                    aria-label={translate('website-move-down', { name })}
+                    disabled={index === blocks.length - 1}
+                    onClick={() => move(index, 1)}
+                  >
+                    ↓
+                  </Button>
+                  <PopConfirm
+                    title={translate('website-section-remove-confirm')}
+                    okText={translate('website-remove')}
+                    cancelText={translate('cancel')}
+                    okButtonProps={{ danger: true }}
+                    onConfirm={() => setBlocks(blocks.filter((_, i) => i !== index))}
+                  >
+                    <Button aria-label={translate('website-remove-named', { name })}>
+                      {translate('website-remove')}
+                    </Button>
+                  </PopConfirm>
+                </Space>
+              )
+            })}
+          </div>
+          {errors.blocks ? (
+            <div role={'alert'} className={'ant-form-item-explain-error'}>
+              {errors.blocks}
+            </div>
+          ) : null}
+          {/* A row inside a row is allowed; a third level is not offered. */}
+          <BlockPalette
+            isFull={isFull}
+            onAdd={add}
+            types={ADDABLE_SECTION_TYPES.filter((type) => type !== 'row' || parents === 0)}
+          />
+          <small>
+            {translate(isFull ? 'website-row-add-full' : 'website-row-count', {
+              count: blocks.length,
+              max: MAX_ROW_BLOCKS,
+            })}
+          </small>
+        </Space>
+      )
+    }
     case 'text':
       return field(
         'html',
@@ -774,30 +953,86 @@ const TypeEditor = ({ section, onChange, errors = {}, images = {}, onImagesPicke
   }
 }
 
-// Every block's editor, then the choice shared by all blocks (spec 009): a pair in one row.
+// Every block's editor, then the choices shared by all blocks: a pair in one row (spec 009, on the page only), the
+// width of a block inside a row (spec 010) and the pages a shared block shows on (SMN-95).
 const SectionEditor = (props: iSectionEditor) => {
-  const { section, onChange } = props
+  const { section, onChange, parents = 0, pages, errors = {} } = props
+  const hidden = Array.isArray(section.hiddenPageIds) ? (section.hiddenPageIds as string[]) : []
   return (
     <Space orientation={'vertical'} style={{ width: '100%' }}>
       <TypeEditor {...props} />
-      <Checkbox
-        checked={section.sideBySide === true}
-        onChange={(e) => {
-          const next = { ...section, sideBySide: e.target.checked || undefined }
-          if (!e.target.checked) delete next.sideBySide
-          onChange(next)
-        }}
-      >
-        {translate('website-section-side-by-side')}
-      </Checkbox>
+      {parents === 0 ? (
+        <Checkbox
+          checked={section.sideBySide === true}
+          onChange={(e) => {
+            const next = { ...section, sideBySide: e.target.checked || undefined }
+            if (!e.target.checked) delete next.sideBySide
+            onChange(next)
+          }}
+        >
+          {translate('website-section-side-by-side')}
+        </Checkbox>
+      ) : (
+        <div>
+          <div id={`${section.id}-basis`}>{translate('website-block-basis')}</div>
+          <Radio.Group
+            name={`${section.id}-basis`}
+            aria-labelledby={`${section.id}-basis`}
+            value={BASES.includes(`${section.basis}`) ? section.basis : 'auto'}
+            onChange={(e) => {
+              const next = { ...section, basis: e.target.value }
+              if (e.target.value === 'auto') delete next.basis
+              onChange(next)
+            }}
+          >
+            {BASES.map((basis) => (
+              <Radio key={basis} value={basis}>
+                {basis === 'auto' || basis === 'full' ? translate(`website-opt-${basis}`) : basis}
+              </Radio>
+            ))}
+          </Radio.Group>
+          {errors.basis ? (
+            <div role={'alert'} className={'ant-form-item-explain-error'}>
+              {errors.basis}
+            </div>
+          ) : null}
+        </div>
+      )}
+      {pages && parents === 0 ? (
+        <div role={'group'} aria-label={translate('website-shared-show-on')}>
+          <div>{translate('website-shared-show-on')}</div>
+          <Space orientation={'vertical'}>
+            {pages.map((page) => (
+              <Checkbox
+                key={page.id}
+                checked={!hidden.includes(page.id)}
+                onChange={(e) => {
+                  const next = { ...section }
+                  const ids = e.target.checked ? hidden.filter((id) => id !== page.id) : [...hidden, page.id]
+                  if (ids.length > 0) next.hiddenPageIds = ids
+                  else delete next.hiddenPageIds
+                  onChange(next)
+                }}
+              >
+                {page.title}
+              </Checkbox>
+            ))}
+          </Space>
+          {errors.hiddenPageIds ? (
+            <div role={'alert'} className={'ant-form-item-explain-error'}>
+              {errors.hiddenPageIds}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
     </Space>
   )
 }
 
 // The checks the browser can make before saving; the API checks everything again.
-export const checkSection = (section: IWebsiteSection): { [field: string]: string } => {
+export function checkSection(section: IWebsiteSection): { [field: string]: string } {
   const errors: { [field: string]: string } = {}
-  if (section.type === 'hero' || section.type === 'split') {
+  if (section.type === 'hero' || section.type === 'split' || section.type === 'buttons') {
     ;(['buttonUrl', 'button2Url'] as const).forEach((name) => {
       if (typeof section[name] === 'string' && !isLink(section[name] as string)) {
         errors[name] = translate('website-section-bad-link')
@@ -808,6 +1043,18 @@ export const checkSection = (section: IWebsiteSection): { [field: string]: strin
     if (hasText !== (typeof section.button2Url === 'string')) {
       errors[hasText ? 'button2Url' : 'button2Text'] = translate('website-section-button2-both')
     }
+  }
+  if (section.type === 'tile' && typeof section.link === 'string' && !isLink(section.link)) {
+    errors.link = translate('website-section-bad-link')
+  }
+  if (section.type === 'row') {
+    const blocks = getBlocks(section)
+    if (blocks.length === 0) errors.blocks = translate('website-row-required')
+    blocks.forEach((block, index) =>
+      Object.entries(checkSection(block)).forEach(([field, problem]) => {
+        errors[`blocks[${index}].${field}`] = problem
+      }),
+    )
   }
   if (section.type === 'cards') {
     const cards = getCards(section)
