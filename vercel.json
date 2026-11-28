@@ -11,7 +11,7 @@
         { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' https://cdn.tiny.cloud https://js.stripe.com https://res.wx.qq.com https://res2.wx.qq.com; style-src 'self' 'unsafe-inline' https://cdn.tiny.cloud; img-src 'self' data: blob: https:; font-src 'self' data: https://cdn.tiny.cloud; media-src 'self' blob: https:; connect-src 'self' https:; frame-src 'self' https:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
+          "value": "default-src 'self'; script-src 'self' https://cdn.tiny.cloud https://js.stripe.com https://res.wx.qq.com https://res2.wx.qq.com; style-src 'self' 'unsafe-inline' https://cdn.tiny.cloud; img-src 'self' data: blob: https:; font-src 'self' data: https://cdn.tiny.cloud https://r.showmine66.com; media-src 'self' blob: https:; connect-src 'self' https:; frame-src 'self' https:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
         }
       ]
     },

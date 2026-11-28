@@ -20,6 +20,8 @@ describe('security headers', () => {
     expect(directive('style-src')).toContain('\'unsafe-inline\'')
     // Articles being edited can embed frames from anywhere, as they can in the reader.
     expect(directive('frame-src')).toBe('frame-src \'self\' https:')
+    // The website canvas uses the Reader's font for the airy style (SMN-93).
+    expect(directive('font-src')).toContain('https://r.showmine66.com')
   })
 
   test('scripts stay locked down', () => {
